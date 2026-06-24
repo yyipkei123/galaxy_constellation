@@ -230,6 +230,26 @@ describe('segments route', () => {
     expect(screen.queryByText(/NaN|Infinity/i)).not.toBeInTheDocument();
   });
 
+  it('renders fallback labels when malformed segment text fields are not strings', () => {
+    const malformedSegment = {
+      id: 'non-string-text-segment',
+      name: 123,
+      nameZh: {},
+      signatureTrait: {},
+      sizeBand: 456,
+      crossPropertyCashBand: [],
+    } as unknown as Segment;
+
+    expect(() => renderSegments([malformedSegment], malformedSegment)).not.toThrow();
+
+    expect(screen.getByRole('button', { name: 'segment: Unnamed Segment' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Unnamed Segment' })).toBeInTheDocument();
+    expect(screen.getAllByText('Customer 360').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Segment profile is available with limited CDE fields.').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText('~0-0k matched guests')).toBeInTheDocument();
+    expect(screen.queryByText(/NaN|Infinity/i)).not.toBeInTheDocument();
+  });
+
   it('sanitizes raw competitor spend bands before CRM append rendering', () => {
     const rawRows: CrmRow[] = [
       {

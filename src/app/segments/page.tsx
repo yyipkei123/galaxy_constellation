@@ -16,8 +16,8 @@ function finiteValue(value: number | undefined, fallback = 0) {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
 }
 
-function safeText(value: string | undefined, fallback: string) {
-  return value?.trim() ? value : fallback;
+function safeText(value: unknown, fallback: string) {
+  return typeof value === 'string' && value.trim() ? value : fallback;
 }
 
 function hasRenderableSegmentId(segment: Partial<Segment> | undefined): segment is Partial<Segment> & { id: string } {
