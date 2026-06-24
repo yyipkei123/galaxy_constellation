@@ -13,6 +13,8 @@ export function formatEnriched(value: number | string, kind: EnrichedFormatKind)
     return `Index ${Math.round(value)}`;
   }
 
+  if (kind !== 'band') throw new Error(`Unsupported CDE format kind: ${kind}`);
+
   if (typeof value !== 'string') throw new Error('CDE bands must be strings');
   if (currencyPattern.test(value)) throw new Error('CDE bands must not include currency symbols or codes');
   if (!value.includes('equiv.')) throw new Error('CDE bands must include equiv. to mark modelled ranges');

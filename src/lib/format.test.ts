@@ -13,6 +13,10 @@ describe('formatEnriched', () => {
     expect(() => formatEnriched('9000', 'band')).toThrow(/equiv/);
   });
 
+  it('rejects unsupported runtime format kinds', () => {
+    expect(() => formatEnriched('8-12k equiv./mo', 'money' as never)).toThrow(/Unsupported CDE format kind/);
+  });
+
   it('keeps Galaxy offer mechanics in a separate formatter', () => {
     expect(formatOfferMoney(200)).toBe('MOP 200');
   });

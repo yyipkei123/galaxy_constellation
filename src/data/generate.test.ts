@@ -27,6 +27,19 @@ describe('synthetic CDE data', () => {
     }
   });
 
+  it('uses the spec-approved Traditional Chinese segment labels', () => {
+    const latest = segmentsByQuarter[quarters.at(-1)!.id];
+
+    expect(Object.fromEntries(latest.map((segment) => [segment.name, segment.nameZh]))).toEqual({
+      'Diamond High-Rollers': '鑽石貴賓',
+      'Cosmopolitan Connoisseurs': '都會鑑賞家',
+      'GBA Cross-Border Explorers': '大灣區跨境客',
+      'Family Leisure Seekers': '親子度假客',
+      'MICE & Business Guests': '商務會展客',
+      'Aspiring Mass-Affluent': '新晉中產客',
+    });
+  });
+
   it('normalizes opportunity index around market base 100', () => {
     const latest = segmentsByQuarter[quarters.at(-1)!.id];
     const mean = latest.reduce((sum, segment) => sum + segment.opportunityIndex, 0) / latest.length;
@@ -42,7 +55,7 @@ describe('synthetic CDE data', () => {
       activeMetricCount: 7,
     });
     expect(crmRows).toHaveLength(10);
-    expect(crmRows[0].customerId).toMatch(/^MEM-/);
+    expect(crmRows[0].customerId).toMatch(/^MEM-••••\d{4}$/);
     expect(crmRows[0].competitorSpendBand).toContain('equiv./mo');
   });
 });

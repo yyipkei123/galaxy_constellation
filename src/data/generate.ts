@@ -38,7 +38,7 @@ const baseSegments: BaseSegment[] = [
   {
     id: 'diamond-high-rollers',
     name: 'Diamond High-Rollers',
-    nameZh: '鑽石高端玩家',
+    nameZh: '鑽石貴賓',
     colorToken: 'gold',
     sizeLowK: 8,
     sizeHighK: 12,
@@ -85,7 +85,7 @@ const baseSegments: BaseSegment[] = [
   {
     id: 'cosmopolitan-connoisseurs',
     name: 'Cosmopolitan Connoisseurs',
-    nameZh: '都會品味鑑賞家',
+    nameZh: '都會鑑賞家',
     colorToken: 'goldLite',
     sizeLowK: 16,
     sizeHighK: 24,
@@ -126,7 +126,7 @@ const baseSegments: BaseSegment[] = [
   {
     id: 'gba-cross-border-explorers',
     name: 'GBA Cross-Border Explorers',
-    nameZh: '大灣區跨境探索客',
+    nameZh: '大灣區跨境客',
     colorToken: 'positive',
     sizeLowK: 38,
     sizeHighK: 52,
@@ -167,7 +167,7 @@ const baseSegments: BaseSegment[] = [
   {
     id: 'family-leisure-seekers',
     name: 'Family Leisure Seekers',
-    nameZh: '家庭休閒旅客',
+    nameZh: '親子度假客',
     colorToken: 'market',
     sizeLowK: 28,
     sizeHighK: 40,
@@ -207,7 +207,7 @@ const baseSegments: BaseSegment[] = [
   {
     id: 'mice-business-guests',
     name: 'MICE & Business Guests',
-    nameZh: '會展及商務旅客',
+    nameZh: '商務會展客',
     colorToken: 'goldDeep',
     sizeLowK: 18,
     sizeHighK: 26,
@@ -248,7 +248,7 @@ const baseSegments: BaseSegment[] = [
   {
     id: 'aspiring-mass-affluent',
     name: 'Aspiring Mass-Affluent',
-    nameZh: '新晉中高端客群',
+    nameZh: '新晉中產客',
     colorToken: 'leak',
     sizeLowK: 44,
     sizeHighK: 62,
@@ -422,9 +422,10 @@ const competitorSpendBands = [
 
 export const crmRows: CrmRow[] = crmSegmentOrder.map((segmentId, index) => {
   const segment = latestSegments.find((item) => item.id === segmentId) ?? latestSegments[0];
+  const maskedSuffix = String(3421 + index * 173).slice(-4);
 
   return {
-    customerId: `MEM-${String(index + 1).padStart(4, '0')}`,
+    customerId: `MEM-••••${maskedSuffix}`,
     segmentId,
     categorySharePct: segment.metrics.shareOfWallet,
     competitorSpendBand: competitorSpendBands[index],
