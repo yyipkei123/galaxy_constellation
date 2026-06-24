@@ -1,4 +1,15 @@
-import { CORE_CATEGORIES, quarters, segmentsByQuarter, methodology, crmRows } from './index';
+import { formatGuestBand } from '@/lib/format';
+import {
+  CORE_CATEGORIES,
+  quarters,
+  segmentsByQuarter,
+  methodology,
+  crmRows,
+  latestQuarter,
+  marketScanTiles,
+} from './index';
+
+const currencyPattern = /(MOP|HKD|\$|元|澳門幣)/i;
 
 describe('synthetic CDE data', () => {
   it('generates four trailing quarters with six segments each', () => {
@@ -23,6 +34,14 @@ describe('synthetic CDE data', () => {
     for (const quarter of quarters) {
       for (const segment of segmentsByQuarter[quarter.id]) {
         expect(segment.metrics.shareOfWallet).toBe(segment.categories.hospitality.capturedSharePct);
+      }
+    }
+  });
+
+  it('keeps generated size bands aligned with generated size bounds', () => {
+    for (const quarter of quarters) {
+      for (const segment of segmentsByQuarter[quarter.id]) {
+        expect(segment.sizeBand).toBe(formatGuestBand(segment.sizeLowK, segment.sizeHighK));
       }
     }
   });
@@ -55,7 +74,27 @@ describe('synthetic CDE data', () => {
       activeMetricCount: 7,
     });
     expect(crmRows).toHaveLength(10);
-    expect(crmRows[0].customerId).toMatch(/^MEM-••••\d{4}$/);
+    expect(latestQuarter.id).toBe('2026-q2');
+    expect(marketScanTiles).toHaveLength(4);
     expect(crmRows[0].competitorSpendBand).toContain('equiv./mo');
+
+    for (const row of crmRows) {
+      expect(row.customerId).toMatch(/^MEM-••••\d{4}$/);
+      expect(row.competitorSpendBand).not.toMatch(currencyPattern);
+    }
+  });
+
+  it('keeps generated bands and propensities within CDE display constraints', () => {
+    for (const quarter of quarters) {
+      for (const segment of segmentsByQuarter[quarter.id]) {
+        expect(segment.crossPropertyCashBand).not.toMatch(currencyPattern);
+        expect(segment.propensities.luxuryHotelSpender).toBeGreaterThanOrEqual(0);
+        expect(segment.propensities.luxuryHotelSpender).toBeLessThanOrEqual(1);
+        expect(segment.propensities.topTierRewards).toBeGreaterThanOrEqual(0);
+        expect(segment.propensities.topTierRewards).toBeLessThanOrEqual(1);
+        expect(segment.propensities.coBrandLookAlike).toBeGreaterThanOrEqual(0);
+        expect(segment.propensities.coBrandLookAlike).toBeLessThanOrEqual(1);
+      }
+    }
   });
 });

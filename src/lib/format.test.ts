@@ -7,6 +7,12 @@ describe('formatEnriched', () => {
     expect(formatEnriched('8-12k equiv./mo', 'band')).toBe('8-12k equiv./mo');
   });
 
+  it('rejects non-finite CDE percentages and indices', () => {
+    expect(() => formatEnriched(Number.NaN, 'pct')).toThrow(/finite/);
+    expect(() => formatEnriched(Number.POSITIVE_INFINITY, 'pct')).toThrow(/finite/);
+    expect(() => formatEnriched(Number.NEGATIVE_INFINITY, 'index')).toThrow(/finite/);
+  });
+
   it('rejects CDE bands that look like exact money values', () => {
     expect(() => formatEnriched('MOP 9000', 'band')).toThrow(/CDE bands must not include currency/);
     expect(() => formatEnriched('$9000', 'band')).toThrow(/CDE bands must not include currency/);

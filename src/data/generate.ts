@@ -1,5 +1,5 @@
 import { formatGuestBand } from '@/lib/format';
-import { jitter, mulberry32 } from '@/lib/rng';
+import { clamp, jitter, mulberry32 } from '@/lib/rng';
 import type {
   ColorToken,
   CoreCategory,
@@ -320,6 +320,8 @@ function generateSegment(base: BaseSegment, random: () => number, quarterIndex: 
   const maturity = quarterIndex - (quarters.length - 1);
   const trend = maturity * 2;
   const hospitalityCapture = jitter(base.categories.hospitality.capturedSharePct + trend, random, 4, 15, 88);
+  const sizeLowK = jitter(base.sizeLowK, random, 3, 4, 80);
+  const sizeHighK = jitter(base.sizeHighK, random, 4, 6, 90);
 
   const categories = CORE_CATEGORIES.reduce(
     (wallets, category) => {
@@ -354,15 +356,15 @@ function generateSegment(base: BaseSegment, random: () => number, quarterIndex: 
     name: base.name,
     nameZh: base.nameZh,
     colorToken: base.colorToken,
-    sizeLowK: jitter(base.sizeLowK, random, 3, 4, 80),
-    sizeHighK: jitter(base.sizeHighK, random, 4, 6, 90),
-    sizeBand: formatGuestBand(base.sizeLowK, base.sizeHighK),
+    sizeLowK,
+    sizeHighK,
+    sizeBand: formatGuestBand(sizeLowK, sizeHighK),
     signatureTrait: base.signatureTrait,
     metrics,
     propensities: {
-      luxuryHotelSpender: Number((base.propensities.luxuryHotelSpender + (random() - 0.5) * 0.04).toFixed(2)),
-      topTierRewards: Number((base.propensities.topTierRewards + (random() - 0.5) * 0.04).toFixed(2)),
-      coBrandLookAlike: Number((base.propensities.coBrandLookAlike + (random() - 0.5) * 0.04).toFixed(2)),
+      luxuryHotelSpender: Number(clamp(base.propensities.luxuryHotelSpender + (random() - 0.5) * 0.04, 0, 1).toFixed(2)),
+      topTierRewards: Number(clamp(base.propensities.topTierRewards + (random() - 0.5) * 0.04, 0, 1).toFixed(2)),
+      coBrandLookAlike: Number(clamp(base.propensities.coBrandLookAlike + (random() - 0.5) * 0.04, 0, 1).toFixed(2)),
     },
     categories,
     gamingContextIndex: base.gamingContextIndex ? jitter(base.gamingContextIndex, random, 10, 50, 260) : undefined,

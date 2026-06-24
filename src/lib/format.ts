@@ -5,11 +5,13 @@ const currencyPattern = /(MOP|HKD|\$|元|澳門幣)/i;
 export function formatEnriched(value: number | string, kind: EnrichedFormatKind): string {
   if (kind === 'pct') {
     if (typeof value !== 'number') throw new Error('CDE percentage values must be numeric');
+    if (!Number.isFinite(value)) throw new Error('CDE percentage values must be finite');
     return `${Math.round(value)}%`;
   }
 
   if (kind === 'index') {
     if (typeof value !== 'number') throw new Error('CDE index values must be numeric');
+    if (!Number.isFinite(value)) throw new Error('CDE index values must be finite');
     return `Index ${Math.round(value)}`;
   }
 
