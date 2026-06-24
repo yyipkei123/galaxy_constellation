@@ -1,6 +1,21 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { AppStateProvider } from '@/store/app-store';
+import { AppStateProvider, useAppState } from '@/store/app-store';
 import { TopBar } from './top-bar';
+
+function StoreContractProbe() {
+  const state = useAppState();
+
+  return (
+    <output aria-label="store contract">
+      {[
+        Array.isArray(state.filters.segmentIds),
+        typeof state.setFilters,
+        typeof state.pushCampaign,
+        typeof state.clearCampaignToast,
+      ].join('|')}
+    </output>
+  );
+}
 
 describe('TopBar', () => {
   it('shows active CDE methodology metrics and defaults the quarter selector to Q2 2026', () => {
@@ -28,5 +43,15 @@ describe('TopBar', () => {
     });
 
     expect(screen.getByRole('combobox', { name: /reporting quarter/i })).toHaveValue('2026-q1');
+  });
+
+  it('exposes the spec app-state action names for downstream tasks', () => {
+    render(
+      <AppStateProvider>
+        <StoreContractProbe />
+      </AppStateProvider>,
+    );
+
+    expect(screen.getByLabelText('store contract')).toHaveTextContent('true|function|function|function');
   });
 });

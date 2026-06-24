@@ -47,14 +47,13 @@ interface AppStateValue {
   selectedSegmentId: string;
   setSelectedSegmentId: (segmentId: string) => void;
   methodology: Methodology;
-  audienceFilters: AudienceFilters;
-  setAudienceFilters: (filters: AudienceFilters) => void;
-  updateAudienceFilters: (filters: Partial<AudienceFilters>) => void;
+  filters: AudienceFilters;
+  setFilters: (filters: AudienceFilters | Partial<AudienceFilters>) => void;
   savedAudiences: SavedAudience[];
   saveAudience: (name: string) => SavedAudience;
   removeSavedAudience: (audienceId: string) => void;
   campaignToast: CampaignToast | null;
-  showCampaignToast: (toast: CampaignToast) => void;
+  pushCampaign: (toast: CampaignToast) => void;
   clearCampaignToast: () => void;
 }
 
@@ -69,7 +68,7 @@ const AppStateContext = createContext<AppStateValue | null>(null);
 export function AppStateProvider({ children }: { children: ReactNode }) {
   const [selectedQuarterId, setSelectedQuarterIdState] = useState(latestQuarter.id);
   const [selectedSegmentId, setSelectedSegmentIdState] = useState(latestSegments[0].id);
-  const [audienceFilters, setAudienceFilters] = useState<AudienceFilters>(defaultAudienceFilters);
+  const [filters, setFiltersState] = useState<AudienceFilters>(defaultAudienceFilters);
   const [savedAudiences, setSavedAudiences] = useState<SavedAudience[]>([]);
   const [campaignToast, setCampaignToast] = useState<CampaignToast | null>(null);
 
@@ -93,21 +92,21 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setSelectedSegmentIdState(segmentId);
   }, []);
 
-  const updateAudienceFilters = useCallback((filters: Partial<AudienceFilters>) => {
-    setAudienceFilters((current) => ({ ...current, ...filters }));
+  const setFilters = useCallback((nextFilters: AudienceFilters | Partial<AudienceFilters>) => {
+    setFiltersState((current) => ({ ...current, ...nextFilters }));
   }, []);
 
   const saveAudience = useCallback((name: string) => {
     const audience: SavedAudience = {
       id: `${Date.now()}-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'audience'}`,
       name,
-      segmentIds: audienceFilters.segmentIds,
+      segmentIds: filters.segmentIds,
       createdAt: new Date().toISOString(),
     };
 
     setSavedAudiences((current) => [audience, ...current]);
     return audience;
-  }, [audienceFilters.segmentIds]);
+  }, [filters.segmentIds]);
 
   const removeSavedAudience = useCallback((audienceId: string) => {
     setSavedAudiences((current) => current.filter((audience) => audience.id !== audienceId));
@@ -123,27 +122,26 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     selectedSegmentId: selectedSegment.id,
     setSelectedSegmentId,
     methodology,
-    audienceFilters,
-    setAudienceFilters,
-    updateAudienceFilters,
+    filters,
+    setFilters,
     savedAudiences,
     saveAudience,
     removeSavedAudience,
     campaignToast,
-    showCampaignToast: setCampaignToast,
+    pushCampaign: setCampaignToast,
     clearCampaignToast: () => setCampaignToast(null),
   }), [
-    audienceFilters,
     campaignToast,
+    filters,
     removeSavedAudience,
     saveAudience,
     savedAudiences,
     segments,
     selectedQuarter,
     selectedSegment,
+    setFilters,
     setSelectedQuarterId,
     setSelectedSegmentId,
-    updateAudienceFilters,
   ]);
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;

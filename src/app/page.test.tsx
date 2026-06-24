@@ -6,4 +6,9 @@ describe('home route smoke test', () => {
     render(<Home />);
     expect(screen.getByRole('heading', { name: /Galaxy Constellation/i })).toBeInTheDocument();
   });
+
+  it('does not render its own main landmark because the shell owns it', () => {
+    render(<Home />);
+    expect(screen.queryByRole('main')).not.toBeInTheDocument();
+  });
 });

@@ -1,6 +1,6 @@
 export default function Home() {
   return (
-    <main className="min-h-screen px-8 py-10 text-galaxy-cream">
+    <div className="min-h-screen px-8 py-10 text-galaxy-cream">
       <p className="text-xs font-semibold uppercase tracking-[0.28em] text-galaxy-gold">
         客戶錢包洞察 · Guest Wallet Intelligence
       </p>
@@ -8,6 +8,6 @@ export default function Home() {
       <p className="mt-4 max-w-2xl text-lg text-galaxy-muted">
         Enriched by Mastercard CDE, built for Galaxy Macau commercial leadership.
       </p>
-    </main>
+    </div>
   );
 }
