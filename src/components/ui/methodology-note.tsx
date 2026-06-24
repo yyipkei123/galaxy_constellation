@@ -1,0 +1,15 @@
+'use client';
+
+import { useAppState } from '@/store/app-store';
+
+export function MethodologyNote() {
+  const { methodology } = useAppState();
+
+  return (
+    <p className="text-xs leading-6 text-galaxy-muted">
+      Mastercard CDE methodology: matched coverage {methodology.matchedCoveragePct}% across modelled guest wallet
+      cohorts, refreshed {methodology.refresh}, with {methodology.activeMetricCount} active CDE metrics using{' '}
+      {methodology.basis}.
+    </p>
+  );
+}
