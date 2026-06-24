@@ -107,6 +107,7 @@ describe('share of wallet route', () => {
     ['All', 'Hospitality', 'F&B', 'Entertainment', 'Retail-Luxury'].forEach((label) => {
       expect(screen.getByRole('button', { name: label })).toBeInTheDocument();
     });
+    expect(screen.getByRole('group', { name: 'Wallet category filters' })).toBeInTheDocument();
 
     expect(screen.getByRole('heading', { name: 'Share of Wallet vs Share of Visits' })).toBeInTheDocument();
     expect(screen.getByLabelText(/Share of wallet versus share of visits/i)).toBeInTheDocument();
@@ -154,6 +155,29 @@ describe('share of wallet route', () => {
     expect(screen.getByText('No wallet segments available for this quarter.')).toBeInTheDocument();
     expect(screen.getByText('Average online payment share')).toBeInTheDocument();
     expect(screen.getAllByText('0%').length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByText(/NaN|Infinity/)).not.toBeInTheDocument();
+  });
+
+  it('tolerates partial malformed segment data without leaking invalid values', () => {
+    const malformedSegment = {
+      id: 'partial-segment',
+      name: 'Partial Segment',
+      categories: {
+        hospitality: { capturedSharePct: 44 },
+        fnb: { capturedSharePct: Number.NaN, sub: { bars: 120 } },
+        entertainment: {},
+        retailLuxury: { sub: {} },
+      },
+    } as unknown as Segment;
+
+    expect(() => renderWallet([malformedSegment])).not.toThrow();
+
+    expect(screen.getByRole('heading', { name: 'Share of Wallet' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Wallet category filters' })).toBeInTheDocument();
+    expect(screen.getByText('Hospitality wallet capture')).toBeInTheDocument();
+    expect(screen.getByText('F&B wallet capture')).toBeInTheDocument();
+    expect(screen.getByLabelText(/Share of wallet versus share of visits/i)).toBeInTheDocument();
+    expect(screen.getByText('Average online payment share')).toBeInTheDocument();
     expect(screen.queryByText(/NaN|Infinity/)).not.toBeInTheDocument();
   });
 });

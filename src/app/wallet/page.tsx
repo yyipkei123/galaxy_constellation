@@ -28,18 +28,18 @@ const CATEGORY_OPTIONS: Array<{ label: string; value: CategorySelection }> = [
   { label: CATEGORY_LABELS.retailLuxury, value: 'retailLuxury' },
 ];
 
-function finiteNumber(value: number | undefined): number {
-  return typeof value === 'number' && Number.isFinite(value) ? value : 0;
+function validNumber(value: number | undefined): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
 }
 
-function average(values: number[]) {
-  const finiteValues = values.filter(Number.isFinite);
+function average(values: Array<number | undefined>) {
+  const finiteValues = values.filter((value): value is number => typeof value === 'number' && Number.isFinite(value));
 
   if (finiteValues.length === 0) return 0;
   return finiteValues.reduce((sum, value) => sum + value, 0) / finiteValues.length;
 }
 
-function roundedAverage(values: number[]) {
+function roundedAverage(values: Array<number | undefined>) {
   return Math.round(average(values));
 }
 
@@ -48,13 +48,25 @@ function isSegment(segment: Segment | undefined): segment is Segment {
 }
 
 function categoryCapture(segments: Segment[], category: CoreCategory) {
-  return roundedAverage(segments.map((segment) => finiteNumber(segment.categories?.[category]?.capturedSharePct)));
+  return roundedAverage(segments.map((segment) => validNumber(segment.categories?.[category]?.capturedSharePct)));
 }
 
 function subIndex(segments: Segment[], category: CoreCategory, keys: string[]) {
   return roundedAverage(
-    segments.flatMap((segment) => keys.map((key) => finiteNumber(segment.categories?.[category]?.sub?.[key]))),
+    segments.flatMap((segment) => keys.map((key) => validNumber(segment.categories?.[category]?.sub?.[key]))),
   );
+}
+
+function chartReadySegments(segments: Segment[]): Segment[] {
+  return segments.map((segment, index) => ({
+    ...segment,
+    name: segment.name || `Segment ${index + 1}`,
+    metrics: {
+      ...(segment.metrics ?? {}),
+      shareOfWallet: validNumber(segment.metrics?.shareOfWallet) ?? 0,
+      shareOfVisits: validNumber(segment.metrics?.shareOfVisits) ?? 0,
+    },
+  } as Segment));
 }
 
 function channelInsight(onlinePct: number) {
@@ -127,8 +139,9 @@ export default function WalletPage() {
   const { selectedQuarter, segments } = useAppState();
   const [selectedCategory, setSelectedCategory] = useState<CategorySelection>('all');
   const safeSegments = useMemo(() => (segments ?? []).filter(isSegment), [segments]);
+  const scatterSegments = useMemo(() => chartReadySegments(safeSegments), [safeSegments]);
   const categories = visibleCategories(selectedCategory);
-  const averageOnlinePct = roundedAverage(safeSegments.map((segment) => finiteNumber(segment.metrics?.channelShareOnlinePct)));
+  const averageOnlinePct = roundedAverage(safeSegments.map((segment) => validNumber(segment.metrics?.channelShareOnlinePct)));
 
   return (
     <div className="space-y-6 text-galaxy-cream">
@@ -151,7 +164,7 @@ export default function WalletPage() {
         </div>
       </section>
 
-      <div className="flex flex-wrap gap-2" aria-label="Wallet category filters">
+      <div role="group" className="flex flex-wrap gap-2" aria-label="Wallet category filters">
         {CATEGORY_OPTIONS.map((option) => {
           const isSelected = selectedCategory === option.value;
 
@@ -211,7 +224,7 @@ export default function WalletPage() {
               Share of Wallet vs Share of Visits
             </h2>
           </div>
-          <SowSovScatter segments={safeSegments} />
+          <SowSovScatter segments={scatterSegments} />
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             {[
               'Loyal & frequent',
