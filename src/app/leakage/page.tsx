@@ -27,7 +27,7 @@ function safeText(value: unknown, fallback: string) {
 function safeBand(value: unknown) {
   const text = safeText(value, '0-0k equiv./mo');
 
-  if (/\b(?:MOP|HKD)\b|\$/i.test(text) || !text.includes('equiv./mo')) {
+  if (/\b(?:MOP|HKD)\b|\$|元|澳門幣/i.test(text) || !text.includes('equiv./mo')) {
     return '0-0k equiv./mo';
   }
 

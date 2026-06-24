@@ -173,4 +173,18 @@ describe('cross-property leakage route', () => {
     expect(screen.queryByText(/NaN|Infinity/)).not.toBeInTheDocument();
     expect(container).not.toHaveTextContent(/\b(?:MOP|HKD)\b|\$/i);
   });
+
+  it('sanitizes localized currency markers in malformed cash bands before rendering', () => {
+    const malformedSegment = {
+      ...latestSegments[0],
+      id: 'localized-currency-segment',
+      name: 'Localized Currency Segment',
+      crossPropertyCashBand: '999元 equiv./mo',
+    } as unknown as Segment;
+
+    expect(() => renderLeakage([malformedSegment], malformedSegment)).not.toThrow();
+
+    expect(screen.getByText('0-0k equiv./mo')).toBeInTheDocument();
+    expect(screen.queryByText(/999元/)).not.toBeInTheDocument();
+  });
 });
