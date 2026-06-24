@@ -7,6 +7,7 @@ import { BandValue, IndexValue } from '@/components/ui/formatted-values';
 import { Overline } from '@/components/ui/overline';
 import { Panel } from '@/components/ui/panel';
 import { CORE_CATEGORIES, type CoreCategory, type Segment } from '@/data';
+import { formatEnriched } from '@/lib/format';
 import { useAppState } from '@/store/app-store';
 
 const CATEGORY_LABELS: Record<CoreCategory, string> = {
@@ -31,7 +32,11 @@ function safeBand(value: unknown) {
     return '0-0k equiv./mo';
   }
 
-  return text;
+  try {
+    return formatEnriched(text, 'band');
+  } catch {
+    return '0-0k equiv./mo';
+  }
 }
 
 function normalizeCategory(category: Segment['categories'][CoreCategory] | undefined) {

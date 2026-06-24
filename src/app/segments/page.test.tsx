@@ -265,4 +265,20 @@ describe('segments route', () => {
     expect(within(table).getByText('Indexed band equiv./mo')).toBeInTheDocument();
     expect(within(table).queryByText(/HKD|\$/i)).not.toBeInTheDocument();
   });
+
+  it('sanitizes exact-looking competitor spend bands before CRM append rendering', () => {
+    const rawRows: CrmRow[] = [
+      {
+        ...crmRows[0],
+        customerId: 'MEM-••••9998',
+        competitorSpendBand: '9000 equiv./mo',
+      },
+    ];
+
+    expect(() => render(<CrmAppendTable rows={rawRows} />)).not.toThrow();
+
+    const table = screen.getByRole('table', { name: /append-to-CRM/i });
+    expect(within(table).getByText('Indexed band equiv./mo')).toBeInTheDocument();
+    expect(within(table).queryByText('9000 equiv./mo')).not.toBeInTheDocument();
+  });
 });

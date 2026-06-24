@@ -187,4 +187,18 @@ describe('cross-property leakage route', () => {
     expect(screen.getByText('0-0k equiv./mo')).toBeInTheDocument();
     expect(screen.queryByText(/999元/)).not.toBeInTheDocument();
   });
+
+  it('sanitizes exact-looking equiv cash bands before rendering', () => {
+    const exactBandSegment = {
+      ...latestSegments[0],
+      id: 'exact-band-segment',
+      name: 'Exact Band Segment',
+      crossPropertyCashBand: '9000 equiv./mo',
+    } as unknown as Segment;
+
+    expect(() => renderLeakage([exactBandSegment], exactBandSegment)).not.toThrow();
+
+    expect(screen.getByText('0-0k equiv./mo')).toBeInTheDocument();
+    expect(screen.queryByText('9000 equiv./mo')).not.toBeInTheDocument();
+  });
 });

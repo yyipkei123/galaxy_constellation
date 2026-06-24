@@ -17,6 +17,8 @@ describe('formatEnriched', () => {
     expect(() => formatEnriched('MOP 9000', 'band')).toThrow(/CDE bands must not include currency/);
     expect(() => formatEnriched('$9000', 'band')).toThrow(/CDE bands must not include currency/);
     expect(() => formatEnriched('9000', 'band')).toThrow(/equiv/);
+    expect(() => formatEnriched('9000 equiv./mo', 'band')).toThrow(/modelled range/);
+    expect(() => formatEnriched('9k equiv./mo', 'band')).toThrow(/modelled range/);
   });
 
   it('rejects unsupported runtime format kinds', () => {

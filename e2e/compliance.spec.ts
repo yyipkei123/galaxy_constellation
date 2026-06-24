@@ -15,6 +15,14 @@ test.describe('Galaxy Constellation rendered compliance', () => {
 
       if (route !== '/activation') {
         await expect(body).not.toContainText('MOP');
+      } else {
+        await expect(page.getByText('Galaxy Rewards offer term').first()).toBeVisible();
+        await expect(page.getByText('MOP 200 rebate on MOP 500 spend')).toBeVisible();
+        const bodyTextWithoutAllowedOffer = (await body.textContent())?.replaceAll(
+          'MOP 200 rebate on MOP 500 spend',
+          '',
+        ) ?? '';
+        expect(bodyTextWithoutAllowedOffer).not.toContain('MOP');
       }
     });
   }

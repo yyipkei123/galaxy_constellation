@@ -51,7 +51,7 @@ interface AppStateValue {
   filters: AudienceFilters;
   setFilters: (filters: SetStateAction<AudienceFilters>) => void;
   savedAudiences: SavedAudience[];
-  saveAudience: (name: string) => SavedAudience;
+  saveAudience: (name: string, segmentIds?: string[]) => SavedAudience;
   removeSavedAudience: (audienceId: string) => void;
   campaignToast: CampaignToast | null;
   pushCampaign: (toast: CampaignToast) => void;
@@ -104,11 +104,11 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const saveAudience = useCallback((name: string) => {
+  const saveAudience = useCallback((name: string, segmentIds = filters.segmentIds) => {
     const audience: SavedAudience = {
       id: `${Date.now()}-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'audience'}`,
       name,
-      segmentIds: [...filters.segmentIds],
+      segmentIds: [...segmentIds],
       createdAt: new Date().toISOString(),
     };
 

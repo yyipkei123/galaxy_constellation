@@ -11,7 +11,11 @@ function cdeBand(value: string | undefined) {
     return 'Indexed band equiv./mo';
   }
 
-  return formatEnriched(value, 'band');
+  try {
+    return formatEnriched(value, 'band');
+  } catch {
+    return 'Indexed band equiv./mo';
+  }
 }
 
 export function CrmAppendTable({ rows }: { rows: CrmRow[] }) {

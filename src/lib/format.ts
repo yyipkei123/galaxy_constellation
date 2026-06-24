@@ -1,6 +1,7 @@
 export type EnrichedFormatKind = 'pct' | 'index' | 'band';
 
 const currencyPattern = /(MOP|HKD|\$|元|澳門幣)/i;
+const modelledBandPattern = /^\d+(?:\.\d+)?-\d+(?:\.\d+)?k equiv\.\/mo$/i;
 
 export function formatEnriched(value: number | string, kind: EnrichedFormatKind): string {
   if (kind === 'pct') {
@@ -18,9 +19,14 @@ export function formatEnriched(value: number | string, kind: EnrichedFormatKind)
   if (kind !== 'band') throw new Error(`Unsupported CDE format kind: ${kind}`);
 
   if (typeof value !== 'string') throw new Error('CDE bands must be strings');
-  if (currencyPattern.test(value)) throw new Error('CDE bands must not include currency symbols or codes');
-  if (!value.includes('equiv.')) throw new Error('CDE bands must include equiv. to mark modelled ranges');
-  return value;
+
+  const normalizedValue = value.trim();
+  if (currencyPattern.test(normalizedValue)) throw new Error('CDE bands must not include currency symbols or codes');
+  if (!normalizedValue.includes('equiv.')) throw new Error('CDE bands must include equiv. to mark modelled ranges');
+  if (!modelledBandPattern.test(normalizedValue)) {
+    throw new Error('CDE bands must be a modelled range such as 8-12k equiv./mo');
+  }
+  return normalizedValue;
 }
 
 export function formatPropensity(value: number): string {
