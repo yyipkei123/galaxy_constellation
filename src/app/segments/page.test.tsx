@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeAll, vi } from 'vitest';
-import { latestQuarter, latestSegments, methodology, quarters, type Segment } from '@/data';
+import { crmRows, latestQuarter, latestSegments, methodology, quarters, type Segment } from '@/data';
+import { formatPropensity } from '@/lib/format';
 import { useAppState } from '@/store/app-store';
 import SegmentsPage from './page';
 
@@ -126,13 +127,22 @@ describe('segments route', () => {
     [
       'Share of Wallet',
       'Share of Visits',
+      'Avg Transaction #',
+      'Avg Transaction Size',
+      'Avg Industry Spend',
+      'Channel Share',
+      'Channel Visits #',
+    ].forEach((label) => {
+      expect(screen.getByText(label)).toBeInTheDocument();
+    });
+    [
       'Average Transaction Count',
       'Average Transaction Size',
       'Average Industry Spend',
       'Online Channel Share',
       'Channel Visits',
     ].forEach((label) => {
-      expect(screen.getByText(label)).toBeInTheDocument();
+      expect(screen.queryByText(label)).not.toBeInTheDocument();
     });
     expect(screen.getAllByText('CDE').length).toBeGreaterThanOrEqual(7);
 
@@ -165,9 +175,25 @@ describe('segments route', () => {
 
     const table = screen.getByRole('table', { name: /append-to-CRM/i });
     expect(within(table).getByText('Append-to-CRM')).toBeInTheDocument();
+    const headers = within(table).getAllByRole('columnheader').map((header) => header.textContent);
+    expect(headers).toEqual([
+      'Masked Customer ID',
+      'Category Share',
+      'Spend-with-competitors',
+      'Luxury-retail index',
+      'Propensity score',
+    ]);
+    headers.forEach((header) => {
+      expect(within(table).getByRole('columnheader', { name: header })).toBeInTheDocument();
+    });
+    ['Masked ID', 'Segment', 'Competitor Band', 'Luxury Retail', 'Look-Alike'].forEach((header) => {
+      expect(within(table).queryByRole('columnheader', { name: header })).not.toBeInTheDocument();
+    });
     expect(within(table).getAllByText(/^MEM-/)).toHaveLength(10);
     expect(within(table).getAllByText(/••••/)).toHaveLength(10);
     expect(within(table).getAllByText(/equiv\.\/mo/).length).toBeGreaterThan(0);
+    expect(within(table).getByText(formatPropensity(crmRows[0].propensityScore))).toBeInTheDocument();
+    expect(within(table).queryByText(`${Math.round(crmRows[0].propensityScore * 100)}%`)).not.toBeInTheDocument();
     expect(screen.queryByText(/\b(?:HKD|MOP)\b|\$/i)).not.toBeInTheDocument();
   });
 

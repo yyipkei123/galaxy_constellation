@@ -18,11 +18,11 @@ export function CdeMetricPanel({ metrics }: { metrics: CdeMetrics }) {
   const metricItems: MetricItem[] = [
     { label: 'Share of Wallet', value: metrics.shareOfWallet, kind: 'pct' },
     { label: 'Share of Visits', value: metrics.shareOfVisits, kind: 'pct' },
-    { label: 'Average Transaction Count', value: metrics.avgTxnCountIndex, kind: 'index' },
-    { label: 'Average Transaction Size', value: metrics.avgTxnSizeIndex, kind: 'index' },
-    { label: 'Average Industry Spend', value: metrics.avgIndustrySpendIndex, kind: 'index' },
-    { label: 'Online Channel Share', value: metrics.channelShareOnlinePct, kind: 'pct' },
-    { label: 'Channel Visits', value: metrics.channelVisitsIndex, kind: 'index' },
+    { label: 'Avg Transaction #', value: metrics.avgTxnCountIndex, kind: 'index' },
+    { label: 'Avg Transaction Size', value: metrics.avgTxnSizeIndex, kind: 'index' },
+    { label: 'Avg Industry Spend', value: metrics.avgIndustrySpendIndex, kind: 'index' },
+    { label: 'Channel Share', value: metrics.channelShareOnlinePct, kind: 'pct' },
+    { label: 'Channel Visits #', value: metrics.channelVisitsIndex, kind: 'index' },
   ];
 
   return (

@@ -133,7 +133,7 @@ export default function SegmentsPage() {
               <h2 className="mt-3 font-serif text-3xl text-galaxy-cream">CDE-compliant append fields</h2>
             </div>
             <div className="overflow-x-auto">
-              <CrmAppendTable rows={crmRows} segments={safeSegments} />
+              <CrmAppendTable rows={crmRows} />
             </div>
           </Panel>
         </>
