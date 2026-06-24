@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeAll, vi } from 'vitest';
-import { crmRows, latestQuarter, latestSegments, methodology, quarters, type Segment } from '@/data';
+import { crmRows, latestQuarter, latestSegments, methodology, quarters, type CrmRow, type Segment } from '@/data';
+import { CrmAppendTable } from '@/components/panels/crm-append-table';
 import { formatPropensity } from '@/lib/format';
 import { useAppState } from '@/store/app-store';
 import SegmentsPage from './page';
@@ -108,6 +109,7 @@ describe('segments route', () => {
 
     const buttons = screen.getAllByRole('button', { name: /^segment:/i });
     expect(buttons).toHaveLength(6);
+    expect(screen.getByRole('group', { name: 'Segment rail' })).toBeInTheDocument();
     latestSegments.forEach((segment) => {
       const button = screen.getByRole('button', { name: `segment: ${segment.name}` });
       expect(within(button).getByText(segment.name)).toBeInTheDocument();
@@ -209,5 +211,38 @@ describe('segments route', () => {
   it('does not throw when selectedSegment is unavailable', () => {
     expect(() => renderSegments(latestSegments, undefined)).not.toThrow();
     expect(screen.getByRole('heading', { name: latestSegments[0].name })).toBeInTheDocument();
+  });
+
+  it('renders malformed segments with finite fallbacks instead of crashing', () => {
+    const malformedSegment = {
+      id: 'partial-segment',
+      name: 'Partial Segment',
+    } as unknown as Segment;
+
+    expect(() => renderSegments([malformedSegment], malformedSegment)).not.toThrow();
+
+    expect(screen.getByRole('button', { name: 'segment: Partial Segment' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('heading', { name: 'Partial Segment' })).toBeInTheDocument();
+    expect(screen.getByText('7 active CDE metrics')).toBeInTheDocument();
+    expect(screen.getByText('Indexed category profile')).toBeInTheDocument();
+    expect(screen.getByText('Recommended plays')).toBeInTheDocument();
+    expect(screen.getByText('No recommended plays available for this segment.')).toBeInTheDocument();
+    expect(screen.queryByText(/NaN|Infinity/i)).not.toBeInTheDocument();
+  });
+
+  it('sanitizes raw competitor spend bands before CRM append rendering', () => {
+    const rawRows: CrmRow[] = [
+      {
+        ...crmRows[0],
+        customerId: 'MEM-••••9999',
+        competitorSpendBand: 'HKD $5000 monthly',
+      },
+    ];
+
+    render(<CrmAppendTable rows={rawRows} />);
+
+    const table = screen.getByRole('table', { name: /append-to-CRM/i });
+    expect(within(table).getByText('Indexed band equiv./mo')).toBeInTheDocument();
+    expect(within(table).queryByText(/HKD|\$/i)).not.toBeInTheDocument();
   });
 });

@@ -12,13 +12,80 @@ import { Panel } from '@/components/ui/panel';
 import { crmRows, type Segment } from '@/data';
 import { useAppState } from '@/store/app-store';
 
-function isSegment(segment: Segment | undefined): segment is Segment {
-  return Boolean(segment?.id);
+function finiteValue(value: number | undefined, fallback = 0) {
+  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+}
+
+function safeText(value: string | undefined, fallback: string) {
+  return value?.trim() ? value : fallback;
+}
+
+function hasRenderableSegmentId(segment: Partial<Segment> | undefined): segment is Partial<Segment> & { id: string } {
+  return typeof segment?.id === 'string' && segment.id.trim().length > 0;
+}
+
+function normalizeCategory(category: Segment['categories']['hospitality'] | undefined) {
+  const capturedSharePct = finiteValue(category?.capturedSharePct);
+
+  return {
+    capturedSharePct,
+    leakagePct: finiteValue(category?.leakagePct, 100 - capturedSharePct),
+    totalWalletIndex: finiteValue(category?.totalWalletIndex, 100),
+    sub: category?.sub ?? {},
+  };
+}
+
+function normalizeSegmentForView(segment: Segment): Segment {
+  const name = safeText(segment.name, 'Unnamed Segment');
+  const metrics = segment.metrics;
+  const propensities = segment.propensities;
+
+  return {
+    ...segment,
+    name,
+    nameZh: safeText(segment.nameZh, 'Customer 360'),
+    colorToken: segment.colorToken ?? 'gold',
+    sizeLowK: finiteValue(segment.sizeLowK),
+    sizeHighK: finiteValue(segment.sizeHighK),
+    sizeBand: safeText(segment.sizeBand, '~0-0k matched guests'),
+    signatureTrait: safeText(
+      segment.signatureTrait,
+      'Segment profile is available with limited CDE fields.',
+    ),
+    metrics: {
+      shareOfWallet: finiteValue(metrics?.shareOfWallet),
+      shareOfVisits: finiteValue(metrics?.shareOfVisits),
+      avgTxnCountIndex: finiteValue(metrics?.avgTxnCountIndex),
+      avgTxnSizeIndex: finiteValue(metrics?.avgTxnSizeIndex),
+      avgIndustrySpendIndex: finiteValue(metrics?.avgIndustrySpendIndex),
+      channelShareOnlinePct: finiteValue(metrics?.channelShareOnlinePct),
+      channelVisitsIndex: finiteValue(metrics?.channelVisitsIndex),
+    },
+    propensities: {
+      luxuryHotelSpender: finiteValue(propensities?.luxuryHotelSpender),
+      topTierRewards: finiteValue(propensities?.topTierRewards),
+      coBrandLookAlike: finiteValue(propensities?.coBrandLookAlike),
+    },
+    categories: {
+      hospitality: normalizeCategory(segment.categories?.hospitality),
+      fnb: normalizeCategory(segment.categories?.fnb),
+      entertainment: normalizeCategory(segment.categories?.entertainment),
+      retailLuxury: normalizeCategory(segment.categories?.retailLuxury),
+    },
+    gamingContextIndex: finiteValue(segment.gamingContextIndex, 100),
+    crossPropertyCashIndex: finiteValue(segment.crossPropertyCashIndex, 100),
+    crossPropertyCashBand: safeText(segment.crossPropertyCashBand, 'Indexed band equiv./mo'),
+    opportunityIndex: finiteValue(segment.opportunityIndex),
+    recommendedPlays: Array.isArray(segment.recommendedPlays) ? segment.recommendedPlays : [],
+  };
 }
 
 export default function SegmentsPage() {
   const { segments, selectedSegment, setSelectedSegmentId } = useAppState();
-  const safeSegments = useMemo(() => (segments ?? []).filter(isSegment), [segments]);
+  const safeSegments = useMemo(
+    () => (segments ?? []).filter(hasRenderableSegmentId).map((segment) => normalizeSegmentForView(segment as Segment)),
+    [segments],
+  );
   const initialSelectedId = selectedSegment?.id ?? safeSegments[0]?.id ?? '';
   const [focusedSegmentId, setFocusedSegmentId] = useState(initialSelectedId);
   const activeSegment = safeSegments.find((segment) => segment.id === focusedSegmentId)
@@ -54,7 +121,7 @@ export default function SegmentsPage() {
       {activeSegment ? (
         <>
           <div className="grid gap-6 xl:grid-cols-[22rem_minmax(0,1fr)]">
-            <div className="space-y-3" aria-label="Segment rail">
+            <div role="group" className="space-y-3" aria-label="Segment rail">
               {safeSegments.map((segment) => (
                 <SegmentCard
                   key={segment.id}
@@ -112,7 +179,7 @@ export default function SegmentsPage() {
               </p>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
-              {activeSegment.recommendedPlays.map((play) => (
+              {activeSegment.recommendedPlays.length > 0 ? activeSegment.recommendedPlays.map((play) => (
                 <Link
                   key={play.title}
                   href="/activation"
@@ -123,7 +190,11 @@ export default function SegmentsPage() {
                   <p className="mt-2 text-sm leading-6 text-galaxy-muted">{play.rationale}</p>
                   <p className="mt-3 text-sm font-semibold text-galaxy-gold">{play.lever}</p>
                 </Link>
-              ))}
+              )) : (
+                <p className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4 text-sm leading-6 text-galaxy-muted">
+                  No recommended plays available for this segment.
+                </p>
+              )}
             </div>
           </Panel>
 
