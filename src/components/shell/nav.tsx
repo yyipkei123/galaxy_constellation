@@ -20,7 +20,7 @@ const navItems: Array<{ href: string; label: string; icon: LucideIcon }> = [
   { href: '/wallet', label: 'Wallet', icon: WalletCards },
   { href: '/segments', label: 'Segments', icon: Gem },
   { href: '/leakage', label: 'Leakage', icon: Activity },
-  { href: '/audience', label: 'Audience', icon: ScanSearch },
+  { href: '/propensity', label: 'Audience', icon: ScanSearch },
   { href: '/activation', label: 'Activation', icon: Megaphone },
   { href: '/market-scan', label: 'Market Scan', icon: Radar },
 ];
