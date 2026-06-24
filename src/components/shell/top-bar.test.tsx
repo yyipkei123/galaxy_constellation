@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import { vi } from 'vitest';
 import { AppStateProvider, useAppState } from '@/store/app-store';
 import { TopBar } from './top-bar';
 
@@ -17,7 +18,65 @@ function StoreContractProbe() {
   );
 }
 
+const externalSegmentIds = ['diamond-high-rollers'];
+
+function StoreBehaviorProbe() {
+  const {
+    campaignToast,
+    clearCampaignToast,
+    filters,
+    pushCampaign,
+    saveAudience,
+    savedAudiences,
+    setFilters,
+  } = useAppState();
+
+  return (
+    <div>
+      <output aria-label="filters">{`${filters.channel}|${filters.minPropensity}|${filters.segmentIds.join(',')}`}</output>
+      <output aria-label="saved audiences">{savedAudiences.map((audience) => (
+        `${audience.id}:${audience.name}:${audience.segmentIds.join(',')}`
+      )).join('|')}</output>
+      <output aria-label="campaign toast">{campaignToast ? `${campaignToast.title}|${campaignToast.description}` : 'none'}</output>
+      <button
+        type="button"
+        onClick={() => setFilters((current) => ({
+          ...current,
+          channel: 'online',
+          minPropensity: 0.72,
+        }))}
+      >
+        Update filters
+      </button>
+      <button type="button" onClick={() => setFilters({
+        segmentIds: externalSegmentIds,
+        channel: 'hybrid',
+        minPropensity: 0.5,
+      })}>
+        Use external filters
+      </button>
+      <button type="button" onClick={() => saveAudience('Priority CDE Audience')}>
+        Save audience
+      </button>
+      <button type="button" onClick={() => {
+        externalSegmentIds.push('mutated-after-save');
+        pushCampaign({ title: 'Audience pushed', description: 'Sent to activation queue' });
+      }}>
+        Mutate and push
+      </button>
+      <button type="button" onClick={clearCampaignToast}>
+        Clear campaign
+      </button>
+    </div>
+  );
+}
+
 describe('TopBar', () => {
+  afterEach(() => {
+    externalSegmentIds.splice(0, externalSegmentIds.length, 'diamond-high-rollers');
+    vi.restoreAllMocks();
+  });
+
   it('shows active CDE methodology metrics and defaults the quarter selector to Q2 2026', () => {
     render(
       <AppStateProvider>
@@ -53,5 +112,56 @@ describe('TopBar', () => {
     );
 
     expect(screen.getByLabelText('store contract')).toHaveTextContent('true|function|function|function');
+  });
+
+  it('updates filters through a React-style setter callback', () => {
+    render(
+      <AppStateProvider>
+        <StoreBehaviorProbe />
+      </AppStateProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Update filters' }));
+
+    expect(screen.getByLabelText('filters')).toHaveTextContent('online|0.72|');
+  });
+
+  it('replaces duplicate saved audience ids and stores segment ids as a snapshot clone', () => {
+    vi.spyOn(Date, 'now').mockReturnValue(2000);
+
+    render(
+      <AppStateProvider>
+        <StoreBehaviorProbe />
+      </AppStateProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Use external filters' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save audience' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save audience' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Mutate and push' }));
+
+    expect(screen.getByLabelText('saved audiences')).toHaveTextContent(
+      '2000-priority-cde-audience:Priority CDE Audience:diamond-high-rollers',
+    );
+    expect(screen.getByLabelText('saved audiences').textContent?.split('|')).toHaveLength(1);
+    expect(screen.getByLabelText('saved audiences')).not.toHaveTextContent('mutated-after-save');
+  });
+
+  it('pushes and clears campaign toast state', () => {
+    render(
+      <AppStateProvider>
+        <StoreBehaviorProbe />
+      </AppStateProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Mutate and push' }));
+
+    expect(screen.getByLabelText('campaign toast')).toHaveTextContent(
+      'Audience pushed|Sent to activation queue',
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Clear campaign' }));
+
+    expect(screen.getByLabelText('campaign toast')).toHaveTextContent('none');
   });
 });

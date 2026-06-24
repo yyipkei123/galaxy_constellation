@@ -18,6 +18,7 @@ describe('formatted CDE values', () => {
     expect(screen.getByText('8-12k equiv./mo')).toBeInTheDocument();
     expect(screen.getAllByText('CDE')).toHaveLength(3);
     expect(screen.getAllByTitle('Mastercard Card Data Enrichment - modelled estimate')).toHaveLength(3);
+    expect(screen.getAllByLabelText('Mastercard Card Data Enrichment - modelled estimate')).toHaveLength(3);
   });
 
   it('renders the required CDE methodology disclaimer and active methodology facts', () => {

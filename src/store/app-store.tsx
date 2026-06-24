@@ -7,6 +7,7 @@ import {
   useMemo,
   useState,
   type ReactNode,
+  type SetStateAction,
 } from 'react';
 import {
   latestQuarter,
@@ -48,7 +49,7 @@ interface AppStateValue {
   setSelectedSegmentId: (segmentId: string) => void;
   methodology: Methodology;
   filters: AudienceFilters;
-  setFilters: (filters: AudienceFilters | Partial<AudienceFilters>) => void;
+  setFilters: (filters: SetStateAction<AudienceFilters>) => void;
   savedAudiences: SavedAudience[];
   saveAudience: (name: string) => SavedAudience;
   removeSavedAudience: (audienceId: string) => void;
@@ -92,19 +93,26 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setSelectedSegmentIdState(segmentId);
   }, []);
 
-  const setFilters = useCallback((nextFilters: AudienceFilters | Partial<AudienceFilters>) => {
-    setFiltersState((current) => ({ ...current, ...nextFilters }));
+  const setFilters = useCallback((nextFilters: SetStateAction<AudienceFilters>) => {
+    setFiltersState((current) => {
+      const resolvedFilters = typeof nextFilters === 'function' ? nextFilters(current) : nextFilters;
+
+      return {
+        ...resolvedFilters,
+        segmentIds: [...resolvedFilters.segmentIds],
+      };
+    });
   }, []);
 
   const saveAudience = useCallback((name: string) => {
     const audience: SavedAudience = {
       id: `${Date.now()}-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'audience'}`,
       name,
-      segmentIds: filters.segmentIds,
+      segmentIds: [...filters.segmentIds],
       createdAt: new Date().toISOString(),
     };
 
-    setSavedAudiences((current) => [audience, ...current]);
+    setSavedAudiences((current) => [audience, ...current.filter((item) => item.id !== audience.id)]);
     return audience;
   }, [filters.segmentIds]);
 
