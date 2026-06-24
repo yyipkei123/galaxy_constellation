@@ -15,7 +15,7 @@ export function SpendRadar({ segment }: { segment: Segment }) {
   ];
 
   return (
-    <div className="h-80">
+    <div className="h-80" aria-label={`${segment.name} spend index radar`}>
       <ResponsiveContainer width="100%" height="100%">
         <RadarChart data={data}>
           <PolarGrid stroke={galaxyPalette.border} />

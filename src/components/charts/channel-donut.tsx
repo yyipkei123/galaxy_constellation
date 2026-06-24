@@ -2,15 +2,21 @@
 
 import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
 import { galaxyPalette } from '@/lib/palette';
+import { clampPct } from './utils';
 
 export function ChannelDonut({ onlinePct }: { onlinePct: number }) {
+  const online = clampPct(onlinePct);
+  const physical = 100 - online;
   const data = [
-    { name: 'Online', value: onlinePct, color: galaxyPalette.gold },
-    { name: 'Physical', value: 100 - onlinePct, color: galaxyPalette.market },
+    { name: 'Online', value: online, color: galaxyPalette.gold },
+    { name: 'Physical', value: physical, color: galaxyPalette.market },
   ];
 
   return (
-    <div className="grid grid-cols-[120px_1fr] items-center gap-4">
+    <div
+      className="grid grid-cols-[120px_1fr] items-center gap-4"
+      aria-label={`Channel split: ${online}% online payment share, ${physical}% physical payment share`}
+    >
       <div className="h-28">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -24,10 +30,10 @@ export function ChannelDonut({ onlinePct }: { onlinePct: number }) {
       </div>
       <div className="space-y-2 text-sm text-galaxy-muted">
         <p>
-          <span className="text-galaxy-gold">{onlinePct}%</span> online payment share
+          <span className="text-galaxy-gold">{`${online}%`}</span> online payment share
         </p>
         <p>
-          <span className="text-galaxy-cream">{100 - onlinePct}%</span> physical payment share
+          <span className="text-galaxy-cream">{`${physical}%`}</span> physical payment share
         </p>
       </div>
     </div>

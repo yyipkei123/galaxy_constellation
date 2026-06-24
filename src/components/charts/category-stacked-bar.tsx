@@ -1,5 +1,6 @@
 import type { CoreCategory, Segment } from '@/data';
 import { CdeChip } from '@/components/ui/cde-chip';
+import { clampPct } from './utils';
 
 const labels: Record<CoreCategory, string> = {
   hospitality: 'Hospitality',
@@ -9,7 +10,7 @@ const labels: Record<CoreCategory, string> = {
 };
 
 export function CategoryStackedBar({ segments, category }: { segments: Segment[]; category: CoreCategory }) {
-  const capture = Math.round(
+  const capture = clampPct(
     segments.reduce((sum, segment) => sum + segment.categories[category].capturedSharePct, 0) / segments.length,
   );
   const leak = 100 - capture;
