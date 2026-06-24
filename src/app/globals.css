@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@theme {
+  --color-galaxy-ink: #0b0b0e;
+  --color-galaxy-charcoal: #15151b;
+  --color-galaxy-slate: #1f1f27;
+  --color-galaxy-border: #2c2c36;
+  --color-galaxy-gold: #c9a45c;
+  --color-galaxy-gold-lite: #e4c988;
+  --color-galaxy-gold-deep: #a8823e;
+  --color-galaxy-cream: #f4ebd9;
+  --color-galaxy-muted: #9a9486;
+  --color-galaxy-capture: #c9a45c;
+  --color-galaxy-leak: #b5543f;
+  --color-galaxy-market: #4a4a57;
+  --color-galaxy-positive: #6fa98c;
+}
+
+:root {
+  color-scheme: dark;
+  background: #0b0b0e;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(circle at top left, rgba(201, 164, 92, 0.18), transparent 32rem),
+    linear-gradient(135deg, #0b0b0e 0%, #15151b 58%, #0b0b0e 100%);
+  color: #f4ebd9;
+}
+
+* {
+  box-sizing: border-box;
+}
