@@ -15,7 +15,9 @@ describe('overview route', () => {
     renderHome();
 
     expect(screen.getByRole('heading', { name: /Galaxy Constellation/i })).toBeInTheDocument();
-    expect(screen.getByText(/Guest Wallet Intelligence/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Guest Wallet Intelligence/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Mastercard CDE/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/off-property wallet headroom/i)).toBeInTheDocument();
 
     expect(screen.getByText('Matched guest base')).toBeInTheDocument();
     expect(screen.getByText('Galaxy wallet capture')).toBeInTheDocument();

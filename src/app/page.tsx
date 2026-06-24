@@ -54,8 +54,9 @@ export default function Home() {
           <div>
             <h1 className="font-serif text-5xl text-galaxy-cream md:text-6xl">Galaxy Constellation</h1>
             <p className="mt-5 max-w-3xl text-base leading-8 text-galaxy-muted md:text-lg">
-              CDE-enriched wallet intelligence maps matched Galaxy guests against broader category behavior,
-              turning share, visit, channel, and rewards propensity signals into quarterly growth priorities.
+              Guest Wallet Intelligence enriched by Mastercard CDE reveals Galaxy&apos;s captured wallet and
+              modelled off-property wallet headroom, turning share, visit, channel, and rewards propensity
+              signals into quarterly growth priorities.
             </p>
           </div>
           <div className="rounded-lg border border-galaxy-gold/30 bg-galaxy-ink/45 p-5">
