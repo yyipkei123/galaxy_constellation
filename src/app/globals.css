@@ -33,3 +33,22 @@ body {
 * {
   box-sizing: border-box;
 }
+
+.recharts-wrapper text {
+  fill: #9a9486;
+  font-family: var(--font-sans), Inter, sans-serif;
+}
+
+button,
+a,
+select,
+input {
+  outline-color: #c9a45c;
+}
+
+@media (max-width: 1024px) {
+  nav {
+    border-right: 0;
+    border-bottom: 1px solid #2c2c36;
+  }
+}
