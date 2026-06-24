@@ -75,7 +75,8 @@ describe('synthetic CDE data', () => {
     });
     expect(crmRows).toHaveLength(10);
     expect(latestQuarter.id).toBe('2026-q2');
-    expect(marketScanTiles).toHaveLength(4);
+    expect(marketScanTiles).toHaveLength(5);
+    expect(marketScanTiles.some((tile) => tile.sourceType === 'share of voice')).toBe(true);
     expect(crmRows[0].competitorSpendBand).toContain('equiv./mo');
 
     for (const row of crmRows) {

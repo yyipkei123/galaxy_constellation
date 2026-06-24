@@ -456,6 +456,12 @@ export const marketScanTiles: MarketScanTile[] = [
     implication: 'Prioritize high-index guests for private retail preview invitations.',
   },
   {
+    title: 'Share-of-voice gap watch',
+    sourceType: 'share of voice',
+    signal: 'Galaxy luxury hospitality conversation trails newer competitor resort packages in regional media.',
+    implication: 'Rebalance premium storytelling toward suite, dining, and rewards proof points before peak weekends.',
+  },
+  {
     title: 'GBA weekend footfall pulse',
     sourceType: 'footfall signal',
     signal: 'Border-adjacent weekend arrivals remain above the quarterly baseline.',

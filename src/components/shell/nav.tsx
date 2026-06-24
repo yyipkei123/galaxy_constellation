@@ -22,7 +22,7 @@ const navItems: Array<{ href: string; label: string; icon: LucideIcon }> = [
   { href: '/leakage', label: 'Leakage', icon: Activity },
   { href: '/propensity', label: 'Audience', icon: ScanSearch },
   { href: '/activation', label: 'Activation', icon: Megaphone },
-  { href: '/market-scan', label: 'Market Scan', icon: Radar },
+  { href: '/marketscan', label: 'Market Scan', icon: Radar },
 ];
 
 export function Nav() {

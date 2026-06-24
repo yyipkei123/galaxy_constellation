@@ -12,4 +12,10 @@ describe('Nav', () => {
 
     expect(screen.getByRole('link', { name: /Audience/i })).toHaveAttribute('href', '/propensity');
   });
+
+  it('points the Market Scan link to the implemented marketscan route', () => {
+    render(<Nav />);
+
+    expect(screen.getByRole('link', { name: /Market Scan/i })).toHaveAttribute('href', '/marketscan');
+  });
 });
