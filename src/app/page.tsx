@@ -8,12 +8,31 @@ import { IndexValue, PercentValue } from '@/components/ui/formatted-values';
 import { KpiCard } from '@/components/ui/kpi-card';
 import { Overline } from '@/components/ui/overline';
 import { Panel } from '@/components/ui/panel';
-import { CORE_CATEGORIES } from '@/data';
+import { CORE_CATEGORIES, type Methodology, type Quarter, type Segment } from '@/data';
 import { formatPropensity } from '@/lib/format';
 import { useAppState } from '@/store/app-store';
 
+function finiteNumber(value: number | undefined): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : 0;
+}
+
 function average(values: number[]) {
-  return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+  const finiteValues = values.filter(Number.isFinite);
+
+  if (finiteValues.length === 0) return 0;
+  return Math.round(finiteValues.reduce((sum, value) => sum + value, 0) / finiteValues.length);
+}
+
+function hasRenderableCategories(segment: Segment) {
+  return CORE_CATEGORIES.every((category) => {
+    const wallet = segment?.categories?.[category];
+
+    return Number.isFinite(wallet?.capturedSharePct) && Number.isFinite(wallet?.leakagePct);
+  });
+}
+
+function isSegment(segment: Segment | undefined): segment is Segment {
+  return Boolean(segment);
 }
 
 function EnrichedTextValue({ children }: { children: string }) {
@@ -27,18 +46,35 @@ function EnrichedTextValue({ children }: { children: string }) {
 
 export default function Home() {
   const { selectedQuarter, segments, methodology } = useAppState();
-  const matchedGuestLowK = segments.reduce((sum, segment) => sum + segment.sizeLowK, 0);
-  const matchedGuestHighK = segments.reduce((sum, segment) => sum + segment.sizeHighK, 0);
-  const walletCapturePct = average(segments.map((segment) => segment.metrics.shareOfWallet));
+
+  return <OverviewRoute selectedQuarter={selectedQuarter} segments={segments} methodology={methodology} />;
+}
+
+interface OverviewRouteProps {
+  selectedQuarter: Quarter;
+  segments?: Segment[];
+  methodology: Methodology;
+}
+
+function OverviewRoute({ selectedQuarter, segments, methodology }: OverviewRouteProps) {
+  const safeSegments: Segment[] = (segments ?? []).filter(isSegment);
+  const categorySegments = safeSegments.filter(hasRenderableCategories);
+  const matchedGuestLowK = safeSegments.reduce((sum, segment) => sum + finiteNumber(segment?.sizeLowK), 0);
+  const matchedGuestHighK = safeSegments.reduce((sum, segment) => sum + finiteNumber(segment?.sizeHighK), 0);
+  const walletCapturePct = average(safeSegments.map((segment) => segment?.metrics?.shareOfWallet ?? 0));
   const walletHeadroomPct = average(
-    segments.flatMap((segment) => CORE_CATEGORIES.map((category) => segment.categories[category].leakagePct)),
+    safeSegments.flatMap((segment) => (
+      CORE_CATEGORIES.map((category) => segment?.categories?.[category]?.leakagePct ?? 0)
+    )),
   );
-  const topTierRewardsPropensity = (
-    segments.reduce((sum, segment) => sum + segment.propensities.topTierRewards, 0) / segments.length
-  );
-  const topOpportunityIndex = Math.max(...segments.map((segment) => segment.opportunityIndex));
-  const topOpportunities = [...segments]
-    .sort((first, second) => second.opportunityIndex - first.opportunityIndex)
+  const topTierRewardsPropensity = safeSegments.length > 0
+    ? safeSegments.reduce((sum, segment) => sum + finiteNumber(segment?.propensities?.topTierRewards), 0) / safeSegments.length
+    : 0;
+  const topOpportunityIndex = safeSegments.length > 0
+    ? Math.max(...safeSegments.map((segment) => finiteNumber(segment?.opportunityIndex)))
+    : 0;
+  const topOpportunities = [...safeSegments]
+    .sort((first, second) => finiteNumber(second?.opportunityIndex) - finiteNumber(first?.opportunityIndex))
     .slice(0, 3);
 
   return (
@@ -112,9 +148,15 @@ export default function Home() {
             </p>
           </div>
           <div className="space-y-5">
-            {CORE_CATEGORIES.map((category) => (
-              <CategoryStackedBar key={category} segments={segments} category={category} />
-            ))}
+            {categorySegments.length > 0 ? (
+              CORE_CATEGORIES.map((category) => (
+                <CategoryStackedBar key={category} segments={categorySegments} category={category} />
+              ))
+            ) : (
+              <p className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4 text-sm text-galaxy-muted">
+                No category wallet segments available for this quarter.
+              </p>
+            )}
           </div>
         </Panel>
 
@@ -122,24 +164,30 @@ export default function Home() {
           <Overline>Priority Plays</Overline>
           <h2 className="mt-3 font-serif text-3xl text-galaxy-cream">Top 3 opportunities this quarter</h2>
           <div className="mt-6 space-y-4">
-            {topOpportunities.map((segment, index) => (
-              <Link
-                key={segment.id}
-                href="/leakage"
-                className="block rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4 transition hover:border-galaxy-gold/60 hover:bg-galaxy-gold/10 focus:outline-none focus:ring-2 focus:ring-galaxy-gold"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-galaxy-gold">
-                      Opportunity {index + 1}
-                    </p>
-                    <h3 className="mt-2 text-lg font-semibold text-galaxy-cream">{segment.name}</h3>
+            {topOpportunities.length > 0 ? (
+              topOpportunities.map((segment, index) => (
+                <Link
+                  key={segment.id}
+                  href="/leakage"
+                  className="block rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4 transition hover:border-galaxy-gold/60 hover:bg-galaxy-gold/10 focus:outline-none focus:ring-2 focus:ring-galaxy-gold"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-galaxy-gold">
+                        Opportunity {index + 1}
+                      </p>
+                      <h3 className="mt-2 text-lg font-semibold text-galaxy-cream">{segment.name}</h3>
+                    </div>
+                    <IndexValue value={finiteNumber(segment.opportunityIndex)} />
                   </div>
-                  <IndexValue value={segment.opportunityIndex} />
-                </div>
-                <p className="mt-3 text-sm leading-6 text-galaxy-muted">{segment.signatureTrait}</p>
-              </Link>
-            ))}
+                  <p className="mt-3 text-sm leading-6 text-galaxy-muted">{segment.signatureTrait}</p>
+                </Link>
+              ))
+            ) : (
+              <p className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4 text-sm text-galaxy-muted">
+                No opportunity segments available for this quarter.
+              </p>
+            )}
           </div>
         </Panel>
       </div>
