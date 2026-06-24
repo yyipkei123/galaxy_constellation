@@ -10,7 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "verify": "npm run test && npm run build && npm run test:e2e"
+    "verify": "npm run lint && npm run test && npm run build && npm run test:e2e"
   },
   "dependencies": {
     "clsx": "^2.1.1",
