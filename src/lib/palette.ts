@@ -1,0 +1,15 @@
+export const galaxyPalette = {
+  ink: '#0B0B0E',
+  charcoal: '#15151B',
+  slate: '#1F1F27',
+  border: '#2C2C36',
+  gold: '#C9A45C',
+  goldLite: '#E4C988',
+  goldDeep: '#A8823E',
+  cream: '#F4EBD9',
+  muted: '#9A9486',
+  capture: '#C9A45C',
+  leak: '#B5543F',
+  market: '#4A4A57',
+  positive: '#6FA98C',
+} as const;
