@@ -101,9 +101,10 @@ export default function ActivationPage() {
     () => (segments ?? []).filter((segment): segment is Segment => Boolean(segment)),
     [segments],
   );
+  const hasSavedAudiences = savedAudiences.length > 0;
   const audiences = useMemo(
-    () => (savedAudiences.length > 0 ? savedAudiences.map(savedActivationAudience) : fallbackAudiences(safeSegments)),
-    [safeSegments, savedAudiences],
+    () => (hasSavedAudiences ? savedAudiences.map(savedActivationAudience) : fallbackAudiences(safeSegments)),
+    [hasSavedAudiences, safeSegments, savedAudiences],
   );
   const activeAudience = audiences[0] ?? {
     id: 'empty-audience',
@@ -112,7 +113,7 @@ export default function ActivationPage() {
     source: 'fallback' as const,
   };
   const activeSegments = segmentByIds(safeSegments, activeAudience.segmentIds);
-  const cardSegments = activeSegments.length > 0 ? activeSegments : safeSegments.slice(0, 2);
+  const cardSegments = activeSegments.length > 0 || hasSavedAudiences ? activeSegments : safeSegments.slice(0, 2);
   const cards = playableCards(cardSegments)
     .slice(0, 4)
     .map((card, index) => (
@@ -165,9 +166,16 @@ export default function ActivationPage() {
             {savedAudiences.length > 0 ? 'Saved audiences' : 'Top leakage segments'}
           </h2>
           <div className="mt-5 space-y-3">
-            {audiences.map((audience) => (
+            {audiences.map((audience, index) => (
               <div key={audience.id} className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">
-                <p className="text-sm font-semibold text-galaxy-cream">{audience.name}</p>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm font-semibold text-galaxy-cream">{audience.name}</p>
+                  {index === 0 && audience.source === 'saved' ? (
+                    <span className="rounded border border-galaxy-gold/40 bg-galaxy-gold/10 px-2 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-galaxy-gold">
+                      Active audience
+                    </span>
+                  ) : null}
+                </div>
                 <p className="mt-2 text-xs text-galaxy-muted">
                   {audience.segmentIds.length} segment{audience.segmentIds.length === 1 ? '' : 's'} ready for activation
                 </p>
