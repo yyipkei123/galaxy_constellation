@@ -17,9 +17,9 @@ export function TopBar() {
       </div>
 
       <label className="flex items-center gap-3 text-sm text-galaxy-muted">
-        <span className="font-medium text-galaxy-cream">Reporting quarter</span>
+        <span className="font-medium text-galaxy-cream">Quarter selector</span>
         <select
-          aria-label="Reporting quarter"
+          aria-label="Quarter selector"
           className="h-10 rounded-md border border-galaxy-border bg-galaxy-charcoal px-3 text-sm font-semibold text-galaxy-cream outline-none ring-galaxy-gold/30 focus:ring-2"
           value={selectedQuarterId}
           onChange={(event) => setSelectedQuarterId(event.target.value)}

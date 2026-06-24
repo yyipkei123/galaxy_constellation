@@ -86,7 +86,7 @@ describe('TopBar', () => {
 
     expect(screen.getByText('7 active CDE metrics')).toBeInTheDocument();
     expect(screen.getByText('Matched coverage 63%')).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: /reporting quarter/i })).toHaveValue('2026-q2');
+    expect(screen.getByRole('combobox', { name: /quarter selector/i })).toHaveValue('2026-q2');
     expect(screen.getByRole('option', { name: '2026 Q2' })).toBeInTheDocument();
   });
 
@@ -97,11 +97,11 @@ describe('TopBar', () => {
       </AppStateProvider>,
     );
 
-    fireEvent.change(screen.getByRole('combobox', { name: /reporting quarter/i }), {
+    fireEvent.change(screen.getByRole('combobox', { name: /quarter selector/i }), {
       target: { value: '2026-q1' },
     });
 
-    expect(screen.getByRole('combobox', { name: /reporting quarter/i })).toHaveValue('2026-q1');
+    expect(screen.getByRole('combobox', { name: /quarter selector/i })).toHaveValue('2026-q1');
   });
 
   it('exposes the spec app-state action names for downstream tasks', () => {
