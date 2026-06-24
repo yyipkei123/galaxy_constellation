@@ -1,0 +1,15 @@
+import { render, screen } from '@testing-library/react';
+import MarketScanPage from './page';
+
+describe('market scan route', () => {
+  it('renders the illustrative market scan companion board', () => {
+    render(<MarketScanPage />);
+
+    expect(screen.getByRole('heading', { name: 'Market Scan' })).toBeInTheDocument();
+    expect(screen.getByText(/illustrative market-scan companion/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/competitor calendar/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/social sentiment/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/share of voice/i)).toBeInTheDocument();
+    expect(screen.queryByRole('main')).not.toBeInTheDocument();
+  });
+});
