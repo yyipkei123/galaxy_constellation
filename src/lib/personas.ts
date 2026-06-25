@@ -5,8 +5,8 @@ export type PersonaSortMode = 'opportunity' | 'audience' | 'readiness';
 
 export interface PersonaFilterInput {
   segmentId?: string;
-  wealthTier?: PersonaWealthTier;
-  priority?: PersonaPriority;
+  wealthTier?: PersonaWealthTier | 'All';
+  priority?: PersonaPriority | 'All';
   query?: string;
   sort?: PersonaSortMode;
 }
@@ -15,10 +15,10 @@ export interface PersonaClusterSummary {
   segmentId: string;
   label: string;
   personaCount: number;
-  totalAudienceK: number;
-  averageOpportunityIndex: number;
-  priorityPersonaId: string;
-  largestPersonaId: string;
+  audienceK: number;
+  priorityCount: number;
+  highestOpportunityIndex: number;
+  largestPersonaName: string;
 }
 
 export interface PersonaUniverseSummary {
@@ -39,14 +39,16 @@ function finiteNumber(value: number | undefined, fallback = 0): number {
 }
 
 function normalizeQuery(value: string | undefined): string {
-  return value?.trim().toLocaleLowerCase() ?? '';
+  return value?.trim().toLowerCase() ?? '';
 }
 
-function hasPersonaId(personaId: string): personaId is keyof typeof personaById {
+function hasPersonaId(personaId: string | undefined): personaId is keyof typeof personaById {
+  if (!personaId) return false;
+
   return Object.prototype.hasOwnProperty.call(personaById, personaId);
 }
 
-function lookupPersona(personaId: string): SegmentPersona | undefined {
+function lookupPersona(personaId: string | undefined): SegmentPersona | undefined {
   return hasPersonaId(personaId) ? personaById[personaId] : undefined;
 }
 
@@ -81,7 +83,7 @@ function getSearchText(persona: SegmentPersona): string {
     ...persona.tags,
   ]
     .join(' ')
-    .toLocaleLowerCase();
+    .toLowerCase();
 }
 
 export function getPersonasForSegment(segmentId: string, sort: PersonaSortMode = 'opportunity'): SegmentPersona[] {
@@ -93,8 +95,8 @@ export function filterPersonas(input: PersonaFilterInput = {}): SegmentPersona[]
 
   const filtered = personaRecords.filter((persona) => {
     if (input.segmentId && persona.segmentId !== input.segmentId) return false;
-    if (input.wealthTier && persona.wealthTier !== input.wealthTier) return false;
-    if (input.priority && persona.priority !== input.priority) return false;
+    if (input.wealthTier && input.wealthTier !== 'All' && persona.wealthTier !== input.wealthTier) return false;
+    if (input.priority && input.priority !== 'All' && persona.priority !== input.priority) return false;
     if (query && !getSearchText(persona).includes(query)) return false;
 
     return true;
@@ -110,7 +112,7 @@ export function getPriorityPersona(segmentId?: string): SegmentPersona {
   return sortPersonas(candidates, 'opportunity')[0] ?? personaRecords[0];
 }
 
-export function getPersonaDetail(personaId: string, segmentId?: string): SegmentPersona {
+export function getPersonaDetail(personaId: string | undefined, segmentId?: string): SegmentPersona {
   const persona = lookupPersona(personaId);
 
   if (persona && (!segmentId || persona.segmentId === segmentId)) return persona;
@@ -121,11 +123,9 @@ export function getPersonaDetail(personaId: string, segmentId?: string): Segment
 export function getPersonaUniverseSummary(): PersonaUniverseSummary {
   const clusters = personaClusters.map<PersonaClusterSummary>((cluster) => {
     const personas = getClusterPersonas(cluster.segmentId);
-    const totalAudienceK = personas.reduce((sum, persona) => sum + finiteNumber(persona.audienceK), 0);
-    const totalOpportunityIndex = personas.reduce(
-      (sum, persona) => sum + finiteNumber(persona.opportunityIndex),
-      0,
-    );
+    const audienceK = personas.reduce((sum, persona) => sum + finiteNumber(persona.audienceK), 0);
+    const priorityCount = personas.filter((persona) => persona.priority === 'priority').length;
+    const highestOpportunityIndex = Math.max(0, ...personas.map((persona) => finiteNumber(persona.opportunityIndex)));
     const priorityPersona = sortPersonas(personas, 'opportunity')[0] ?? getPriorityPersona();
     const largestPersona = sortPersonas(personas, 'audience')[0] ?? priorityPersona;
 
@@ -133,10 +133,10 @@ export function getPersonaUniverseSummary(): PersonaUniverseSummary {
       segmentId: cluster.segmentId,
       label: cluster.label,
       personaCount: personas.length,
-      totalAudienceK,
-      averageOpportunityIndex: personas.length > 0 ? Math.round(totalOpportunityIndex / personas.length) : 0,
-      priorityPersonaId: priorityPersona.id,
-      largestPersonaId: largestPersona.id,
+      audienceK,
+      priorityCount,
+      highestOpportunityIndex,
+      largestPersonaName: largestPersona.name,
     };
   });
 

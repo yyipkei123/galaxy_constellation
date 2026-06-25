@@ -48,11 +48,24 @@ describe('persona segmentation selectors', () => {
     expect(summary.totalPersonas).toBe(18);
     expect(summary.totalAudienceK).toBeGreaterThan(0);
     expect(summary.clusters).toHaveLength(6);
-    expect(summary.clusters[0]).toMatchObject({
+    expect(summary.clusters[0]).toEqual({
       segmentId: 'diamond-high-rollers',
       label: 'Diamond High-Rollers',
       personaCount: 3,
+      audienceK: 9,
+      priorityCount: 2,
+      highestOpportunityIndex: 142,
+      largestPersonaName: 'Suite-First Patrons',
     });
+    expect(Object.keys(summary.clusters[0]).sort()).toEqual([
+      'audienceK',
+      'highestOpportunityIndex',
+      'label',
+      'largestPersonaName',
+      'personaCount',
+      'priorityCount',
+      'segmentId',
+    ]);
     expect(summary.generatedInsight).toMatch(/largest second-level persona/i);
   });
 
@@ -78,11 +91,20 @@ describe('persona segmentation selectors', () => {
     expect(personas.map((persona) => persona.id)).toEqual(['tier-challenge-climbers']);
   });
 
+  it('treats All wealth tier and priority filters as no filter', () => {
+    const unfiltered = filterPersonas();
+    const allFiltered = filterPersonas({ wealthTier: 'All', priority: 'All' });
+
+    expect(allFiltered.map((persona) => persona.id)).toEqual(unfiltered.map((persona) => persona.id));
+  });
+
   it('falls back to the priority persona when selected persona id is unavailable', () => {
     const detail = getPersonaDetail('missing-persona', 'diamond-high-rollers');
+    const undefinedDetail = getPersonaDetail(undefined, 'diamond-high-rollers');
     const priority = getPriorityPersona('diamond-high-rollers');
 
     expect(detail.id).toBe(priority.id);
+    expect(undefinedDetail.id).toBe(priority.id);
     expect(detail.segmentId).toBe('diamond-high-rollers');
   });
 
