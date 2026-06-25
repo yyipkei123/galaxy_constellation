@@ -182,6 +182,36 @@ describe('segments route', () => {
     expect(recommendationKit.queryByText(/Limited-edition appointment queue/i)).not.toBeInTheDocument();
   });
 
+  it('keeps the recommendation kit aligned with the filtered persona results', () => {
+    renderSegments();
+
+    fireEvent.click(screen.getByRole('button', { name: 'persona: Private Dining Hosts' }));
+
+    let recommendationKit = within(screen.getByLabelText('Persona recommendation kit'));
+    expect(recommendationKit.getByRole('heading', { name: 'Private Dining Hosts', level: 3 })).toBeInTheDocument();
+
+    fireEvent.change(screen.getByPlaceholderText(/Search persona, need, wallet gap, or tag/i), {
+      target: { value: 'watch' },
+    });
+
+    expect(screen.queryByRole('button', { name: 'persona: Private Dining Hosts' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'persona: Watch & Jewellery Collectors' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+
+    recommendationKit = within(screen.getByLabelText('Persona recommendation kit'));
+    expect(recommendationKit.getByRole('heading', { name: 'Watch & Jewellery Collectors', level: 3 })).toBeInTheDocument();
+    expect(recommendationKit.queryByRole('heading', { name: 'Private Dining Hosts', level: 3 })).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByPlaceholderText(/Search persona, need, wallet gap, or tag/i), {
+      target: { value: 'not a matching persona' },
+    });
+
+    expect(screen.getByText(/No personas match the current filters/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText('Persona recommendation kit')).not.toBeInTheDocument();
+  });
+
   it('renders a persona recommendation fallback when recommendations are empty', () => {
     const personaWithoutRecommendations: SegmentPersona = {
       ...personaRecords[0],

@@ -23,7 +23,6 @@ import { crmRows, type PersonaPriority, type PersonaWealthTier, type Segment } f
 import { buildSegmentInsightNarrative } from '@/lib/insights';
 import {
   filterPersonas,
-  getPersonaDetail,
   getPersonaUniverseSummary,
   type PersonaSortMode,
 } from '@/lib/personas';
@@ -125,7 +124,13 @@ export default function SegmentsPage() {
     }),
     [activeSegment?.id, personaPriority, personaQuery, personaSort, personaWealthTier],
   );
-  const selectedPersona = activeSegment ? getPersonaDetail(selectedPersonaId, activeSegment.id) : null;
+  const selectedPersona = useMemo(() => {
+    if (!activeSegment) return null;
+
+    return filteredPersonas.find((persona) => persona.id === selectedPersonaId)
+      ?? filteredPersonas[0]
+      ?? null;
+  }, [activeSegment, filteredPersonas, selectedPersonaId]);
 
   function selectSegment(segmentId: string) {
     setFocusedSegmentId(segmentId);
