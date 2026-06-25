@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import type { MouseEventHandler, ReactNode } from 'react';
 import { beforeEach, vi } from 'vitest';
 import { latestQuarter, latestSegments, methodology, quarters } from '@/data';
@@ -80,7 +80,7 @@ describe('ChatAssistantLauncher', () => {
     vi.clearAllMocks();
   });
 
-  it('opens and closes the AI insight assistant dialog', () => {
+  it('opens and closes the AI insight assistant dialog', async () => {
     renderLauncher();
 
     expect(screen.queryByRole('dialog', { name: 'AI insight assistant' })).not.toBeInTheDocument();
@@ -99,9 +99,10 @@ describe('ChatAssistantLauncher', () => {
     expect(screen.queryByRole('dialog', { name: 'AI insight assistant' })).not.toBeInTheDocument();
     expect(launcher).toHaveAccessibleName('Open AI insight assistant');
     expect(launcher).toHaveAttribute('aria-expanded', 'false');
+    await waitFor(() => expect(launcher).toHaveFocus());
   });
 
-  it('moves focus into the dialog, reaches the textbox with Tab, and closes with Escape', () => {
+  it('moves focus into the dialog, reaches the textbox with Tab, and closes with Escape', async () => {
     renderLauncher();
 
     const launcher = screen.getByRole('button', { name: 'Open AI insight assistant' });
@@ -121,7 +122,8 @@ describe('ChatAssistantLauncher', () => {
 
     fireEvent.keyDown(dialog, { key: 'Escape' });
     expect(screen.queryByRole('dialog', { name: 'AI insight assistant' })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Open AI insight assistant' })).toHaveAttribute('aria-expanded', 'false');
+    expect(launcher).toHaveAttribute('aria-expanded', 'false');
+    await waitFor(() => expect(launcher).toHaveFocus());
   });
 
   it('answers a typed leakage question without banned currency tokens', () => {
@@ -138,6 +140,20 @@ describe('ChatAssistantLauncher', () => {
     expect(within(dialog).getByRole('figure', { name: 'Leakage drivers' })).toBeInTheDocument();
     expect(within(dialog).getAllByText('CDE').length).toBeGreaterThanOrEqual(1);
     expect(dialog).not.toHaveTextContent(/\b(?:MOP|HKD)\b|\$|元|澳門幣/i);
+  });
+
+  it('sanitizes unsafe currency tokens from displayed user prompts', () => {
+    renderLauncher();
+    const dialog = openAssistant();
+
+    fireEvent.change(
+      within(dialog).getByRole('textbox', { name: 'Ask the AI insight assistant' }),
+      { target: { value: 'Show HKD 5000 leakage' } },
+    );
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Send question' }));
+
+    expect(within(dialog).getByText('Leakage opportunity answer')).toBeInTheDocument();
+    expect(dialog).not.toHaveTextContent(/\b(?:MOP|HKD)\b|\$|元|澳門幣|5000/i);
   });
 
   it('runs suggested persona prompts from the latest response', () => {

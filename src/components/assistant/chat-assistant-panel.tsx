@@ -13,6 +13,7 @@ import { Bot, Send, X } from 'lucide-react';
 import { CdeChip } from '@/components/ui/cde-chip';
 import {
   buildChatAssistantResponse,
+  sanitizeChatAssistantText,
   type ChatAssistantContext,
   type ChatAssistantResponse,
   type ChatAssistantVisual,
@@ -160,6 +161,7 @@ export function ChatAssistantPanel({ context, onClose }: ChatAssistantPanelProps
   const dialogRef = useRef<HTMLElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const initialResponse = useMemo(() => buildChatAssistantResponse(STARTER_PROMPT, context), [context]);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -179,11 +181,16 @@ export function ChatAssistantPanel({ context, onClose }: ChatAssistantPanelProps
     closeButtonRef.current?.focus();
   }, []);
 
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView?.({ block: 'end' });
+  }, [messages.length]);
+
   function submitQuestion(rawQuestion: string) {
     const nextQuestion = rawQuestion.trim();
     if (!nextQuestion) return;
 
     const response = buildChatAssistantResponse(nextQuestion, context);
+    const displayQuestion = sanitizeChatAssistantText(nextQuestion);
 
     setMessages((current) => {
       const nextIndex = current.length;
@@ -193,7 +200,7 @@ export function ChatAssistantPanel({ context, onClose }: ChatAssistantPanelProps
         {
           id: `user-${nextIndex}`,
           role: 'user',
-          content: nextQuestion,
+          content: displayQuestion || 'CDE-safe question',
         },
         {
           id: `assistant-${nextIndex}`,
@@ -277,6 +284,7 @@ export function ChatAssistantPanel({ context, onClose }: ChatAssistantPanelProps
             <UserBubble key={message.id} message={message} />
           )
         ))}
+        <div ref={messagesEndRef} aria-hidden="true" />
       </div>
 
       {latestResponse ? (

@@ -2,6 +2,7 @@ import { latestSegments, methodology, personaRecords, type Segment, type Segment
 import { buildLeakageDrivers } from './insights';
 import {
   buildChatAssistantResponse,
+  sanitizeChatAssistantText,
   type ChatAssistantContext,
   type ChatAssistantVisualKind,
   type ChatVisualItem,
@@ -198,6 +199,53 @@ describe('buildChatAssistantResponse', () => {
     expect(serialized).toContain('Indexed band equiv./mo');
     expect(serialized).not.toMatch(bannedCurrencyPattern);
     expect(serialized).not.toMatch(/NaN|Infinity/);
+  });
+
+  it('redacts amount-first currency fragments from display text', () => {
+    const unsafeInputs = [
+      { value: '5000 HKD', unsafePattern: /\d/ },
+      { value: '5,000 MOP', unsafePattern: /\d/ },
+      { value: '5000 $', unsafePattern: /\d/ },
+      { value: '6000 HKD per month', unsafePattern: /\d/ },
+      { value: 'five thousand HKD', unsafePattern: /five|thousand/i },
+      { value: 'HKD five thousand', unsafePattern: /five|thousand/i },
+      { value: 'five thousand and twenty HKD', unsafePattern: /five|thousand|twenty/i },
+      { value: 'HKD five thousand and twenty', unsafePattern: /five|thousand|twenty/i },
+      { value: '五千元', unsafePattern: /五千/ },
+    ];
+
+    unsafeInputs.forEach(({ value, unsafePattern }) => {
+      const sanitized = sanitizeChatAssistantText(value);
+
+      expect(sanitized).not.toMatch(bannedCurrencyPattern);
+      expect(sanitized).not.toMatch(unsafePattern);
+    });
+  });
+
+  it('sanitizes amount-first currency fragments from malformed segment and persona data', () => {
+    const malformedSegment = {
+      ...latestSegments[0],
+      id: 'amount-first-currency-segment',
+      name: 'five thousand HKD segment',
+      crossPropertyCashBand: '5,000 MOP monthly',
+    } as Segment;
+    const malformedPersona = {
+      ...personaRecords[0],
+      id: 'amount-first-currency-persona',
+      name: '五千元 persona',
+      segmentId: malformedSegment.id,
+      crossPropertyCashBand: '5000 $',
+    } as SegmentPersona;
+    const response = buildChatAssistantResponse('Which persona should we target first?', {
+      methodology,
+      segments: [malformedSegment],
+      selectedSegment: malformedSegment,
+      personas: [malformedPersona],
+    });
+    const serialized = JSON.stringify(response);
+
+    expect(serialized).not.toMatch(bannedCurrencyPattern);
+    expect(serialized).not.toMatch(/5000|5,000|five|thousand|五千/i);
   });
 
   it('sanitizes overview responses at the final output boundary', () => {

@@ -70,7 +70,21 @@ const FALLBACK_BAND = 'Indexed band equiv./mo';
 const CDE_SAFE_REDACTION = 'CDE-safe value';
 const NON_FINITE_REDACTION = 'finite CDE value';
 const bannedCurrencyPattern = /MOP|HKD|\$|元|澳門幣/i;
-const currencyAmountPattern = /(?:MOP|HKD|\$|元|澳門幣)\s*\$?\s*\d+(?:[.,]\d+)*(?:\s*(?:k|m|monthly|per\s+month|\/mo))?|\d+(?:[.,]\d+)*(?:\s*(?:元|澳門幣))/gi;
+const currencyTokenSource = '(?:MOP|HKD|\\$|元|澳門幣)';
+const amountSource = '\\d+(?:[.,]\\d+)*(?:\\s*[km])?';
+const periodSource = '(?:\\s*(?:monthly|per\\s+month|\\/mo))?';
+const englishAmountWord = '(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|billion)';
+const englishAmountConnectorSource = '(?:[\\s-]+(?:and[\\s-]+)?)';
+const englishAmountWordSource = `${englishAmountWord}(?:${englishAmountConnectorSource}${englishAmountWord})*`;
+const chineseAmountWordSource = '[零一二三四五六七八九十百千万萬億亿兩两]+';
+const amountWordSource = `(?:${englishAmountWordSource}|${chineseAmountWordSource})`;
+const tokenBeforeAmountPattern = new RegExp(`${currencyTokenSource}\\s*\\$?\\s*${amountSource}${periodSource}`, 'gi');
+const amountBeforeTokenPattern = new RegExp(`${amountSource}\\s*${currencyTokenSource}${periodSource}`, 'gi');
+const tokenBeforeWordAmountPattern = new RegExp(`${currencyTokenSource}\\s*${amountWordSource}${periodSource}`, 'gi');
+const wordAmountBeforeTokenPattern = new RegExp(`${amountWordSource}\\s*${currencyTokenSource}${periodSource}`, 'gi');
+const numericFragmentPattern = /\b\d+(?:[.,]\d+)*(?:\s*[km])?\b/gi;
+const englishAmountWordFragmentPattern = new RegExp(`\\b${englishAmountWord}\\b`, 'gi');
+const chineseAmountWordFragmentPattern = new RegExp(chineseAmountWordSource, 'gi');
 const currencyTokenPattern = /MOP|HKD|\$|元|澳門幣/gi;
 const nonFiniteTextPattern = /\b(?:NaN|Infinity)\b/gi;
 
@@ -82,7 +96,7 @@ function safeText(value: unknown, fallback: string): string {
   if (typeof value !== 'string') return fallback;
   const trimmed = value.trim();
   if (!trimmed) return fallback;
-  return sanitizeOutputText(trimmed) || fallback;
+  return sanitizeChatAssistantText(trimmed) || fallback;
 }
 
 function safePct(value: number | undefined): string {
@@ -107,11 +121,22 @@ function normalizeQuestion(question: string): string {
   return question.trim().toLowerCase();
 }
 
-function sanitizeOutputText(value: string): string {
-  return value
-    .replace(currencyAmountPattern, CDE_SAFE_REDACTION)
+export function sanitizeChatAssistantText(value: string): string {
+  const includesCurrency = bannedCurrencyPattern.test(value);
+  const sanitized = value
+    .replace(tokenBeforeAmountPattern, CDE_SAFE_REDACTION)
+    .replace(amountBeforeTokenPattern, CDE_SAFE_REDACTION)
+    .replace(tokenBeforeWordAmountPattern, CDE_SAFE_REDACTION)
+    .replace(wordAmountBeforeTokenPattern, CDE_SAFE_REDACTION)
     .replace(currencyTokenPattern, CDE_SAFE_REDACTION)
-    .replace(nonFiniteTextPattern, NON_FINITE_REDACTION)
+    .replace(nonFiniteTextPattern, NON_FINITE_REDACTION);
+
+  return (includesCurrency
+    ? sanitized
+      .replace(numericFragmentPattern, CDE_SAFE_REDACTION)
+      .replace(englishAmountWordFragmentPattern, CDE_SAFE_REDACTION)
+      .replace(chineseAmountWordFragmentPattern, CDE_SAFE_REDACTION)
+    : sanitized)
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -183,39 +208,39 @@ function emptyVisual(kind: ChatAssistantVisualKind = 'metric-strip', title = 'No
 
 function sanitizeEvidence(evidence: ChatAssistantEvidence): ChatAssistantEvidence {
   return {
-    label: sanitizeOutputText(evidence.label),
-    value: sanitizeOutputText(evidence.value),
-    detail: evidence.detail ? sanitizeOutputText(evidence.detail) : undefined,
+    label: sanitizeChatAssistantText(evidence.label),
+    value: sanitizeChatAssistantText(evidence.value),
+    detail: evidence.detail ? sanitizeChatAssistantText(evidence.detail) : undefined,
   };
 }
 
 function sanitizeVisualItem(item: ChatVisualItem): ChatVisualItem {
   return {
-    id: sanitizeOutputText(item.id),
-    label: sanitizeOutputText(item.label),
+    id: sanitizeChatAssistantText(item.id),
+    label: sanitizeChatAssistantText(item.label),
     value: finiteNumber(item.value),
-    formattedValue: sanitizeOutputText(item.formattedValue),
-    description: sanitizeOutputText(item.description),
+    formattedValue: sanitizeChatAssistantText(item.formattedValue),
+    description: sanitizeChatAssistantText(item.description),
   };
 }
 
 function sanitizeResponse(response: ChatAssistantResponse): ChatAssistantResponse {
   return {
-    id: sanitizeOutputText(response.id),
+    id: sanitizeChatAssistantText(response.id),
     intent: response.intent,
-    title: sanitizeOutputText(response.title),
-    answer: sanitizeOutputText(response.answer),
+    title: sanitizeChatAssistantText(response.title),
+    answer: sanitizeChatAssistantText(response.answer),
     evidence: response.evidence.map(sanitizeEvidence),
     visual: {
       kind: response.visual.kind,
-      title: sanitizeOutputText(response.visual.title),
+      title: sanitizeChatAssistantText(response.visual.title),
       items: response.visual.items.map(sanitizeVisualItem),
     },
     links: response.links.map((link) => ({
-      label: sanitizeOutputText(link.label),
+      label: sanitizeChatAssistantText(link.label),
       href: link.href,
     })),
-    suggestedQuestions: response.suggestedQuestions.map(sanitizeOutputText),
+    suggestedQuestions: response.suggestedQuestions.map(sanitizeChatAssistantText),
   };
 }
 
