@@ -71,4 +71,36 @@ describe('wallet analytics generation', () => {
     expect(serialized).not.toMatch(/NaN|Infinity/);
     expect(serialized).not.toMatch(bannedCurrencyPattern);
   });
+
+  it('does not rank missing category wallet data as maximum leakage', () => {
+    const partialSegment = {
+      id: 'partial-segment',
+      name: 'Partial Segment',
+      opportunityIndex: 0,
+      metrics: {
+        shareOfWallet: 30,
+        shareOfVisits: 60,
+        channelShareOnlinePct: 60,
+      },
+      categories: {
+        hospitality: { capturedSharePct: 40, totalWalletIndex: 150 },
+        fnb: {},
+        entertainment: {},
+        retailLuxury: {},
+      },
+    } as unknown as Segment;
+
+    const analytics = buildWalletAnalytics([partialSegment], ['fnb', 'hospitality']);
+    const fnb = analytics.categories.find((category) => category.category === 'fnb');
+
+    expect(fnb?.leakagePct).toBe(0);
+    expect(fnb?.opportunityScore).toBe(0);
+    expect(analytics.categories[0].category).toBe('hospitality');
+  });
+
+  it('reports insufficient channel data instead of a physical skew when segments are empty', () => {
+    const analytics = buildWalletAnalytics([]);
+
+    expect(analytics.summary.channelSkew).toBe('Insufficient data');
+  });
 });

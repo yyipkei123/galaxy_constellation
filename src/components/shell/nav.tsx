@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import clsx from 'clsx';
 import {
   Activity,
@@ -27,6 +28,15 @@ const navItems: Array<{ href: string; label: string; icon: LucideIcon }> = [
 
 export function Nav() {
   const pathname = usePathname();
+  const activeLinkRef = useRef<HTMLAnchorElement>(null);
+
+  useEffect(() => {
+    const activeLink = activeLinkRef.current;
+
+    if (typeof activeLink?.scrollIntoView === 'function') {
+      activeLink.scrollIntoView({ block: 'nearest', inline: 'center' });
+    }
+  }, [pathname]);
 
   return (
     <nav aria-label="Primary navigation" className="flex w-full min-w-0 max-w-full gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
@@ -40,6 +50,7 @@ export function Nav() {
           <Link
             key={item.href}
             href={item.href}
+            ref={isActive ? activeLinkRef : undefined}
             className={clsx(
               'flex h-10 shrink-0 items-center gap-2 rounded-md px-3 text-xs font-medium transition-colors sm:text-sm lg:h-11 lg:gap-3',
               isActive

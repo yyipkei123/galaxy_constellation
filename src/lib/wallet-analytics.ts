@@ -28,7 +28,7 @@ export interface WalletAnalyticsSummary {
   averageLeakagePct: number;
   highestLeakageCategory: WalletCategoryAnalytic;
   topWalletSegment: WalletSegmentAnalytic;
-  channelSkew: 'Online skew' | 'Physical skew' | 'Balanced';
+  channelSkew: 'Online skew' | 'Physical skew' | 'Balanced' | 'Insufficient data';
 }
 
 export interface WalletAnalytics {
@@ -60,6 +60,14 @@ function finiteNumber(value: number | undefined, fallback = 0) {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
 }
 
+function boundedPct(value: number | undefined) {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 100) {
+    return undefined;
+  }
+
+  return Math.round(value);
+}
+
 function clampPct(value: number | undefined, fallback = 0) {
   return Math.min(100, Math.max(0, Math.round(finiteNumber(value, fallback))));
 }
@@ -79,13 +87,17 @@ function safeSegmentId(segment: Segment | undefined, index = 0) {
 }
 
 function categoryCapture(segment: Segment | undefined, category: CoreCategory) {
-  return clampPct(segment?.categories?.[category]?.capturedSharePct);
+  return boundedPct(segment?.categories?.[category]?.capturedSharePct) ?? 0;
 }
 
 function categoryLeakage(segment: Segment | undefined, category: CoreCategory) {
   const wallet = segment?.categories?.[category];
-  const capture = categoryCapture(segment, category);
-  return clampPct(wallet?.leakagePct, 100 - capture);
+  const leakage = boundedPct(wallet?.leakagePct);
+  const capture = boundedPct(wallet?.capturedSharePct);
+
+  if (leakage !== undefined) return leakage;
+  if (capture !== undefined) return 100 - capture;
+  return 0;
 }
 
 function categoryWalletIndex(segment: Segment | undefined, category: CoreCategory) {
@@ -164,6 +176,8 @@ function buildSegmentAnalytic(
 }
 
 function channelSkew(segments: WalletSegmentAnalytic[]): WalletAnalyticsSummary['channelSkew'] {
+  if (segments.length === 0) return 'Insufficient data';
+
   const onlinePct = average(segments.map((segment) => segment.channelOnlinePct));
 
   if (onlinePct >= 55) return 'Online skew';

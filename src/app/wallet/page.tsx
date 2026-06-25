@@ -73,7 +73,11 @@ function chartReadySegments(segments: Segment[]): Segment[] {
   } as Segment));
 }
 
-function channelInsight(onlinePct: number) {
+function channelInsight(onlinePct: number, hasSegments: boolean) {
+  if (!hasSegments) {
+    return 'No channel signal available for this quarter.';
+  }
+
   if (onlinePct >= 55) {
     return 'Online behavior is over-indexing, so pre-arrival journeys should carry the next wallet prompt.';
   }
@@ -111,6 +115,10 @@ function scatterCallout(analytics: WalletAnalytics) {
 
 function channelCallout(analytics: WalletAnalytics) {
   const { channelSkew, averageCapturePct } = analytics.summary;
+
+  if (channelSkew === 'Insufficient data') {
+    return 'No channel signal available for this quarter. Once CDE segments load, this panel will compare online and physical payment behavior.';
+  }
 
   if (channelSkew === 'Online skew') {
     return `Online payment behavior is over-indexing while average capture is ${averageCapturePct}%, so pre-arrival and mobile prompts should carry the wallet recapture message.`;
@@ -201,7 +209,7 @@ function RankedCategoryLeakage({ analytics, hasSegments }: { analytics: WalletAn
                   <div
                     className="h-full rounded-full bg-galaxy-leak"
                     style={{ width: `${scoreWidth(category.opportunityScore, maxScore)}%` }}
-                    aria-label={`${category.label} leakage opportunity score ${category.opportunityScore}`}
+                    aria-label={`${category.label} leakage ${category.leakagePct}%, wallet intensity index ${category.walletIndex}, relative priority ${relativeScorePct(category.opportunityScore, maxScore)}%`}
                   />
                 </div>
                 <div className="mt-4 grid gap-3 text-sm text-galaxy-muted sm:grid-cols-3">
@@ -454,6 +462,7 @@ export default function WalletPage() {
     () => buildWalletAnalytics(safeSegments, categories),
     [safeSegments, categories],
   );
+  const hasSegments = safeSegments.length > 0;
   const averageOnlinePct = roundedAverage(safeSegments.map((segment) => validNumber(segment.metrics?.channelShareOnlinePct)));
 
   return (
@@ -502,14 +511,14 @@ export default function WalletPage() {
         </div>
       </div>
 
-      <AnalyticsSnapshot analytics={walletAnalytics} hasSegments={safeSegments.length > 0} />
+      <AnalyticsSnapshot analytics={walletAnalytics} hasSegments={hasSegments} />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
-        <RankedCategoryLeakage analytics={walletAnalytics} hasSegments={safeSegments.length > 0} />
-        <SegmentGapLadder analytics={walletAnalytics} hasSegments={safeSegments.length > 0} />
+        <RankedCategoryLeakage analytics={walletAnalytics} hasSegments={hasSegments} />
+        <SegmentGapLadder analytics={walletAnalytics} hasSegments={hasSegments} />
       </div>
 
-      <SegmentOpportunityHeatmap analytics={walletAnalytics} hasSegments={safeSegments.length > 0} />
+      <SegmentOpportunityHeatmap analytics={walletAnalytics} hasSegments={hasSegments} />
 
       <Panel className="p-4 sm:p-6">
         <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
@@ -522,7 +531,7 @@ export default function WalletPage() {
             values.
           </p>
         </div>
-        {safeSegments.length > 0 ? (
+        {hasSegments ? (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {categories.map((category) => (
               <WalletGauge
@@ -580,7 +589,7 @@ export default function WalletPage() {
             <div className="mt-2 text-2xl font-semibold text-galaxy-gold">
               <PercentValue value={averageOnlinePct} />
             </div>
-            <p className="mt-3 text-sm leading-6 text-galaxy-muted">{channelInsight(averageOnlinePct)}</p>
+            <p className="mt-3 text-sm leading-6 text-galaxy-muted">{channelInsight(averageOnlinePct, hasSegments)}</p>
           </div>
         </Panel>
       </div>

@@ -172,6 +172,9 @@ describe('share of wallet route', () => {
 
     expect(screen.getByText('No wallet segments available for this quarter.')).toBeInTheDocument();
     expect(screen.getByText('No segment-level wallet gaps available for this quarter.')).toBeInTheDocument();
+    expect(screen.getAllByText('Insufficient data').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText('No channel signal available for this quarter.')).toBeInTheDocument();
+    expect(screen.queryByText(/Physical payment behavior is dominant/i)).not.toBeInTheDocument();
     expect(screen.getByText('Average online payment share')).toBeInTheDocument();
     expect(screen.getAllByText('0%').length).toBeGreaterThanOrEqual(1);
     expect(screen.queryByText(/NaN|Infinity/)).not.toBeInTheDocument();
@@ -198,5 +201,11 @@ describe('share of wallet route', () => {
     expect(screen.getByLabelText(/Share of wallet versus share of visits/i)).toBeInTheDocument();
     expect(screen.getByText('Average online payment share')).toBeInTheDocument();
     expect(screen.queryByText(/NaN|Infinity/)).not.toBeInTheDocument();
+  });
+
+  it('does not expose raw internal opportunity scores in rendered or accessible labels', () => {
+    const { container } = renderWallet();
+
+    expect(container.innerHTML).not.toMatch(/leakage opportunity score \d+/i);
   });
 });
