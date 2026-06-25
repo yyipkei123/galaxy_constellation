@@ -52,6 +52,48 @@ export interface Segment {
   recommendedPlays: RecommendedPlay[];
 }
 
+export type PersonaPriority = 'priority' | 'watch' | 'nurture';
+export type PersonaWealthTier = 'VIP' | 'Premium' | 'Mass-Affluent' | 'Mass';
+export type PersonaActivationChannel = 'Host' | 'Mini Program' | 'Concierge' | 'Paid Media' | 'CRM';
+
+export interface PersonaRecommendation {
+  title: string;
+  channel: PersonaActivationChannel;
+  action: string;
+  rationale: string;
+}
+
+export interface SegmentPersona {
+  id: string;
+  segmentId: string;
+  name: string;
+  nameZh: string;
+  audienceK: number;
+  ageBand: string;
+  travelMode: string;
+  wealthTier: PersonaWealthTier;
+  priority: PersonaPriority;
+  primaryNeed: string;
+  galaxyKnownSignal: string;
+  mastercardCdeReveal: string;
+  walletGap: string;
+  opportunityIndex: number;
+  leakagePct: number;
+  propensityScore: number;
+  readinessScore: number;
+  crossPropertyCashBand: string;
+  recommendedProducts: string[];
+  recommendations: PersonaRecommendation[];
+  sellingPoints: string[];
+  tags: string[];
+}
+
+export interface PersonaCluster {
+  segmentId: string;
+  label: string;
+  personaIds: string[];
+}
+
 export interface Quarter {
   id: string;
   label: string;

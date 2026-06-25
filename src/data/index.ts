@@ -9,3 +9,4 @@ export {
   quarters,
   segmentsByQuarter,
 } from './generate';
+export { personaById, personaClusters, personaRecords } from './personas';
