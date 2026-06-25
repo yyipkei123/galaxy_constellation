@@ -7,7 +7,7 @@ import {
   type ChatVisualItem,
 } from './chat-assistant';
 
-const bannedCurrencyPattern = /\b(?:MOP|HKD)\b|\$|元|澳門幣/i;
+const bannedCurrencyPattern = /MOP|HKD|\$|元|澳門幣/i;
 
 function expectSortedDescending(values: number[]) {
   values.forEach((value, index) => {
@@ -131,11 +131,45 @@ describe('buildChatAssistantResponse', () => {
     expect(serialized).not.toMatch(bannedCurrencyPattern);
   });
 
+  it('sanitizes adjacent currency tokens from caller-provided text and bands', () => {
+    const malformedSegment = {
+      ...latestSegments[0],
+      id: 'adjacent-currency-segment',
+      name: 'HKD5000 segment',
+      crossPropertyCashBand: 'HKD5000 monthly',
+    } as Segment;
+    const malformedPersona = {
+      ...personaRecords[0],
+      id: 'adjacent-currency-persona',
+      name: 'MOP5000 persona',
+      segmentId: malformedSegment.id,
+      crossPropertyCashBand: 'MOP5000 monthly',
+    } as SegmentPersona;
+    const responses = [
+      buildChatAssistantResponse('Give me the portfolio overview', {
+        methodology,
+        segments: [malformedSegment],
+        personas: [malformedPersona],
+      }),
+      buildChatAssistantResponse('Which persona should we target first?', {
+        methodology,
+        segments: [malformedSegment],
+        selectedSegment: malformedSegment,
+        personas: [malformedPersona],
+      }),
+    ];
+    const serialized = JSON.stringify(responses);
+
+    expect(serialized).toContain('Indexed band equiv./mo');
+    expect(serialized).not.toMatch(bannedCurrencyPattern);
+    expect(serialized).not.toMatch(/NaN|Infinity/);
+  });
+
   it('sanitizes overview responses at the final output boundary', () => {
     const maliciousSegment = {
       ...latestSegments[0],
       id: 'malicious-segment',
-      name: 'HKD $5000 segment',
+      name: 'HKD5000 segment',
       opportunityIndex: Number.POSITIVE_INFINITY,
       metrics: {
         ...latestSegments[0].metrics,

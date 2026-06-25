@@ -68,7 +68,7 @@ const DEFAULT_SUGGESTIONS = [
 
 const FALLBACK_BAND = 'Indexed band equiv./mo';
 const CDE_SAFE_REDACTION = 'CDE-safe output uses only percentages, indices, and modelled bands.';
-const bannedCurrencyPattern = /\b(?:MOP|HKD)\b|\$|元|澳門幣/i;
+const bannedCurrencyPattern = /MOP|HKD|\$|元|澳門幣/i;
 const nonFiniteTextPattern = /\b(?:NaN|Infinity)\b/i;
 
 function finiteNumber(value: number | undefined, fallback = 0): number {
