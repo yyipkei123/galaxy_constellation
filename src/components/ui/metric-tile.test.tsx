@@ -20,6 +20,6 @@ describe('MetricTile', () => {
     render(<MetricTile label="Top wallet gap" value="Retail-Luxury" />);
 
     expect(screen.getByText('Top wallet gap')).toBeInTheDocument();
-    expect(screen.queryByText(/undefined|null/i)).not.toBeInTheDocument();
+    expect(screen.getByText('Retail-Luxury').nextElementSibling).toBeNull();
   });
 });

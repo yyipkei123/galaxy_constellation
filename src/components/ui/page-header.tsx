@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 import clsx from 'clsx';
 import { Overline } from './overline';
 
@@ -20,10 +20,11 @@ export function PageHeader({
   className,
 }: PageHeaderProps) {
   const isHero = variant === 'hero';
+  const titleId = useId();
 
   return (
     <section
-      aria-labelledby="page-title"
+      aria-labelledby={titleId}
       data-variant={variant}
       className={clsx(
         'rounded-lg border border-galaxy-border bg-[linear-gradient(135deg,rgba(31,27,24,0.9),rgba(8,18,30,0.9))] shadow-2xl shadow-black/20',
@@ -35,7 +36,7 @@ export function PageHeader({
         <div>
           {eyebrow ? <Overline>{eyebrow}</Overline> : null}
           <h1
-            id="page-title"
+            id={titleId}
             className={clsx(
               'mt-3 text-galaxy-cream',
               isHero
