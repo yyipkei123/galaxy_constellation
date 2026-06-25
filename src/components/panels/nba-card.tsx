@@ -53,7 +53,10 @@ export function NbaCard({ play, audienceName, audienceSizeBand, recaptureIndex, 
 
         <p className="mt-4 text-sm leading-6 text-galaxy-muted">{rationale}</p>
         {offerTerm ? (
-          <div className="mt-4 rounded-lg border border-galaxy-gold/30 bg-galaxy-gold/10 p-3">
+          <div
+            data-testid="activation-offer-term"
+            className="mt-4 rounded-lg border border-galaxy-gold/30 bg-galaxy-gold/10 p-3"
+          >
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-galaxy-gold">Galaxy Rewards offer term</p>
             <p className="mt-2 text-sm font-semibold text-galaxy-cream">{offerTerm}</p>
           </div>

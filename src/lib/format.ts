@@ -1,7 +1,7 @@
 export type EnrichedFormatKind = 'pct' | 'index' | 'band';
 
 const currencyPattern = /(MOP|HKD|\$|元|澳門幣)/i;
-const modelledBandPattern = /^\d+(?:\.\d+)?-\d+(?:\.\d+)?k equiv\.\/mo$/i;
+const modelledBandPattern = /^(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)k equiv\.\/mo$/i;
 
 export function formatEnriched(value: number | string, kind: EnrichedFormatKind): string {
   if (kind === 'pct') {
@@ -23,8 +23,14 @@ export function formatEnriched(value: number | string, kind: EnrichedFormatKind)
   const normalizedValue = value.trim();
   if (currencyPattern.test(normalizedValue)) throw new Error('CDE bands must not include currency symbols or codes');
   if (!normalizedValue.includes('equiv.')) throw new Error('CDE bands must include equiv. to mark modelled ranges');
-  if (!modelledBandPattern.test(normalizedValue)) {
+  const modelledBandMatch = normalizedValue.match(modelledBandPattern);
+  if (!modelledBandMatch) {
     throw new Error('CDE bands must be a modelled range such as 8-12k equiv./mo');
+  }
+  const low = Number(modelledBandMatch[1]);
+  const high = Number(modelledBandMatch[2]);
+  if (!Number.isFinite(low) || !Number.isFinite(high) || low > high || (low === high && low !== 0)) {
+    throw new Error('CDE bands must be an ascending modelled range such as 8-12k equiv./mo');
   }
   return normalizedValue;
 }

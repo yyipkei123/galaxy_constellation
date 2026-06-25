@@ -67,6 +67,25 @@ function dominantLeakage(segment: Segment) {
   }, { category: 'hospitality' as CoreCategory, leakagePct: 0, label: CATEGORY_LABELS.hospitality });
 }
 
+function segmentWeight(segment: Segment) {
+  return Math.max(1, finiteValue(segment.sizeHighK) || finiteValue(segment.sizeLowK));
+}
+
+function aggregateDominantLeakage(segments: Segment[]) {
+  if (segments.length === 0) return 'No active match';
+
+  return CORE_CATEGORIES.reduce((dominant, category) => {
+    const leakageScore = segments.reduce(
+      (sum, segment) => sum + finiteValue(segment.categories?.[category]?.leakagePct) * segmentWeight(segment),
+      0,
+    );
+
+    return leakageScore > dominant.leakageScore
+      ? { category, leakageScore, label: CATEGORY_LABELS[category] }
+      : dominant;
+  }, { category: 'hospitality' as CoreCategory, leakageScore: 0, label: CATEGORY_LABELS.hospitality }).label;
+}
+
 function leakageIndex(segment: Segment) {
   const leakageValues = CORE_CATEGORIES.map((category) => finiteValue(segment.categories?.[category]?.leakagePct));
 
@@ -178,11 +197,7 @@ export function AudienceBuilder({ segments, filters, setFilters, saveAudience }:
   const [audienceName, setAudienceName] = useState(DEFAULT_NAME);
   const [savedName, setSavedName] = useState('');
 
-  const allSegmentIds = useMemo(
-    () => safeSegments.map((segment, index) => segmentId(segment, index)),
-    [safeSegments],
-  );
-  const selectedSegmentIds = filters.segmentIds.length > 0 ? filters.segmentIds : allSegmentIds;
+  const selectedSegmentIds = filters.segmentIds;
   const selectedSegmentIdSet = useMemo(() => new Set(selectedSegmentIds), [selectedSegmentIds]);
   const minPropensityPct = rangeValue(finiteValue(filters.minPropensity) * 100);
 
@@ -205,7 +220,7 @@ export function AudienceBuilder({ segments, filters, setFilters, saveAudience }:
   const audienceSizeBand = audienceBand(matchedSegments);
   const recapturableWalletIndex = averageIndex(matchedSegments.map((segment) => finiteValue(segment.opportunityIndex)));
   const recapturableWalletBand = walletBand(matchedSegments);
-  const topDominantLeakage = matchedSegments[0] ? dominantLeakage(matchedSegments[0]).label : 'No active match';
+  const topDominantLeakage = aggregateDominantLeakage(matchedSegments);
   const channelComposition = matchedSegments.reduce<Record<Exclude<AudienceFilters['channel'], 'all'>, number>>(
     (counts, segment) => ({
       ...counts,

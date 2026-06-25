@@ -19,6 +19,8 @@ describe('formatEnriched', () => {
     expect(() => formatEnriched('9000', 'band')).toThrow(/equiv/);
     expect(() => formatEnriched('9000 equiv./mo', 'band')).toThrow(/modelled range/);
     expect(() => formatEnriched('9k equiv./mo', 'band')).toThrow(/modelled range/);
+    expect(() => formatEnriched('12-8k equiv./mo', 'band')).toThrow(/ascending/);
+    expect(() => formatEnriched('9-9k equiv./mo', 'band')).toThrow(/ascending/);
   });
 
   it('rejects unsupported runtime format kinds', () => {

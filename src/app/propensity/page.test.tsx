@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { latestSegments } from '@/data';
 import { AppStateProvider, useAppState } from '@/store/app-store';
 import PropensityPage from './page';
@@ -56,5 +56,27 @@ describe('propensity route', () => {
     expect(screen.getByLabelText('saved audience segment ids')).not.toHaveTextContent(latestSegments[0].id);
     expect(screen.queryByText(/NaN|Infinity/)).not.toBeInTheDocument();
     expect(screen.queryByRole('main')).not.toBeInTheDocument();
+  });
+
+  it('keeps an empty segment selection empty instead of reverting to all segments', () => {
+    renderPropensity();
+
+    latestSegments.forEach((segment) => {
+      fireEvent.click(screen.getByRole('checkbox', { name: new RegExp(segment.name) }));
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Save audience' }));
+
+    expect(screen.getByText('No segments match the current audience controls.')).toBeInTheDocument();
+    expect(screen.getByLabelText('active filters')).toHaveTextContent('all|0|');
+    expect(screen.getByLabelText('saved audience segment ids')).toHaveTextContent('');
+  });
+
+  it('aggregates dominant leakage across the matched audience', () => {
+    renderPropensity();
+
+    const dominantLeakageCard = screen.getByText('Dominant leakage').closest('div');
+
+    expect(dominantLeakageCard).not.toBeNull();
+    expect(within(dominantLeakageCard as HTMLElement).getByText('Entertainment')).toBeInTheDocument();
   });
 });
