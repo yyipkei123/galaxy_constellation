@@ -9,7 +9,7 @@ function heatClass(value: number) {
   return 'bg-galaxy-ink text-galaxy-muted';
 }
 
-export function SeasonalityHeatmap({ corridors }: { corridors: Corridor[] }) {
+export function SeasonalityHeatmap({ corridors, showNotes = true }: { corridors: Corridor[]; showNotes?: boolean }) {
   return (
     <div>
       <div className="overflow-x-auto">
@@ -50,11 +50,13 @@ export function SeasonalityHeatmap({ corridors }: { corridors: Corridor[] }) {
           </tbody>
         </table>
       </div>
-      <div className="mt-4 grid gap-3 text-sm leading-6 text-galaxy-muted md:grid-cols-3">
-        <p>Japan peaks around festival periods in Mar-Apr and Oct-Nov.</p>
-        <p>Southeast Asia clusters on long weekends and short holidays.</p>
-        <p>Hong Kong volume softening is visible from 2020 to 2024.</p>
-      </div>
+      {showNotes ? (
+        <div className="mt-4 grid gap-3 text-sm leading-6 text-galaxy-muted md:grid-cols-3">
+          <p>Japan peaks around festival periods in Mar-Apr and Oct-Nov.</p>
+          <p>Southeast Asia clusters on long weekends and short holidays.</p>
+          <p>Hong Kong volume softening is visible from 2020 to 2024.</p>
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -25,4 +25,13 @@ describe('SeasonalityHeatmap', () => {
       'Japan Mar index 136',
     );
   });
+
+  it('can hide board-level pattern annotations for embedded detail views', () => {
+    render(<SeasonalityHeatmap corridors={[corridors[0]]} showNotes={false} />);
+
+    expect(screen.getByRole('table', { name: /Corridor seasonality heatmap/i })).toBeInTheDocument();
+    expect(screen.queryByText(/Japan peaks around festival periods/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Southeast Asia clusters on long weekends/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Hong Kong volume softening/i)).not.toBeInTheDocument();
+  });
 });

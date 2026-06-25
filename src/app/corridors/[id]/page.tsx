@@ -1,3 +1,4 @@
+import { CorridorDetailPanel } from '@/components/panels/corridor-detail-panel';
 import { PageHeader } from '@/components/ui/page-header';
 import { getCorridorById, koreaRefreshTag } from '@/data';
 
@@ -12,9 +13,15 @@ export default async function CorridorDetailPage({ params }: { params: Promise<{
         variant="compact"
         eyebrow="Corridor detail"
         title={`${corridor.name} Corridor Detail`}
-        description="Persona, affinity, seasonality, and offer bridge for aggregate acquisition planning."
-        aside={tag ? <p className="font-semibold text-galaxy-gold">{tag}</p> : <p>{corridor.languageLabel} content ready</p>}
+        description="Move from aggregate source-market signal into persona affinity, timing, offer design, and content hand-off."
+        aside={(
+          <>
+            <p className="font-semibold text-galaxy-gold">{tag ?? `${corridor.languageLabel} content ready`}</p>
+            <p className="mt-2">No individual records. Corridor insight stays indexed, ranked, percent-based, or banded.</p>
+          </>
+        )}
       />
+      <CorridorDetailPanel corridor={corridor} />
     </div>
   );
 }
