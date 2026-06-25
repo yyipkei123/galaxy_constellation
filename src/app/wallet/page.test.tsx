@@ -103,8 +103,8 @@ describe('share of wallet route', () => {
     renderWallet();
 
     expect(screen.getByRole('heading', { name: 'Share of Wallet' })).toBeInTheDocument();
-    expect(screen.getByText('Reveal the gap')).toBeInTheDocument();
-    expect(screen.getByText(/Compare captured share of wallet/i)).toBeInTheDocument();
+    expect(screen.getByText('Wallet analytics')).toBeInTheDocument();
+    expect(screen.getByText(/Prioritize Galaxy wallet gaps/i)).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Wallet analytics snapshot' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Ranked category leakage' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Segment opportunity heatmap' })).toBeInTheDocument();
@@ -207,5 +207,20 @@ describe('share of wallet route', () => {
     const { container } = renderWallet();
 
     expect(container.innerHTML).not.toMatch(/leakage opportunity score \d+/i);
+  });
+
+  it('uses a compact analytical header and leads with decision visuals before KPI support', () => {
+    renderWallet();
+
+    expect(screen.queryByText('Reveal the gap')).not.toBeInTheDocument();
+    expect(screen.getByText('Wallet analytics')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Share of Wallet', level: 1 })).toHaveClass('font-sans');
+
+    const heatmapHeading = screen.getByRole('heading', { name: 'Segment opportunity heatmap' });
+    const snapshotHeading = screen.getByRole('heading', { name: 'Wallet analytics snapshot' });
+    const rankingHeading = screen.getByRole('heading', { name: 'Ranked category leakage' });
+
+    expect(Boolean(heatmapHeading.compareDocumentPosition(snapshotHeading) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+    expect(Boolean(rankingHeading.compareDocumentPosition(snapshotHeading) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
   });
 });

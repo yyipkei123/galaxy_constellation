@@ -8,9 +8,11 @@ import { WalletGauge } from '@/components/charts/wallet-gauge';
 import { ChartCallout } from '@/components/panels/insight-storytelling';
 import { CdeChip } from '@/components/ui/cde-chip';
 import { IndexValue, PercentValue } from '@/components/ui/formatted-values';
-import { KpiCard } from '@/components/ui/kpi-card';
+import { MetricTile } from '@/components/ui/metric-tile';
 import { Overline } from '@/components/ui/overline';
+import { PageHeader } from '@/components/ui/page-header';
 import { Panel } from '@/components/ui/panel';
+import { SectionHeader } from '@/components/ui/section-header';
 import { CORE_CATEGORIES, type CoreCategory, type Segment } from '@/data';
 import { buildWalletAnalytics, type WalletAnalytics } from '@/lib/wallet-analytics';
 import { useAppState } from '@/store/app-store';
@@ -137,37 +139,31 @@ function AnalyticsSnapshot({ analytics, hasSegments }: { analytics: WalletAnalyt
   return (
     <Panel className="p-4 sm:p-6">
       <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <Overline>Executive wallet view</Overline>
-          <h2 className="mt-3 font-serif text-3xl text-galaxy-cream">Wallet analytics snapshot</h2>
-        </div>
-        <p className="max-w-md text-sm leading-6 text-galaxy-muted">
-          A CDE-safe snapshot of capture, leakage, channel skew, and the segment carrying the clearest wallet gap.
-        </p>
+        <SectionHeader
+          eyebrow="Executive wallet view"
+          title="Wallet analytics snapshot"
+          description="Supporting KPI context for the visible category and segment wallet-gap analysis."
+        />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <KpiCard
+        <MetricTile
           label="Average capture"
           value={<PercentValue value={summary.averageCapturePct} />}
           detail="Across visible wallet categories."
         />
-        <KpiCard
+        <MetricTile
           label="Average leakage"
           value={<PercentValue value={summary.averageLeakagePct} />}
           detail="Market remainder visible through CDE enrichment."
         />
-        <KpiCard
+        <MetricTile
           label="Highest leakage"
-          value={<span className="text-xl font-semibold text-galaxy-cream">{summary.highestLeakageCategory.label}</span>}
+          value={summary.highestLeakageCategory.label}
           detail={<PercentValue value={summary.highestLeakageCategory.leakagePct} />}
         />
-        <KpiCard
+        <MetricTile
           label="Top wallet gap"
-          value={(
-            <span className="block text-xl font-semibold leading-7 text-galaxy-cream">
-              {hasSegments ? summary.topWalletSegment.name : 'No active segment'}
-            </span>
-          )}
+          value={hasSegments ? summary.topWalletSegment.name : 'No active segment'}
           detail={summary.channelSkew}
         />
       </div>
@@ -467,24 +463,25 @@ export default function WalletPage() {
 
   return (
     <div className="space-y-6 text-galaxy-cream">
-      <section className="rounded-lg border border-galaxy-border bg-[radial-gradient(circle_at_top_left,rgba(205,164,92,0.2),transparent_34%),linear-gradient(135deg,rgba(31,27,24,0.96),rgba(8,18,30,0.92))] px-4 py-7 shadow-2xl shadow-black/25 sm:px-6 md:px-8 md:py-8">
-        <Overline>Reveal the gap</Overline>
-        <div className="mt-4 grid gap-5 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-end">
-          <div>
-            <h1 className="font-serif text-4xl text-galaxy-cream sm:text-5xl md:text-6xl">Share of Wallet</h1>
-            <p className="mt-4 max-w-3xl text-base leading-8 text-galaxy-muted md:text-lg">
-              Compare captured share of wallet against visit intensity, channel preference, and category-level
-              headroom to pinpoint where Galaxy can convert known demand into more frequent on-property spend.
-            </p>
-          </div>
-          <div className="rounded-lg border border-galaxy-gold/30 bg-galaxy-ink/45 p-4">
-            <p className="text-sm font-semibold text-galaxy-gold">{selectedQuarter.label}</p>
-            <p className="mt-2 text-sm leading-6 text-galaxy-muted">
+      <PageHeader
+        variant="compact"
+        eyebrow="Wallet analytics"
+        title="Share of Wallet"
+        description={(
+          <>
+            Prioritize Galaxy wallet gaps by segment, category, and channel signal. CDE-enriched values remain indexed,
+            percentage-based, or banded.
+          </>
+        )}
+        aside={(
+          <>
+            <p className="font-semibold text-galaxy-gold">{selectedQuarter.label}</p>
+            <p className="mt-2">
               Wallet and visit signals are modelled from Mastercard CDE segment behavior.
             </p>
-          </div>
-        </div>
-      </section>
+          </>
+        )}
+      />
 
       <div className="-mx-1 max-w-full overflow-x-auto pb-1">
         <div role="group" className="flex w-max min-w-full gap-2 px-1 sm:w-auto sm:flex-wrap" aria-label="Wallet category filters">
@@ -511,14 +508,14 @@ export default function WalletPage() {
         </div>
       </div>
 
-      <AnalyticsSnapshot analytics={walletAnalytics} hasSegments={hasSegments} />
+      <SegmentOpportunityHeatmap analytics={walletAnalytics} hasSegments={hasSegments} />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <RankedCategoryLeakage analytics={walletAnalytics} hasSegments={hasSegments} />
         <SegmentGapLadder analytics={walletAnalytics} hasSegments={hasSegments} />
       </div>
 
-      <SegmentOpportunityHeatmap analytics={walletAnalytics} hasSegments={hasSegments} />
+      <AnalyticsSnapshot analytics={walletAnalytics} hasSegments={hasSegments} />
 
       <Panel className="p-4 sm:p-6">
         <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
