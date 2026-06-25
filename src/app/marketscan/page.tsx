@@ -11,8 +11,8 @@ export default function MarketScanPage() {
         title="Market Scan"
         description={(
           <>
-            Review synthetic competitor calendar, social sentiment, PR/news, share-of-voice, and footfall signals
-            alongside CDE opportunity sizing.
+            This illustrative market-scan companion is a synthetic board for competitor calendar, social sentiment,
+            PR/news, share of voice, and footfall signals that an analyst could use alongside CDE opportunity sizing.
           </>
         )}
       />

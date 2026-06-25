@@ -33,6 +33,9 @@ describe('propensity route', () => {
 
     expect(screen.getByText('Audience build')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Propensity & Audience Builder', level: 1 })).toHaveClass('font-sans');
+    expect(screen.getByText(
+      /Build a CDE-compliant target audience from segment-level luxury hotel, rewards, look-alike, and leakage signals, then save it for Galaxy activation without exposing raw customer-level currency\./,
+    )).toBeInTheDocument();
     expect(screen.getByLabelText(/Luxury-hotel spender/i)).toBeInTheDocument();
     expect(screen.getByText('Live audience size')).toBeInTheDocument();
     expect(screen.getByText('Estimated recapturable wallet')).toBeInTheDocument();

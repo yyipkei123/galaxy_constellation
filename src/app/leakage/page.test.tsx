@@ -86,6 +86,9 @@ describe('cross-property leakage route', () => {
 
     expect(screen.getByText('Leakage review')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Cross-Property Leakage', level: 1 })).toHaveClass('font-sans');
+    expect(screen.getByText(
+      /Quantify where known Galaxy guests are still spending across competitor hotels, retail, dining, and entertainment, then prioritize the segments with the clearest win-back path\./,
+    )).toBeInTheDocument();
     expect(screen.getByText(/other hotels in cash/i)).toBeInTheDocument();
     expect(screen.getByText(/opportunity cost Galaxy can recapture/i)).toBeInTheDocument();
     expect(screen.getByText('Generated opportunity narrative')).toBeInTheDocument();

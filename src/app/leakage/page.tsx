@@ -173,8 +173,8 @@ export default function LeakagePage() {
         title="Cross-Property Leakage"
         description={(
           <>
-            Track where visible wallet leaves Galaxy, rank leakage drivers, and move validated segment priorities into
-            audience activation.
+            Quantify where known Galaxy guests are still spending across competitor hotels, retail, dining, and
+            entertainment, then prioritize the segments with the clearest win-back path.
           </>
         )}
         aside={(

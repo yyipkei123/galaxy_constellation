@@ -16,7 +16,7 @@ export default function PropensityPage() {
         description={(
           <>
             Build a CDE-compliant target audience from segment-level luxury hotel, rewards, look-alike, and leakage
-            signals.
+            signals, then save it for Galaxy activation without exposing raw customer-level currency.
           </>
         )}
         aside={(
