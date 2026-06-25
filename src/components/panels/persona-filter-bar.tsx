@@ -25,16 +25,17 @@ const SORT_OPTIONS: Array<{ value: PersonaSortMode; label: string }> = [
 
 const WEALTH_TIERS: WealthTierFilter[] = ['All', 'VIP', 'Premium', 'Mass-Affluent', 'Mass'];
 const PRIORITIES: PriorityFilter[] = ['All', 'priority', 'watch', 'nurture'];
+const PRIORITY_LABELS: Record<PriorityFilter, string> = {
+  All: 'All',
+  priority: 'Priority',
+  watch: 'Watch',
+  nurture: 'Nurture',
+};
 
 function chipClass(isSelected: boolean) {
   return isSelected
     ? 'border-galaxy-gold bg-galaxy-gold/15 text-galaxy-gold'
     : 'border-galaxy-border bg-galaxy-ink/35 text-galaxy-muted hover:border-galaxy-gold/70 hover:text-galaxy-cream';
-}
-
-function priorityLabel(priority: PriorityFilter) {
-  if (priority === 'All') return priority;
-  return priority;
 }
 
 export function PersonaFilterBar({
@@ -78,7 +79,7 @@ export function PersonaFilterBar({
       </div>
 
       <div className="mt-4 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-        <div className="flex flex-wrap gap-2" aria-label="Wealth tier filters">
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Wealth tier filters">
           {WEALTH_TIERS.map((tier) => (
             <button
               key={tier}
@@ -92,7 +93,7 @@ export function PersonaFilterBar({
           ))}
         </div>
 
-        <div className="flex flex-wrap gap-2" aria-label="Priority filters">
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Priority filters">
           {PRIORITIES.map((level) => (
             <button
               key={level}
@@ -101,7 +102,7 @@ export function PersonaFilterBar({
               onClick={() => onPriorityChange(level)}
               className={`rounded border px-3 py-1.5 text-xs font-semibold transition ${chipClass(priority === level)}`}
             >
-              {priorityLabel(level)}
+              {PRIORITY_LABELS[level]}
             </button>
           ))}
         </div>
