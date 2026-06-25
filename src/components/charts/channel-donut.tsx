@@ -14,7 +14,7 @@ export function ChannelDonut({ onlinePct }: { onlinePct: number }) {
 
   return (
     <div
-      className="grid grid-cols-[120px_1fr] items-center gap-4"
+      className="grid grid-cols-1 items-center gap-4 sm:grid-cols-[120px_1fr]"
       aria-label={`Channel split: ${online}% online payment share, ${physical}% physical payment share`}
     >
       <div className="h-28">

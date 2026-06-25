@@ -29,7 +29,7 @@ export function Nav() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Primary navigation" className="flex flex-col gap-2">
+    <nav aria-label="Primary navigation" className="flex w-full min-w-0 max-w-full gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
       {navItems.map((item) => {
         const Icon = item.icon;
         const isActive = item.href === '/'
@@ -41,7 +41,7 @@ export function Nav() {
             key={item.href}
             href={item.href}
             className={clsx(
-              'flex h-11 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors',
+              'flex h-10 shrink-0 items-center gap-2 rounded-md px-3 text-xs font-medium transition-colors sm:text-sm lg:h-11 lg:gap-3',
               isActive
                 ? 'bg-galaxy-gold text-galaxy-ink'
                 : 'text-galaxy-muted hover:bg-galaxy-slate hover:text-galaxy-cream',
@@ -53,7 +53,7 @@ export function Nav() {
           </Link>
         );
       })}
-      <div className="mt-4 flex items-center gap-2 rounded-md border border-galaxy-border px-3 py-2 text-xs text-galaxy-muted">
+      <div className="mt-4 hidden items-center gap-2 rounded-md border border-galaxy-border px-3 py-2 text-xs text-galaxy-muted lg:flex">
         <Map aria-hidden="true" className="h-4 w-4 text-galaxy-gold" />
         Cotai wallet view
       </div>

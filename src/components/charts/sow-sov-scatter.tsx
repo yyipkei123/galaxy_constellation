@@ -12,9 +12,9 @@ export function SowSovScatter({ segments }: { segments: Segment[] }) {
   }));
 
   return (
-    <div className="h-80" aria-label="Share of wallet versus share of visits scatter chart">
+    <div className="h-72 md:h-80" aria-label="Share of wallet versus share of visits scatter chart">
       <ResponsiveContainer width="100%" height="100%">
-        <ScatterChart margin={{ top: 16, right: 16, bottom: 24, left: 8 }}>
+        <ScatterChart margin={{ top: 16, right: 12, bottom: 24, left: 0 }}>
           <CartesianGrid stroke={galaxyPalette.border} />
           <XAxis dataKey="sow" name="Share of Wallet" stroke={galaxyPalette.muted} unit="%" />
           <YAxis dataKey="sov" name="Share of Visits" stroke={galaxyPalette.muted} unit="%" />

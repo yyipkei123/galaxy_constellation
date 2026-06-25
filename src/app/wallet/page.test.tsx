@@ -105,6 +105,10 @@ describe('share of wallet route', () => {
     expect(screen.getByRole('heading', { name: 'Share of Wallet' })).toBeInTheDocument();
     expect(screen.getByText('Reveal the gap')).toBeInTheDocument();
     expect(screen.getByText(/Compare captured share of wallet/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Wallet analytics snapshot' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Ranked category leakage' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Segment opportunity heatmap' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Largest wallet gaps now' })).toBeInTheDocument();
 
     ['All', 'Hospitality', 'F&B', 'Entertainment', 'Retail-Luxury'].forEach((label) => {
       expect(screen.getByRole('button', { name: label })).toBeInTheDocument();
@@ -125,9 +129,21 @@ describe('share of wallet route', () => {
     expect(screen.getByRole('heading', { name: 'Channel mix' })).toBeInTheDocument();
     expect(screen.getByLabelText(/Channel split/i)).toBeInTheDocument();
     expect(screen.getByText(/Average online payment share/i)).toBeInTheDocument();
+    expect(screen.getAllByText('Insight callout').length).toBeGreaterThanOrEqual(2);
     expect(screen.getAllByText(/CDE/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.queryByText(/MOP|HKD|\$/)).not.toBeInTheDocument();
     expect(screen.queryByRole('main')).not.toBeInTheDocument();
+  });
+
+  it('updates ranked category leakage when a category filter is selected', () => {
+    renderWallet();
+
+    fireEvent.click(screen.getByRole('button', { name: 'F&B' }));
+
+    const ranking = screen.getByRole('region', { name: 'Ranked category leakage analytics' });
+    expect(within(ranking).getByText('F&B')).toBeInTheDocument();
+    expect(within(ranking).queryByText('Hospitality')).not.toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'F&B category drill' })).toBeInTheDocument();
   });
 
   it('limits the F&B drill to bars/clubs and full-service restaurants', () => {
@@ -155,6 +171,7 @@ describe('share of wallet route', () => {
     renderWallet([]);
 
     expect(screen.getByText('No wallet segments available for this quarter.')).toBeInTheDocument();
+    expect(screen.getByText('No segment-level wallet gaps available for this quarter.')).toBeInTheDocument();
     expect(screen.getByText('Average online payment share')).toBeInTheDocument();
     expect(screen.getAllByText('0%').length).toBeGreaterThanOrEqual(1);
     expect(screen.queryByText(/NaN|Infinity/)).not.toBeInTheDocument();

@@ -18,6 +18,13 @@ test.describe('Galaxy Constellation rendered compliance', () => {
         await expect(page.getByRole('heading', { name: /Insight engine/i })).toBeVisible();
       }
 
+      if (route === '/wallet') {
+        await expect(page.getByRole('heading', { name: /Wallet analytics snapshot/i })).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Ranked category leakage/i })).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Segment opportunity heatmap/i })).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Largest wallet gaps now/i })).toBeVisible();
+      }
+
       if (route === '/segments') {
         const personaRecommendationKit = page.getByLabel('Persona recommendation kit');
 
@@ -107,4 +114,40 @@ test.describe('Galaxy Constellation rendered compliance', () => {
     await expect(page.getByRole('heading', { name: /Cross-Property Leakage/i })).toBeVisible();
     await expect(page.getByText(/Enriched figures are modelled estimates/i)).toBeVisible();
   });
+
+  test('mobile activation keeps route content in the first viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/activation');
+
+    const hero = page.getByRole('heading', { name: 'Next-Best-Action', exact: true });
+    await expect(hero).toBeVisible();
+    const box = await hero.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return { top: rect.top, bottom: rect.bottom };
+    });
+
+    expect(box.top).toBeLessThan(620);
+    expect(box.bottom).toBeLessThanOrEqual(844);
+    expect(await page.evaluate(() => document.body.scrollWidth)).toBeLessThanOrEqual(390);
+  });
+
+  for (const viewport of [
+    { label: 'iPhone', width: 390, height: 844 },
+    { label: 'iPad', width: 820, height: 1180 },
+    { label: 'desktop', width: 1440, height: 900 },
+  ]) {
+    test(`/wallet remains CDE-safe and responsive on ${viewport.label}`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      await page.goto('/wallet');
+
+      await expect(page.getByRole('heading', { name: 'Share of Wallet', exact: true })).toBeVisible();
+      await expect(page.getByRole('heading', { name: /Wallet analytics snapshot/i })).toBeVisible();
+      await expect(page.getByRole('heading', { name: /Segment opportunity heatmap/i })).toBeVisible();
+      await expect(page.getByText(/Enriched figures are modelled estimates/i)).toBeVisible();
+      await expect(page.locator('body')).not.toContainText(/HKD|MOP|\$|元|澳門幣/);
+
+      const scrollWidth = await page.evaluate(() => document.body.scrollWidth);
+      expect(scrollWidth).toBeLessThanOrEqual(viewport.width);
+    });
+  }
 });
