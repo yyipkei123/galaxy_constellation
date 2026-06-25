@@ -67,9 +67,12 @@ const DEFAULT_SUGGESTIONS = [
 ] as const;
 
 const FALLBACK_BAND = 'Indexed band equiv./mo';
-const CDE_SAFE_REDACTION = 'CDE-safe output uses only percentages, indices, and modelled bands.';
+const CDE_SAFE_REDACTION = 'CDE-safe value';
+const NON_FINITE_REDACTION = 'finite CDE value';
 const bannedCurrencyPattern = /MOP|HKD|\$|元|澳門幣/i;
-const nonFiniteTextPattern = /\b(?:NaN|Infinity)\b/i;
+const currencyAmountPattern = /(?:MOP|HKD|\$|元|澳門幣)\s*\$?\s*\d+(?:[.,]\d+)*(?:\s*(?:k|m|monthly|per\s+month|\/mo))?|\d+(?:[.,]\d+)*(?:\s*(?:元|澳門幣))/gi;
+const currencyTokenPattern = /MOP|HKD|\$|元|澳門幣/gi;
+const nonFiniteTextPattern = /\b(?:NaN|Infinity)\b/gi;
 
 function finiteNumber(value: number | undefined, fallback = 0): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
@@ -78,8 +81,8 @@ function finiteNumber(value: number | undefined, fallback = 0): number {
 function safeText(value: unknown, fallback: string): string {
   if (typeof value !== 'string') return fallback;
   const trimmed = value.trim();
-  if (!trimmed || bannedCurrencyPattern.test(trimmed)) return fallback;
-  return trimmed;
+  if (!trimmed) return fallback;
+  return sanitizeOutputText(trimmed) || fallback;
 }
 
 function safePct(value: number | undefined): string {
@@ -105,8 +108,12 @@ function normalizeQuestion(question: string): string {
 }
 
 function sanitizeOutputText(value: string): string {
-  if (bannedCurrencyPattern.test(value) || nonFiniteTextPattern.test(value)) return CDE_SAFE_REDACTION;
-  return value;
+  return value
+    .replace(currencyAmountPattern, CDE_SAFE_REDACTION)
+    .replace(currencyTokenPattern, CDE_SAFE_REDACTION)
+    .replace(nonFiniteTextPattern, NON_FINITE_REDACTION)
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function getSegments(context: Partial<ChatAssistantContext>): Segment[] {
@@ -139,10 +146,10 @@ function getSelectedSegment(context: Partial<ChatAssistantContext>): Segment | u
 
 function getSelectedPersonas(context: Partial<ChatAssistantContext>, selectedSegment?: Segment): SegmentPersona[] {
   const personas = getPersonas(context);
-  const selectedPersona = personas.find((persona) => persona.id === context.selectedPersonaId);
   const scopedPersonas = selectedSegment
     ? personas.filter((persona) => persona.segmentId === selectedSegment.id)
     : personas;
+  const selectedPersona = scopedPersonas.find((persona) => persona.id === context.selectedPersonaId);
   const candidates = selectedPersona ? [selectedPersona, ...scopedPersonas.filter((persona) => persona.id !== selectedPersona.id)] : scopedPersonas;
 
   return sortByOpportunity(candidates);
@@ -152,10 +159,12 @@ function classifyIntent(question: string): ChatAssistantIntent {
   const normalized = normalizeQuestion(question);
 
   if (!normalized) return 'fallback';
-  if (/\b(methodology|raw|exact|spend|source|calculate|calculated|modelled|modeled|basis)\b/.test(normalized)) {
+  if (/\b(leak|leaking|leakage|gap|outside|recapture|wallet)\b/.test(normalized)) return 'leakage';
+  if (
+    /\b(methodology|compliance|source|basis|currency|data[-\s]?rule|raw\s+(?:spend|data)|exact\s+(?:spend|data|value)|calculate|calculated|modelled|modeled)\b/.test(normalized)
+  ) {
     return 'methodology';
   }
-  if (/\b(leak|leakage|gap|outside|recapture|wallet)\b/.test(normalized)) return 'leakage';
   if (/\b(persona|personas|audience|target first|target)\b/.test(normalized)) return 'persona';
   if (/\b(activation|activate|campaign|offer|next)\b/.test(normalized)) return 'activation';
   if (/\b(segment|opportunity|headroom)\b/.test(normalized)) return 'segment';

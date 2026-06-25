@@ -61,6 +61,41 @@ describe('buildChatAssistantResponse', () => {
     expect(JSON.stringify(response)).not.toMatch(bannedCurrencyPattern);
   });
 
+  it('ignores stale selectedPersonaId values outside the selected segment', () => {
+    const selectedSegment = latestSegments[0];
+    const scopedPersonas = personaRecords.filter((persona) => persona.segmentId === selectedSegment.id);
+    const stalePersona = {
+      ...personaRecords.find((persona) => persona.segmentId !== selectedSegment.id)!,
+      id: 'stale-off-segment-persona',
+      name: 'Off Segment Persona',
+      opportunityIndex: 999,
+    } as SegmentPersona;
+    const response = buildChatAssistantResponse('Which persona should we target first?', {
+      methodology,
+      segments: latestSegments,
+      selectedSegment,
+      selectedPersonaId: stalePersona.id,
+      personas: [...scopedPersonas, stalePersona],
+    });
+    const scopedNames = scopedPersonas.map((persona) => persona.name);
+
+    expect(response.intent).toBe('persona');
+    expect(response.answer).not.toContain(stalePersona.name);
+    expect(response.visual.items.map((item) => item.label)).not.toContain(stalePersona.name);
+    expect(response.visual.items.every((item) => scopedNames.includes(item.label))).toBe(true);
+  });
+
+  it('routes spend leakage business questions to leakage instead of methodology', () => {
+    const response = buildChatAssistantResponse('Where is spend leaking outside?', {
+      methodology,
+      segments: latestSegments,
+      personas: personaRecords,
+    });
+
+    expect(response.intent).toBe('leakage');
+    expect(response.links).toEqual(expect.arrayContaining([expect.objectContaining({ href: '/leakage' })]));
+  });
+
   it('answers methodology and raw-spend questions without route links or exact money values', () => {
     const response = buildChatAssistantResponse('Can you show the raw spend methodology?', {
       methodology,
@@ -186,6 +221,26 @@ describe('buildChatAssistantResponse', () => {
     expect(response.intent).toBe('overview');
     expect(serialized).not.toMatch(bannedCurrencyPattern);
     expect(serialized).not.toMatch(/NaN|Infinity/);
+  });
+
+  it('redacts unsafe currency fragments while preserving safe overview answer context', () => {
+    const maliciousSegment = {
+      ...latestSegments[0],
+      id: 'fragment-redaction-segment',
+      name: 'HKD5000 overview segment',
+      crossPropertyCashBand: 'MOP5000 monthly',
+    } as Segment;
+    const response = buildChatAssistantResponse('Give me the portfolio overview', {
+      methodology,
+      segments: [maliciousSegment],
+      personas: [],
+    });
+    const serialized = JSON.stringify(response);
+
+    expect(response.answer).toMatch(/overview/i);
+    expect(response.answer).toMatch(/CDE/i);
+    expect(serialized).not.toMatch(bannedCurrencyPattern);
+    expect(serialized).not.toMatch(/5000/);
   });
 
   it('accepts the planned selectedSegment context shape and emits visual descriptions', () => {
