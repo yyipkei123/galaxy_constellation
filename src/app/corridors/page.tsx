@@ -38,8 +38,8 @@ export default function CorridorsPage() {
         )}
       />
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
-        <Panel>
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
+        <Panel className="min-w-0">
           <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
             <SectionHeader
               eyebrow="Top inbound markets"
@@ -82,10 +82,12 @@ export default function CorridorsPage() {
           <CorridorRankTable corridors={rankedCorridors} year={year} metric={metric} />
         </Panel>
 
-        <PriorityCorridorTile corridor={priorityCorridor} />
+        <div className="min-w-0">
+          <PriorityCorridorTile corridor={priorityCorridor} />
+        </div>
       </div>
 
-      <Panel>
+      <Panel className="min-w-0">
         <div className="mb-5">
           <SectionHeader
             eyebrow="Seasonality"

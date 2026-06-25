@@ -236,8 +236,15 @@ test.describe('Galaxy Constellation rendered compliance', () => {
     expect(await documentScrollWidth(page)).toBeLessThanOrEqual(390);
   });
 
-  test('mobile Korea corridor detail keeps content within viewport width', async ({ page }) => {
+  test('mobile Lens B corridor routes keep content within viewport width', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
+
+    await page.goto('/corridors');
+    await expect(page.getByRole('heading', { name: /Source-Market & Corridor Intelligence/i })).toBeVisible();
+    await expect(page.getByRole('row', { name: /#1 Korea/i })).toBeVisible();
+    await expect(page.locator('body')).not.toContainText(/HKD|MOP|\$|元|澳門幣/);
+    expect(await documentScrollWidth(page)).toBeLessThanOrEqual(390);
+
     await page.goto('/corridors/korea');
 
     await expect(page.getByRole('heading', { name: /Korea Corridor Detail/i })).toBeVisible();
