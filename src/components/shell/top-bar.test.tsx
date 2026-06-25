@@ -77,17 +77,30 @@ describe('TopBar', () => {
     vi.restoreAllMocks();
   });
 
-  it('shows active CDE methodology metrics and defaults the quarter selector to Q2 2026', () => {
+  it('shows compact CDE methodology metrics and defaults the quarter selector to Q2 2026', () => {
     render(
       <AppStateProvider>
         <TopBar />
       </AppStateProvider>,
     );
 
-    expect(screen.getByText('7 active CDE metrics')).toBeInTheDocument();
-    expect(screen.getByText('Matched coverage 63%')).toBeInTheDocument();
+    expect(screen.getByText('7 CDE metrics')).toBeInTheDocument();
+    expect(screen.getByText('Coverage 63%')).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: /quarter selector/i })).toHaveValue('2026-q2');
     expect(screen.getByRole('option', { name: '2026 Q2' })).toBeInTheDocument();
+  });
+
+  it('renders compact mobile metadata without losing the full accessible metric text', () => {
+    render(
+      <AppStateProvider>
+        <TopBar />
+      </AppStateProvider>,
+    );
+
+    expect(screen.getByText('7 CDE metrics')).toBeInTheDocument();
+    expect(screen.getByText('7 CDE metrics')).toHaveAttribute('aria-label', '7 active CDE metrics');
+    expect(screen.getByText('Coverage 63%')).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: /quarter selector/i })).toHaveValue('2026-q2');
   });
 
   it('updates the selected reporting quarter from the accessible selector', async () => {

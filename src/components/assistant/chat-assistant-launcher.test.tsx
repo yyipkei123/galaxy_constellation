@@ -104,6 +104,16 @@ describe('ChatAssistantLauncher', () => {
     await waitFor(() => expect(launcher).toHaveFocus());
   });
 
+  it('uses a smaller safe-area mobile launcher and a labeled desktop affordance', () => {
+    renderLauncher();
+
+    const launcher = screen.getByRole('button', { name: 'Open AI insight assistant' });
+    expect(launcher).toHaveClass('bottom-[calc(env(safe-area-inset-bottom)+1rem)]');
+    expect(launcher).toHaveClass('h-12');
+    expect(launcher).toHaveClass('w-12');
+    expect(within(launcher).getByText('Ask CDE AI')).toHaveClass('hidden');
+  });
+
   it('moves focus into the dialog, lets Tab leave the non-modal drawer, and closes with Escape', async () => {
     renderLauncher();
 

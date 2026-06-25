@@ -55,9 +55,10 @@ export function ChatAssistantLauncher() {
         aria-controls={CHAT_ASSISTANT_DIALOG_ID}
         aria-expanded={isOpen}
         onClick={toggleAssistant}
-        className="fixed bottom-5 right-5 z-50 inline-flex h-14 w-14 items-center justify-center rounded-full border border-galaxy-gold/50 bg-galaxy-gold text-galaxy-ink shadow-xl shadow-black/40 transition hover:bg-galaxy-gold-lite focus-visible:ring-2 focus-visible:ring-galaxy-gold focus-visible:ring-offset-2 focus-visible:ring-offset-galaxy-ink sm:right-6"
+        className="fixed bottom-[calc(env(safe-area-inset-bottom)+1rem)] right-4 z-50 inline-flex h-12 w-12 items-center justify-center rounded-full border border-galaxy-gold/50 bg-galaxy-gold text-galaxy-ink shadow-xl shadow-black/40 transition hover:bg-galaxy-gold-lite focus-visible:ring-2 focus-visible:ring-galaxy-gold focus-visible:ring-offset-2 focus-visible:ring-offset-galaxy-ink sm:right-6 lg:h-11 lg:w-auto lg:gap-2 lg:rounded-full lg:px-4"
       >
-        <MessageCircle aria-hidden="true" size={24} />
+        <MessageCircle aria-hidden="true" size={22} />
+        <span className="hidden text-sm font-semibold lg:inline">Ask CDE AI</span>
       </button>
     </>
   );

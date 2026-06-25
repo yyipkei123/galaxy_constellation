@@ -8,11 +8,14 @@ export function TopBar() {
   return (
     <header className="flex flex-col gap-3 border-b border-galaxy-border bg-galaxy-ink/82 px-4 py-3 backdrop-blur sm:px-5 md:flex-row md:items-center md:justify-between md:px-8 md:py-4">
       <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-        <span className="rounded border border-galaxy-gold/40 bg-galaxy-gold/10 px-2 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-galaxy-gold sm:px-2.5 sm:text-xs sm:tracking-[0.18em]">
-          {methodology.activeMetricCount} active CDE metrics
+        <span
+          aria-label={`${methodology.activeMetricCount} active CDE metrics`}
+          className="rounded border border-galaxy-gold/40 bg-galaxy-gold/10 px-2 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-galaxy-gold sm:px-2.5 sm:text-xs sm:tracking-[0.18em]"
+        >
+          {methodology.activeMetricCount} CDE metrics
         </span>
         <span className="text-sm font-medium text-galaxy-cream">
-          Matched coverage {methodology.matchedCoveragePct}%
+          Coverage {methodology.matchedCoveragePct}%
         </span>
       </div>
 
