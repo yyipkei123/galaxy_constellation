@@ -2,8 +2,43 @@ import { expect, test, type Page } from '@playwright/test';
 
 const routes = ['/', '/wallet', '/segments', '/leakage', '/propensity', '/activation', '/marketscan'];
 const interruptedNavigationMessage = 'is interrupted by another navigation';
+const fallbackBaseUrl = 'http://127.0.0.1:3000';
+
+function normalizedPathname(pathname: string) {
+  return pathname === '/' ? pathname : pathname.replace(/\/$/, '');
+}
+
+function normalizedUrl(value: string, baseUrl: string) {
+  const url = new URL(value, baseUrl);
+  return `${url.origin}${normalizedPathname(url.pathname)}${url.search}${url.hash}`;
+}
+
+function isEquivalentRoute(currentUrl: string, route: string, baseUrl: string) {
+  return normalizedUrl(currentUrl, baseUrl) === normalizedUrl(route, baseUrl);
+}
+
+function isSameOrigin(currentUrl: string, baseUrl: string) {
+  try {
+    return new URL(currentUrl).origin === new URL(baseUrl).origin;
+  } catch {
+    return false;
+  }
+}
+
+function currentOrigin(page: Page) {
+  const currentUrl = page.url();
+  return currentUrl.startsWith('http') ? new URL(currentUrl).origin : fallbackBaseUrl;
+}
 
 async function gotoStableRoute(page: Page, route: string) {
+  const baseUrl = currentOrigin(page);
+  const expectedUrl = normalizedUrl(route, baseUrl);
+  const currentUrl = page.url();
+
+  if (isSameOrigin(currentUrl, baseUrl) && !isEquivalentRoute(currentUrl, route, baseUrl)) {
+    await page.goto('about:blank');
+  }
+
   try {
     await page.goto(route);
   } catch (error) {
@@ -14,10 +49,21 @@ async function gotoStableRoute(page: Page, route: string) {
     }
 
     await page.waitForLoadState('load');
+    if (!isEquivalentRoute(page.url(), route, baseUrl)) {
+      throw error;
+    }
+
     await page.goto(route);
   }
 
-  await expect(page).toHaveURL(new RegExp(`${route.replaceAll('/', '\\/')}$`));
+  await expect.poll(() => normalizedUrl(page.url(), baseUrl)).toBe(expectedUrl);
+}
+
+async function documentScrollWidth(page: Page) {
+  return page.evaluate(() => Math.max(
+    document.body.scrollWidth,
+    document.documentElement.scrollWidth,
+  ));
 }
 
 test.describe('Galaxy Constellation rendered compliance', () => {
@@ -146,7 +192,7 @@ test.describe('Galaxy Constellation rendered compliance', () => {
 
     expect(box.top).toBeLessThan(620);
     expect(box.bottom).toBeLessThanOrEqual(844);
-    expect(await page.evaluate(() => document.body.scrollWidth)).toBeLessThanOrEqual(390);
+    expect(await documentScrollWidth(page)).toBeLessThanOrEqual(390);
   });
 
   for (const viewport of [
@@ -164,7 +210,7 @@ test.describe('Galaxy Constellation rendered compliance', () => {
       await expect(page.getByText(/Enriched figures are modelled estimates/i)).toBeVisible();
       await expect(page.locator('body')).not.toContainText(/HKD|MOP|\$|元|澳門幣/);
 
-      const scrollWidth = await page.evaluate(() => document.body.scrollWidth);
+      const scrollWidth = await documentScrollWidth(page);
       expect(scrollWidth).toBeLessThanOrEqual(viewport.width);
     });
   }
@@ -182,7 +228,8 @@ test.describe('Galaxy Constellation rendered compliance', () => {
         await expect(page.getByRole('banner')).toContainText(/CDE metrics/i);
         await expect(page.getByRole('button', { name: /Open AI insight assistant/i })).toBeVisible();
 
-        const activeNav = await page.locator('nav a[aria-current="page"]').boundingBox();
+        const primaryNav = page.getByRole('navigation', { name: /Primary navigation/i });
+        const activeNav = await primaryNav.locator('a[aria-current="page"]').boundingBox();
         expect(activeNav).not.toBeNull();
         expect(activeNav!.x).toBeGreaterThanOrEqual(-1);
         expect(activeNav!.x + activeNav!.width).toBeLessThanOrEqual(viewport.width + 1);
@@ -191,7 +238,7 @@ test.describe('Galaxy Constellation rendered compliance', () => {
         expect(launcher).not.toBeNull();
         expect(launcher!.y + launcher!.height).toBeLessThanOrEqual(viewport.height);
 
-        const scrollWidth = await page.evaluate(() => document.body.scrollWidth);
+        const scrollWidth = await documentScrollWidth(page);
         expect(scrollWidth).toBeLessThanOrEqual(viewport.width);
       }
     });
