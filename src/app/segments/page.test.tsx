@@ -153,6 +153,22 @@ describe('segments route', () => {
     expect(screen.queryByText('Border Family Daytrippers')).not.toBeInTheDocument();
   });
 
+  it('renders selected persona recommendation kit and updates after card selection', () => {
+    renderSegments();
+
+    expect(screen.getByRole('heading', { name: /Persona recommendation kit/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Suite-First Patrons' })).toBeInTheDocument();
+    expect(screen.getByText(/Host-led suite retention path/i)).toBeInTheDocument();
+    expect(screen.getByText(/Galaxy first-party signal/i)).toBeInTheDocument();
+    expect(screen.getByText(/Mastercard CDE reveal/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'persona: Private Dining Hosts' }));
+
+    expect(screen.getByRole('heading', { name: 'Private Dining Hosts' })).toBeInTheDocument();
+    expect(screen.getByText(/Chef-table to promenade path/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Host-led suite retention path/i)).not.toBeInTheDocument();
+  });
+
   it('renders active CDE metrics, propensity labels, spend radar, and recommended plays', () => {
     renderSegments();
 
