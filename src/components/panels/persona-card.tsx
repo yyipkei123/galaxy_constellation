@@ -39,7 +39,7 @@ export function PersonaCard({ persona, isSelected, onSelect }: PersonaCardProps)
         <span className="text-sm font-semibold text-galaxy-gold">~{persona.audienceK}k</span>
       </div>
 
-      <h3 className="mt-4 font-serif text-2xl text-galaxy-cream">{persona.name}</h3>
+      <span className="mt-4 block font-serif text-2xl text-galaxy-cream">{persona.name}</span>
       <p className="mt-2 text-sm font-semibold text-galaxy-muted">
         {persona.ageBand} · {persona.travelMode}
       </p>
