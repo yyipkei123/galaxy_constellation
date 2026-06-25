@@ -11,14 +11,14 @@ export type ChatAssistantIntent =
   | 'methodology'
   | 'fallback';
 
-export type ChatAssistantVisualKind = 'bar-list' | 'none';
+export type ChatAssistantVisualKind = 'bar-list' | 'metric-strip';
 
 export interface ChatVisualItem {
   id: string;
   label: string;
   value: number;
   formattedValue: string;
-  detail?: string;
+  description: string;
 }
 
 export interface ChatAssistantVisual {
@@ -53,9 +53,10 @@ export interface ChatAssistantResponse {
 
 export interface ChatAssistantContext {
   methodology?: Methodology;
-  segments?: Segment[];
+  segments: Segment[];
+  selectedSegment?: Segment;
   selectedSegmentId?: string;
-  personas?: SegmentPersona[];
+  personas: SegmentPersona[];
   selectedPersonaId?: string;
 }
 
@@ -66,7 +67,9 @@ const DEFAULT_SUGGESTIONS = [
 ] as const;
 
 const FALLBACK_BAND = 'Indexed band equiv./mo';
+const CDE_SAFE_REDACTION = 'CDE-safe output uses only percentages, indices, and modelled bands.';
 const bannedCurrencyPattern = /\b(?:MOP|HKD)\b|\$|元|澳門幣/i;
+const nonFiniteTextPattern = /\b(?:NaN|Infinity)\b/i;
 
 function finiteNumber(value: number | undefined, fallback = 0): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
@@ -101,11 +104,20 @@ function normalizeQuestion(question: string): string {
   return question.trim().toLowerCase();
 }
 
-function getSegments(context: ChatAssistantContext): Segment[] {
-  return (context.segments ?? []).filter((segment): segment is Segment => Boolean(segment));
+function sanitizeOutputText(value: string): string {
+  if (bannedCurrencyPattern.test(value) || nonFiniteTextPattern.test(value)) return CDE_SAFE_REDACTION;
+  return value;
 }
 
-function getPersonas(context: ChatAssistantContext): SegmentPersona[] {
+function getSegments(context: Partial<ChatAssistantContext>): Segment[] {
+  const segments = (context.segments ?? []).filter((segment): segment is Segment => Boolean(segment));
+
+  if (!context.selectedSegment) return segments;
+  if (segments.some((segment) => segment.id === context.selectedSegment?.id)) return segments;
+  return [context.selectedSegment, ...segments];
+}
+
+function getPersonas(context: Partial<ChatAssistantContext>): SegmentPersona[] {
   return (context.personas ?? []).filter((persona): persona is SegmentPersona => Boolean(persona));
 }
 
@@ -117,13 +129,15 @@ function sortByOpportunity<T extends { id: string; opportunityIndex: number }>(i
   });
 }
 
-function getSelectedSegment(context: ChatAssistantContext): Segment | undefined {
+function getSelectedSegment(context: Partial<ChatAssistantContext>): Segment | undefined {
+  if (context.selectedSegment) return context.selectedSegment;
+
   const segments = getSegments(context);
   const explicit = segments.find((segment) => segment.id === context.selectedSegmentId);
   return explicit ?? sortByOpportunity(segments)[0];
 }
 
-function getSelectedPersonas(context: ChatAssistantContext, selectedSegment?: Segment): SegmentPersona[] {
+function getSelectedPersonas(context: Partial<ChatAssistantContext>, selectedSegment?: Segment): SegmentPersona[] {
   const personas = getPersonas(context);
   const selectedPersona = personas.find((persona) => persona.id === context.selectedPersonaId);
   const scopedPersonas = selectedSegment
@@ -150,7 +164,7 @@ function classifyIntent(question: string): ChatAssistantIntent {
   return 'fallback';
 }
 
-function emptyVisual(kind: ChatAssistantVisualKind = 'none', title = 'No visual data'): ChatAssistantVisual {
+function emptyVisual(kind: ChatAssistantVisualKind = 'metric-strip', title = 'No visual data'): ChatAssistantVisual {
   return {
     kind,
     title,
@@ -158,11 +172,49 @@ function emptyVisual(kind: ChatAssistantVisualKind = 'none', title = 'No visual 
   };
 }
 
-function makeResponse(input: Omit<ChatAssistantResponse, 'suggestedQuestions'>): ChatAssistantResponse {
+function sanitizeEvidence(evidence: ChatAssistantEvidence): ChatAssistantEvidence {
   return {
+    label: sanitizeOutputText(evidence.label),
+    value: sanitizeOutputText(evidence.value),
+    detail: evidence.detail ? sanitizeOutputText(evidence.detail) : undefined,
+  };
+}
+
+function sanitizeVisualItem(item: ChatVisualItem): ChatVisualItem {
+  return {
+    id: sanitizeOutputText(item.id),
+    label: sanitizeOutputText(item.label),
+    value: finiteNumber(item.value),
+    formattedValue: sanitizeOutputText(item.formattedValue),
+    description: sanitizeOutputText(item.description),
+  };
+}
+
+function sanitizeResponse(response: ChatAssistantResponse): ChatAssistantResponse {
+  return {
+    id: sanitizeOutputText(response.id),
+    intent: response.intent,
+    title: sanitizeOutputText(response.title),
+    answer: sanitizeOutputText(response.answer),
+    evidence: response.evidence.map(sanitizeEvidence),
+    visual: {
+      kind: response.visual.kind,
+      title: sanitizeOutputText(response.visual.title),
+      items: response.visual.items.map(sanitizeVisualItem),
+    },
+    links: response.links.map((link) => ({
+      label: sanitizeOutputText(link.label),
+      href: link.href,
+    })),
+    suggestedQuestions: response.suggestedQuestions.map(sanitizeOutputText),
+  };
+}
+
+function makeResponse(input: Omit<ChatAssistantResponse, 'suggestedQuestions'>): ChatAssistantResponse {
+  return sanitizeResponse({
     ...input,
     suggestedQuestions: [...DEFAULT_SUGGESTIONS],
-  };
+  });
 }
 
 function segmentName(segment: Segment | undefined): string {
@@ -183,7 +235,7 @@ function buildLeakageVisual(segment: Segment | undefined): ChatAssistantVisual {
       label: safeText(driver.label, 'Leakage driver'),
       value: finiteNumber(driver.score),
       formattedValue: safePct(driver.leakagePct),
-      detail: `${safeIndex(driver.walletIndex)} wallet intensity`,
+      description: `${safeIndex(driver.walletIndex)} wallet intensity`,
     }));
 
   return {
@@ -202,7 +254,7 @@ function buildPersonaVisual(personas: SegmentPersona[]): ChatAssistantVisual {
       label: personaName(persona),
       value: finiteNumber(persona.opportunityIndex),
       formattedValue: safeIndex(persona.opportunityIndex),
-      detail: `${safePct(persona.readinessScore)} readiness`,
+      description: `${safePct(persona.readinessScore)} readiness`,
     })),
   };
 }
@@ -222,12 +274,12 @@ function buildOverviewVisual(segments: Segment[]): ChatAssistantVisual {
         label: segmentName(segment),
         value: finiteNumber(segment.opportunityIndex),
         formattedValue: safeIndex(segment.opportunityIndex),
-        detail: `${safePct(segment.metrics?.shareOfWallet)} Galaxy capture`,
+        description: `${safePct(segment.metrics?.shareOfWallet)} Galaxy capture`,
       })),
   };
 }
 
-function buildOverviewResponse(context: ChatAssistantContext): ChatAssistantResponse {
+function buildOverviewResponse(context: Partial<ChatAssistantContext>): ChatAssistantResponse {
   const segments = getSegments(context);
   const narrative = buildPortfolioInsightNarrative(segments, context.methodology);
   const topSegment = sortByOpportunity(segments)[0];
@@ -256,7 +308,7 @@ function buildOverviewResponse(context: ChatAssistantContext): ChatAssistantResp
   });
 }
 
-function buildSegmentResponse(context: ChatAssistantContext): ChatAssistantResponse {
+function buildSegmentResponse(context: Partial<ChatAssistantContext>): ChatAssistantResponse {
   const segment = getSelectedSegment(context);
   const name = segmentName(segment);
 
@@ -277,7 +329,7 @@ function buildSegmentResponse(context: ChatAssistantContext): ChatAssistantRespo
   });
 }
 
-function buildLeakageResponse(context: ChatAssistantContext): ChatAssistantResponse {
+function buildLeakageResponse(context: Partial<ChatAssistantContext>): ChatAssistantResponse {
   const segment = getSelectedSegment(context);
   const visual = buildLeakageVisual(segment);
   const topDriver = visual.items[0];
@@ -288,7 +340,7 @@ function buildLeakageResponse(context: ChatAssistantContext): ChatAssistantRespo
     intent: 'leakage',
     title: 'Leakage driver ranking',
     answer: segment && topDriver
-      ? `Mastercard CDE ranks ${topDriver.label} as the largest leakage driver for ${name}, with ${topDriver.formattedValue} leakage, ${topDriver.detail}, and ${safeBand(segment.crossPropertyCashBand)} modelled headroom.`
+      ? `Mastercard CDE ranks ${topDriver.label} as the largest leakage driver for ${name}, with ${topDriver.formattedValue} leakage, ${topDriver.description}, and ${safeBand(segment.crossPropertyCashBand)} modelled headroom.`
       : 'Mastercard CDE has no active segment leakage drivers to rank yet.',
     evidence: [
       {
@@ -306,7 +358,7 @@ function buildLeakageResponse(context: ChatAssistantContext): ChatAssistantRespo
   });
 }
 
-function buildPersonaResponse(context: ChatAssistantContext): ChatAssistantResponse {
+function buildPersonaResponse(context: Partial<ChatAssistantContext>): ChatAssistantResponse {
   const segment = getSelectedSegment(context);
   const personas = getSelectedPersonas(context, segment);
   const topPersona = personas[0];
@@ -334,7 +386,7 @@ function buildPersonaResponse(context: ChatAssistantContext): ChatAssistantRespo
   });
 }
 
-function buildActivationResponse(context: ChatAssistantContext): ChatAssistantResponse {
+function buildActivationResponse(context: Partial<ChatAssistantContext>): ChatAssistantResponse {
   const segment = getSelectedSegment(context);
   const personas = getSelectedPersonas(context, segment);
   const topPersona = personas[0];
@@ -366,7 +418,7 @@ function buildActivationResponse(context: ChatAssistantContext): ChatAssistantRe
   });
 }
 
-function buildMethodologyResponse(context: ChatAssistantContext): ChatAssistantResponse {
+function buildMethodologyResponse(context: Partial<ChatAssistantContext>): ChatAssistantResponse {
   return makeResponse({
     id: 'chat-methodology-cde-safety',
     intent: 'methodology',
@@ -404,7 +456,7 @@ function buildFallbackResponse(): ChatAssistantResponse {
   });
 }
 
-export function buildChatAssistantResponse(question: string, context: ChatAssistantContext = {}): ChatAssistantResponse {
+export function buildChatAssistantResponse(question: string, context: Partial<ChatAssistantContext> = {}): ChatAssistantResponse {
   const intent = classifyIntent(question);
 
   switch (intent) {

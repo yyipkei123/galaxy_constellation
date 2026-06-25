@@ -1,6 +1,11 @@
 import { latestSegments, methodology, personaRecords, type Segment, type SegmentPersona } from '@/data';
 import { buildLeakageDrivers } from './insights';
-import { buildChatAssistantResponse } from './chat-assistant';
+import {
+  buildChatAssistantResponse,
+  type ChatAssistantContext,
+  type ChatAssistantVisualKind,
+  type ChatVisualItem,
+} from './chat-assistant';
 
 const bannedCurrencyPattern = /\b(?:MOP|HKD)\b|\$|元|澳門幣/i;
 
@@ -27,6 +32,8 @@ describe('buildChatAssistantResponse', () => {
     expect(response.visual?.items).toHaveLength(expectedDrivers.length);
     expect(response.visual?.items.map((item) => item.label)).toEqual(expectedDrivers.map((driver) => driver.label));
     expectSortedDescending(response.visual?.items.map((item) => item.value) ?? []);
+    expect(response.visual.items[0]).toHaveProperty('description');
+    expect(response.visual.items[0]).not.toHaveProperty('detail');
     expect(response.answer).toMatch(/Mastercard CDE/i);
     expect(response.links).toEqual(expect.arrayContaining([expect.objectContaining({ href: '/leakage' })]));
     expect(JSON.stringify(response)).not.toMatch(bannedCurrencyPattern);
@@ -65,6 +72,7 @@ describe('buildChatAssistantResponse', () => {
     expect(response.answer).toMatch(/indices/i);
     expect(response.answer).toMatch(/percentages/i);
     expect(response.answer).toMatch(/modelled bands/i);
+    expect(response.visual.kind).toBe('metric-strip');
     expect(response.links).toEqual([]);
     expect(JSON.stringify(response)).not.toMatch(bannedCurrencyPattern);
   });
@@ -77,6 +85,7 @@ describe('buildChatAssistantResponse', () => {
     });
 
     expect(response.intent).toBe('fallback');
+    expect(response.visual.kind).toBe('metric-strip');
     expect(response.suggestedQuestions).toEqual(
       expect.arrayContaining(['Which segment has the largest leakage gap?']),
     );
@@ -120,5 +129,51 @@ describe('buildChatAssistantResponse', () => {
 
     expect(serialized).toContain('Indexed band equiv./mo');
     expect(serialized).not.toMatch(bannedCurrencyPattern);
+  });
+
+  it('sanitizes overview responses at the final output boundary', () => {
+    const maliciousSegment = {
+      ...latestSegments[0],
+      id: 'malicious-segment',
+      name: 'HKD $5000 segment',
+      opportunityIndex: Number.POSITIVE_INFINITY,
+      metrics: {
+        ...latestSegments[0].metrics,
+        shareOfWallet: Number.NaN,
+      },
+    } as Segment;
+    const response = buildChatAssistantResponse('Give me the portfolio overview', {
+      methodology,
+      segments: [maliciousSegment],
+      personas: [],
+    });
+    const serialized = JSON.stringify(response);
+
+    expect(response.intent).toBe('overview');
+    expect(serialized).not.toMatch(bannedCurrencyPattern);
+    expect(serialized).not.toMatch(/NaN|Infinity/);
+  });
+
+  it('accepts the planned selectedSegment context shape and emits visual descriptions', () => {
+    const selectedSegment = {
+      ...latestSegments[1],
+      id: 'direct-selected-segment',
+      name: 'Direct Selected Segment',
+    } as Segment;
+    const context = {
+      methodology,
+      segments: [],
+      selectedSegment,
+      personas: [],
+    } satisfies ChatAssistantContext;
+    const response = buildChatAssistantResponse('Explain the selected segment opportunity', context);
+    const validVisualKinds = ['bar-list', 'metric-strip'] satisfies ChatAssistantVisualKind[];
+    const firstItem = response.visual.items[0] satisfies ChatVisualItem | undefined;
+
+    expect(response.intent).toBe('segment');
+    expect(response.answer).toContain('Direct Selected Segment');
+    expect(validVisualKinds).toContain(response.visual.kind);
+    expect(firstItem?.description).toEqual(expect.any(String));
+    expect(firstItem).not.toHaveProperty('detail');
   });
 });
