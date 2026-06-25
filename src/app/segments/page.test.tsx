@@ -1,7 +1,18 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeAll, vi } from 'vitest';
-import { crmRows, latestQuarter, latestSegments, methodology, quarters, type CrmRow, type Segment } from '@/data';
+import {
+  crmRows,
+  latestQuarter,
+  latestSegments,
+  methodology,
+  personaRecords,
+  quarters,
+  type CrmRow,
+  type Segment,
+  type SegmentPersona,
+} from '@/data';
 import { CrmAppendTable } from '@/components/panels/crm-append-table';
+import { PersonaDetailKit } from '@/components/panels/persona-detail-kit';
 import { formatPropensity } from '@/lib/format';
 import { useAppState } from '@/store/app-store';
 import SegmentsPage from './page';
@@ -118,12 +129,12 @@ describe('segments route', () => {
       expect(within(button).getByText(segment.sizeBand)).toBeInTheDocument();
     });
 
-    expect(screen.getByRole('heading', { name: latestSegments[0].name })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: latestSegments[0].name, level: 2 })).toBeInTheDocument();
     expect(screen.getAllByText(latestSegments[0].nameZh).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('AI-style insight brief')).toBeInTheDocument();
     expect(screen.getByText(/Generated insight narrative/i)).toBeInTheDocument();
-    expect(screen.getByText(/Galaxy first-party signal/i)).toBeInTheDocument();
-    expect(screen.getByText(/Mastercard CDE reveal/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Galaxy first-party signal/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Mastercard CDE reveal/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/Discovered opportunity/i)).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Why this segment matters now/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Persona universe/i })).toBeInTheDocument();
@@ -131,8 +142,8 @@ describe('segments route', () => {
     expect(screen.getByText(/second-level persona opportunity/i)).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Persona explorer/i })).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/Search persona, need, wallet gap, or tag/i)).toBeInTheDocument();
-    expect(screen.getByText('Suite-First Patrons')).toBeInTheDocument();
-    expect(screen.getByText('Private Dining Hosts')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'persona: Suite-First Patrons' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'persona: Private Dining Hosts' })).toBeInTheDocument();
   });
 
   it('filters second-level personas by selected top-level segment and search text', () => {
@@ -140,17 +151,17 @@ describe('segments route', () => {
 
     fireEvent.click(screen.getByRole('button', { name: `segment: ${latestSegments[2].name}` }));
 
-    expect(screen.getByText('Same-Week Itinerary Builders')).toBeInTheDocument();
-    expect(screen.getByText('Border Family Daytrippers')).toBeInTheDocument();
-    expect(screen.queryByText('Suite-First Patrons')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'persona: Same-Week Itinerary Builders' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'persona: Border Family Daytrippers' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'persona: Suite-First Patrons' })).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByPlaceholderText(/Search persona, need, wallet gap, or tag/i), {
       target: { value: 'mobile' },
     });
 
-    expect(screen.getByText('Same-Week Itinerary Builders')).toBeInTheDocument();
-    expect(screen.getByText('Mobile Deal Optimizers')).toBeInTheDocument();
-    expect(screen.queryByText('Border Family Daytrippers')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'persona: Same-Week Itinerary Builders' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'persona: Mobile Deal Optimizers' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'persona: Border Family Daytrippers' })).not.toBeInTheDocument();
   });
 
   it('renders selected persona recommendation kit and updates after card selection', () => {
@@ -158,8 +169,8 @@ describe('segments route', () => {
 
     expect(screen.getByRole('heading', { name: /Persona recommendation kit/i })).toBeInTheDocument();
     let recommendationKit = within(screen.getByLabelText('Persona recommendation kit'));
-    expect(recommendationKit.getByRole('heading', { name: 'Suite-First Patrons', level: 3 })).toBeInTheDocument();
-    expect(recommendationKit.getByText(/Host-led suite retention path/i)).toBeInTheDocument();
+    expect(recommendationKit.getByRole('heading', { name: 'Watch & Jewellery Collectors', level: 3 })).toBeInTheDocument();
+    expect(recommendationKit.getByText(/Limited-edition appointment queue/i)).toBeInTheDocument();
     expect(recommendationKit.getByText(/Galaxy first-party signal/i)).toBeInTheDocument();
     expect(recommendationKit.getByText(/Mastercard CDE reveal/i)).toBeInTheDocument();
 
@@ -168,7 +179,21 @@ describe('segments route', () => {
     recommendationKit = within(screen.getByLabelText('Persona recommendation kit'));
     expect(recommendationKit.getByRole('heading', { name: 'Private Dining Hosts', level: 3 })).toBeInTheDocument();
     expect(recommendationKit.getByText(/Chef-table to promenade path/i)).toBeInTheDocument();
-    expect(recommendationKit.queryByText(/Host-led suite retention path/i)).not.toBeInTheDocument();
+    expect(recommendationKit.queryByText(/Limited-edition appointment queue/i)).not.toBeInTheDocument();
+  });
+
+  it('renders a persona recommendation fallback when recommendations are empty', () => {
+    const personaWithoutRecommendations: SegmentPersona = {
+      ...personaRecords[0],
+      recommendations: [],
+    };
+
+    render(<PersonaDetailKit persona={personaWithoutRecommendations} />);
+
+    const recommendationKit = within(screen.getByLabelText('Persona recommendation kit'));
+    expect(recommendationKit.getByRole('heading', { name: personaRecords[0].name, level: 3 })).toBeInTheDocument();
+    expect(recommendationKit.getByText(/No persona recommendation is available for this audience/i)).toBeInTheDocument();
+    expect(recommendationKit.queryByRole('link', { name: /Build activation audience/i })).not.toBeInTheDocument();
   });
 
   it('renders active CDE metrics, propensity labels, spend radar, and recommended plays', () => {
@@ -217,7 +242,7 @@ describe('segments route', () => {
 
     fireEvent.click(screen.getByRole('button', { name: `segment: ${latestSegments[2].name}` }));
 
-    expect(screen.getByRole('heading', { name: latestSegments[2].name })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: latestSegments[2].name, level: 2 })).toBeInTheDocument();
     expect(screen.getAllByText(latestSegments[2].nameZh).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(new RegExp(`${latestSegments[2].name} combines`, 'i'))).toBeInTheDocument();
   });
@@ -260,7 +285,7 @@ describe('segments route', () => {
 
   it('does not throw when selectedSegment is unavailable', () => {
     expect(() => renderSegments(latestSegments, undefined)).not.toThrow();
-    expect(screen.getByRole('heading', { name: latestSegments[0].name })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: latestSegments[0].name, level: 2 })).toBeInTheDocument();
   });
 
   it('renders malformed segments with finite fallbacks instead of crashing', () => {

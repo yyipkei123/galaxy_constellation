@@ -12,11 +12,21 @@ import {
   ExecutiveSummaryPanel,
   HeadlineFindings,
 } from '@/components/panels/insight-storytelling';
+import { PersonaCard } from '@/components/panels/persona-card';
+import { PersonaDetailKit } from '@/components/panels/persona-detail-kit';
+import { PersonaFilterBar } from '@/components/panels/persona-filter-bar';
+import { PersonaUniverse } from '@/components/panels/persona-universe';
 import { SegmentCard } from '@/components/panels/segment-card';
 import { Overline } from '@/components/ui/overline';
 import { Panel } from '@/components/ui/panel';
-import { crmRows, type Segment } from '@/data';
+import { crmRows, type PersonaPriority, type PersonaWealthTier, type Segment } from '@/data';
 import { buildSegmentInsightNarrative } from '@/lib/insights';
+import {
+  filterPersonas,
+  getPersonaDetail,
+  getPersonaUniverseSummary,
+  type PersonaSortMode,
+} from '@/lib/personas';
 import { useAppState } from '@/store/app-store';
 
 function finiteValue(value: number | undefined, fallback = 0) {
@@ -99,10 +109,32 @@ export default function SegmentsPage() {
     ?? safeSegments.find((segment) => segment.id === selectedSegment?.id)
     ?? safeSegments[0];
   const insightNarrative = activeSegment ? buildSegmentInsightNarrative(activeSegment) : null;
+  const [selectedPersonaId, setSelectedPersonaId] = useState('');
+  const [personaQuery, setPersonaQuery] = useState('');
+  const [personaWealthTier, setPersonaWealthTier] = useState<PersonaWealthTier | 'All'>('All');
+  const [personaPriority, setPersonaPriority] = useState<PersonaPriority | 'All'>('All');
+  const [personaSort, setPersonaSort] = useState<PersonaSortMode>('opportunity');
+  const personaSummary = useMemo(() => getPersonaUniverseSummary(), []);
+  const filteredPersonas = useMemo(
+    () => filterPersonas({
+      segmentId: activeSegment?.id,
+      wealthTier: personaWealthTier,
+      priority: personaPriority,
+      query: personaQuery,
+      sort: personaSort,
+    }),
+    [activeSegment?.id, personaPriority, personaQuery, personaSort, personaWealthTier],
+  );
+  const selectedPersona = activeSegment ? getPersonaDetail(selectedPersonaId, activeSegment.id) : null;
 
   function selectSegment(segmentId: string) {
     setFocusedSegmentId(segmentId);
     setSelectedSegmentId(segmentId);
+    setSelectedPersonaId('');
+    setPersonaQuery('');
+    setPersonaWealthTier('All');
+    setPersonaPriority('All');
+    setPersonaSort('opportunity');
   }
 
   return (
@@ -188,6 +220,49 @@ export default function SegmentsPage() {
               </div>
             </Panel>
           </div>
+
+          <PersonaUniverse summary={personaSummary} />
+
+          <Panel>
+            <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <Overline>Persona drill-down</Overline>
+                <h2 className="mt-3 font-serif text-3xl text-galaxy-cream">Persona explorer</h2>
+              </div>
+              <p className="max-w-md text-sm leading-6 text-galaxy-muted">
+                Second-level personas translate the selected Galaxy segment into audience-sized actions, CDE evidence,
+                and activation recommendations.
+              </p>
+            </div>
+
+            <PersonaFilterBar
+              query={personaQuery}
+              wealthTier={personaWealthTier}
+              priority={personaPriority}
+              sort={personaSort}
+              onQueryChange={setPersonaQuery}
+              onWealthTierChange={setPersonaWealthTier}
+              onPriorityChange={setPersonaPriority}
+              onSortChange={setPersonaSort}
+            />
+
+            <div className="mt-5 grid gap-4 lg:grid-cols-3">
+              {filteredPersonas.length > 0 && selectedPersona ? filteredPersonas.map((persona) => (
+                <PersonaCard
+                  key={persona.id}
+                  persona={persona}
+                  isSelected={persona.id === selectedPersona.id}
+                  onSelect={setSelectedPersonaId}
+                />
+              )) : (
+                <p className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4 text-sm leading-6 text-galaxy-muted lg:col-span-3">
+                  No personas match the current filters for this segment.
+                </p>
+              )}
+            </div>
+          </Panel>
+
+          {selectedPersona ? <PersonaDetailKit persona={selectedPersona} /> : null}
 
           <Panel>
             <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
