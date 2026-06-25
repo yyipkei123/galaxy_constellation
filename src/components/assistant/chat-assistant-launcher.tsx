@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { MessageCircle } from 'lucide-react';
 import { personaRecords } from '@/data';
 import { useAppState } from '@/store/app-store';
-import { ChatAssistantPanel } from './chat-assistant-panel';
+import { CHAT_ASSISTANT_DIALOG_ID, ChatAssistantPanel } from './chat-assistant-panel';
 
 export function ChatAssistantLauncher() {
   const { methodology, segments, selectedSegment } = useAppState();
@@ -15,6 +15,7 @@ export function ChatAssistantLauncher() {
     segments,
     selectedSegment,
   }), [methodology, segments, selectedSegment]);
+  const launcherLabel = isOpen ? 'Close AI insight assistant' : 'Open AI insight assistant';
 
   return (
     <>
@@ -22,7 +23,9 @@ export function ChatAssistantLauncher() {
 
       <button
         type="button"
-        aria-label="Open AI insight assistant"
+        aria-label={launcherLabel}
+        aria-controls={CHAT_ASSISTANT_DIALOG_ID}
+        aria-expanded={isOpen}
         onClick={() => setIsOpen((current) => !current)}
         className="fixed bottom-5 right-5 z-50 inline-flex h-14 w-14 items-center justify-center rounded-full border border-galaxy-gold/50 bg-galaxy-gold text-galaxy-ink shadow-xl shadow-black/40 transition hover:bg-galaxy-gold-lite focus-visible:ring-2 focus-visible:ring-galaxy-gold focus-visible:ring-offset-2 focus-visible:ring-offset-galaxy-ink sm:right-6"
       >

@@ -1,7 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { FormEvent, useMemo, useState } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+} from 'react';
 import { Bot, Send, X } from 'lucide-react';
 import { CdeChip } from '@/components/ui/cde-chip';
 import {
@@ -16,6 +23,8 @@ interface ChatAssistantPanelProps {
   context: ChatAssistantContext;
   onClose: () => void;
 }
+
+export const CHAT_ASSISTANT_DIALOG_ID = 'ai-insight-assistant-dialog';
 
 type AssistantMessage = {
   id: string;
@@ -148,6 +157,9 @@ function UserBubble({ message }: { message: UserMessage }) {
 }
 
 export function ChatAssistantPanel({ context, onClose }: ChatAssistantPanelProps) {
+  const dialogRef = useRef<HTMLElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const initialResponse = useMemo(() => buildChatAssistantResponse(STARTER_PROMPT, context), [context]);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -163,27 +175,34 @@ export function ChatAssistantPanel({ context, onClose }: ChatAssistantPanelProps
     message.role === 'assistant'
   ))?.response;
 
+  useEffect(() => {
+    closeButtonRef.current?.focus();
+  }, []);
+
   function submitQuestion(rawQuestion: string) {
     const nextQuestion = rawQuestion.trim();
     if (!nextQuestion) return;
 
     const response = buildChatAssistantResponse(nextQuestion, context);
-    const nextIndex = messages.length;
 
-    setMessages((current) => [
-      ...current,
-      {
-        id: `user-${nextIndex}`,
-        role: 'user',
-        content: nextQuestion,
-      },
-      {
-        id: `assistant-${nextIndex}`,
-        role: 'assistant',
-        prompt: nextQuestion,
-        response,
-      },
-    ]);
+    setMessages((current) => {
+      const nextIndex = current.length;
+
+      return [
+        ...current,
+        {
+          id: `user-${nextIndex}`,
+          role: 'user',
+          content: nextQuestion,
+        },
+        {
+          id: `assistant-${nextIndex}`,
+          role: 'assistant',
+          prompt: nextQuestion,
+          response,
+        },
+      ];
+    });
     setQuestion('');
   }
 
@@ -192,10 +211,46 @@ export function ChatAssistantPanel({ context, onClose }: ChatAssistantPanelProps
     submitQuestion(question);
   }
 
+  function getFocusableDialogElements(): HTMLElement[] {
+    return Array.from(
+      dialogRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ) ?? [],
+    ).filter((element) => element.getAttribute('aria-hidden') !== 'true');
+  }
+
+  function handleDialogKeyDown(event: KeyboardEvent<HTMLElement>) {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      onClose();
+      return;
+    }
+
+    if (event.key === 'Tab') {
+      const focusableElements = getFocusableDialogElements();
+      if (focusableElements.length === 0) return;
+
+      event.preventDefault();
+
+      const currentIndex = document.activeElement instanceof HTMLElement
+        ? focusableElements.indexOf(document.activeElement)
+        : -1;
+      const lastIndex = focusableElements.length - 1;
+      const nextIndex = event.shiftKey
+        ? currentIndex <= 0 ? lastIndex : currentIndex - 1
+        : currentIndex >= lastIndex ? 0 : currentIndex + 1;
+
+      focusableElements[nextIndex].focus();
+    }
+  }
+
   return (
     <section
+      ref={dialogRef}
+      id={CHAT_ASSISTANT_DIALOG_ID}
       role="dialog"
       aria-label="AI insight assistant"
+      onKeyDown={handleDialogKeyDown}
       className="fixed bottom-24 right-4 z-50 flex max-h-[min(42rem,calc(100vh-7rem))] w-[min(calc(100vw-2rem),26rem)] flex-col overflow-hidden rounded-lg border border-galaxy-border bg-galaxy-ink/96 shadow-2xl shadow-black/45 backdrop-blur sm:right-6"
     >
       <header className="flex items-start justify-between gap-4 border-b border-galaxy-border bg-galaxy-charcoal/90 p-4">
@@ -204,6 +259,7 @@ export function ChatAssistantPanel({ context, onClose }: ChatAssistantPanelProps
           <p className="mt-1 text-sm text-galaxy-cream/80">Generated local demo narrative for CDE-safe planning.</p>
         </div>
         <button
+          ref={closeButtonRef}
           type="button"
           aria-label="Close AI insight assistant"
           onClick={onClose}
@@ -242,8 +298,10 @@ export function ChatAssistantPanel({ context, onClose }: ChatAssistantPanelProps
 
       <form onSubmit={handleSubmit} className="flex items-center gap-2 border-t border-galaxy-border bg-galaxy-charcoal/92 p-4">
         <input
+          ref={inputRef}
           value={question}
           onChange={(event) => setQuestion(event.target.value)}
+          aria-label="Ask the AI insight assistant"
           placeholder="Ask about leakage, personas, activation, or CDE rules"
           className="min-w-0 flex-1 rounded-lg border border-galaxy-border bg-galaxy-ink px-3 py-2 text-sm text-galaxy-cream placeholder:text-galaxy-muted"
         />

@@ -70,7 +70,8 @@ function renderLauncher() {
 }
 
 function openAssistant() {
-  fireEvent.click(screen.getByRole('button', { name: 'Open AI insight assistant' }));
+  const launcher = screen.getByRole('button', { name: 'Open AI insight assistant' });
+  fireEvent.click(launcher);
   return screen.getByRole('dialog', { name: 'AI insight assistant' });
 }
 
@@ -83,13 +84,44 @@ describe('ChatAssistantLauncher', () => {
     renderLauncher();
 
     expect(screen.queryByRole('dialog', { name: 'AI insight assistant' })).not.toBeInTheDocument();
+    const launcher = screen.getByRole('button', { name: 'Open AI insight assistant' });
+    expect(launcher).toHaveAttribute('aria-expanded', 'false');
 
-    const dialog = openAssistant();
+    fireEvent.click(launcher);
+    const dialog = screen.getByRole('dialog', { name: 'AI insight assistant' });
     expect(dialog).toBeInTheDocument();
+    expect(launcher).toHaveAccessibleName('Close AI insight assistant');
+    expect(launcher).toHaveAttribute('aria-expanded', 'true');
+    expect(launcher).toHaveAttribute('aria-controls', dialog.id);
 
     fireEvent.click(within(dialog).getByRole('button', { name: 'Close AI insight assistant' }));
 
     expect(screen.queryByRole('dialog', { name: 'AI insight assistant' })).not.toBeInTheDocument();
+    expect(launcher).toHaveAccessibleName('Open AI insight assistant');
+    expect(launcher).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('moves focus into the dialog, reaches the textbox with Tab, and closes with Escape', () => {
+    renderLauncher();
+
+    const launcher = screen.getByRole('button', { name: 'Open AI insight assistant' });
+    launcher.focus();
+    expect(launcher).toHaveFocus();
+
+    const dialog = openAssistant();
+    const closeButton = within(dialog).getByRole('button', { name: 'Close AI insight assistant' });
+    const textbox = within(dialog).getByRole('textbox', { name: 'Ask the AI insight assistant' });
+
+    expect(dialog).toContainElement(document.activeElement);
+    expect(closeButton).toHaveFocus();
+    for (let index = 0; index < 8 && document.activeElement !== textbox; index += 1) {
+      fireEvent.keyDown(document.activeElement ?? closeButton, { key: 'Tab' });
+    }
+    expect(textbox).toHaveFocus();
+
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+    expect(screen.queryByRole('dialog', { name: 'AI insight assistant' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open AI insight assistant' })).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('answers a typed leakage question without banned currency tokens', () => {
@@ -97,7 +129,7 @@ describe('ChatAssistantLauncher', () => {
     const dialog = openAssistant();
 
     fireEvent.change(
-      within(dialog).getByPlaceholderText('Ask about leakage, personas, activation, or CDE rules'),
+      within(dialog).getByRole('textbox', { name: 'Ask the AI insight assistant' }),
       { target: { value: 'Which segment has the biggest leakage opportunity?' } },
     );
     fireEvent.click(within(dialog).getByRole('button', { name: 'Send question' }));
