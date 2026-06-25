@@ -27,7 +27,7 @@ test.describe('Galaxy Constellation rendered compliance', () => {
         await expect(page.getByRole('heading', { name: /Persona explorer/i })).toBeVisible();
         await expect(page.getByRole('heading', { name: /Persona recommendation kit/i })).toBeVisible();
         await expect(page.getByText('Generated persona insight')).toBeVisible();
-        await expect(page.getByRole('heading', { name: /Suite-First Patrons/i })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'persona: Suite-First Patrons' })).toBeVisible();
         await expect(personaRecommendationKit.getByText('Mastercard CDE reveal')).toBeVisible();
       }
 
