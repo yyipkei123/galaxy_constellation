@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { PropensityGauge } from '@/components/charts/propensity-gauge';
 import { SpendRadar } from '@/components/charts/spend-radar';
@@ -97,7 +97,13 @@ function normalizeSegmentForView(segment: Segment): Segment {
 }
 
 export default function SegmentsPage() {
-  const { segments, selectedSegment, setSelectedSegmentId } = useAppState();
+  const {
+    segments,
+    selectedSegment,
+    selectedPersonaId,
+    setSelectedPersonaId,
+    setSelectedSegmentId,
+  } = useAppState();
   const safeSegments = useMemo(
     () => (segments ?? []).filter(hasRenderableSegmentId).map((segment) => normalizeSegmentForView(segment as Segment)),
     [segments],
@@ -108,7 +114,7 @@ export default function SegmentsPage() {
     ?? safeSegments.find((segment) => segment.id === selectedSegment?.id)
     ?? safeSegments[0];
   const insightNarrative = activeSegment ? buildSegmentInsightNarrative(activeSegment) : null;
-  const [selectedPersonaId, setSelectedPersonaId] = useState('');
+  const [focusedPersonaId, setFocusedPersonaId] = useState(selectedPersonaId);
   const [personaQuery, setPersonaQuery] = useState('');
   const [personaWealthTier, setPersonaWealthTier] = useState<PersonaWealthTier | 'All'>('All');
   const [personaPriority, setPersonaPriority] = useState<PersonaPriority | 'All'>('All');
@@ -127,14 +133,30 @@ export default function SegmentsPage() {
   const selectedPersona = useMemo(() => {
     if (!activeSegment) return null;
 
-    return filteredPersonas.find((persona) => persona.id === selectedPersonaId)
+    return filteredPersonas.find((persona) => persona.id === focusedPersonaId)
       ?? filteredPersonas[0]
       ?? null;
-  }, [activeSegment, filteredPersonas, selectedPersonaId]);
+  }, [activeSegment, filteredPersonas, focusedPersonaId]);
+
+  useEffect(() => {
+    setFocusedPersonaId(selectedPersonaId);
+  }, [selectedPersonaId]);
+
+  useEffect(() => {
+    if (selectedPersona && selectedPersona.id !== selectedPersonaId) {
+      setSelectedPersonaId(selectedPersona.id);
+    }
+  }, [selectedPersona, selectedPersonaId, setSelectedPersonaId]);
+
+  function selectPersona(personaId: string) {
+    setFocusedPersonaId(personaId);
+    setSelectedPersonaId(personaId);
+  }
 
   function selectSegment(segmentId: string) {
     setFocusedSegmentId(segmentId);
     setSelectedSegmentId(segmentId);
+    setFocusedPersonaId('');
     setSelectedPersonaId('');
     setPersonaQuery('');
     setPersonaWealthTier('All');
@@ -257,7 +279,7 @@ export default function SegmentsPage() {
                   key={persona.id}
                   persona={persona}
                   isSelected={persona.id === selectedPersona.id}
-                  onSelect={setSelectedPersonaId}
+                  onSelect={selectPersona}
                 />
               )) : (
                 <p className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4 text-sm leading-6 text-galaxy-muted lg:col-span-3">

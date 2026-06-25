@@ -61,7 +61,7 @@ export interface ChatAssistantContext {
 }
 
 const DEFAULT_SUGGESTIONS = [
-  'Which segment has the largest leakage gap?',
+  'Which leakage driver is largest for the selected segment?',
   'Which persona should we target first?',
   'What should activation do next?',
 ] as const;
@@ -87,6 +87,7 @@ const englishAmountWordFragmentPattern = new RegExp(`\\b${englishAmountWord}\\b`
 const chineseAmountWordFragmentPattern = new RegExp(chineseAmountWordSource, 'gi');
 const currencyTokenPattern = /MOP|HKD|\$|元|澳門幣/gi;
 const nonFiniteTextPattern = /\b(?:NaN|Infinity)\b/gi;
+const sensitiveAmountPromptPattern = /\b(?:leak|leaking|leakage|gap|outside|recapture|wallet|spend|spending|cash|value|amount|raw|currency|money)\b|MOP|HKD|\$|元|澳門幣/i;
 
 function finiteNumber(value: number | undefined, fallback = 0): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
@@ -141,6 +142,19 @@ export function sanitizeChatAssistantText(value: string): string {
     .trim();
 }
 
+export function sanitizeChatAssistantPromptText(value: string): string {
+  const sanitized = sanitizeChatAssistantText(value);
+
+  if (!sensitiveAmountPromptPattern.test(value)) return sanitized;
+
+  return sanitized
+    .replace(numericFragmentPattern, CDE_SAFE_REDACTION)
+    .replace(englishAmountWordFragmentPattern, CDE_SAFE_REDACTION)
+    .replace(chineseAmountWordFragmentPattern, CDE_SAFE_REDACTION)
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function getSegments(context: Partial<ChatAssistantContext>): Segment[] {
   const segments = (context.segments ?? []).filter((segment): segment is Segment => Boolean(segment));
 
@@ -175,9 +189,13 @@ function getSelectedPersonas(context: Partial<ChatAssistantContext>, selectedSeg
     ? personas.filter((persona) => persona.segmentId === selectedSegment.id)
     : personas;
   const selectedPersona = scopedPersonas.find((persona) => persona.id === context.selectedPersonaId);
-  const candidates = selectedPersona ? [selectedPersona, ...scopedPersonas.filter((persona) => persona.id !== selectedPersona.id)] : scopedPersonas;
 
-  return sortByOpportunity(candidates);
+  if (!selectedPersona) return sortByOpportunity(scopedPersonas);
+
+  return [
+    selectedPersona,
+    ...sortByOpportunity(scopedPersonas.filter((persona) => persona.id !== selectedPersona.id)),
+  ];
 }
 
 function classifyIntent(question: string): ChatAssistantIntent {

@@ -76,6 +76,12 @@ test.describe('Galaxy Constellation rendered compliance', () => {
     await expect(assistant.getByText('Leakage opportunity answer')).toBeVisible();
     await expect(assistant).not.toContainText(/HKD|MOP|\$|元|澳門幣|5000/i);
 
+    await page.getByRole('textbox', { name: 'Ask the AI insight assistant' }).fill('Show 5000 leakage');
+    await assistant.getByRole('button', { name: 'Send question' }).click();
+
+    await expect(assistant.getByText('Leakage opportunity answer')).toHaveCount(2);
+    await expect(assistant).not.toContainText(/HKD|MOP|\$|元|澳門幣|5000/i);
+
     await page.getByRole('textbox', { name: 'Ask the AI insight assistant' }).fill('Which persona should we target first?');
     await assistant.getByRole('button', { name: 'Send question' }).click();
 

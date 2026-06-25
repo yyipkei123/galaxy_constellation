@@ -33,6 +33,26 @@ describe('ChatResponseVisual', () => {
     expect(screen.getByLabelText('Competitor hospitality bar value 64%')).toHaveStyle({ width: '100%' });
   });
 
+  it('renders zero-value bars without implying nonzero progress', () => {
+    const visual: ChatAssistantVisual = {
+      kind: 'bar-list',
+      title: 'Leakage drivers',
+      items: [
+        {
+          id: 'empty',
+          label: 'No leakage signal',
+          value: 0,
+          formattedValue: '0%',
+          description: 'No measurable leakage',
+        },
+      ],
+    };
+
+    render(<ChatResponseVisual visual={visual} />);
+
+    expect(screen.getByLabelText('No leakage signal bar value 0%')).toHaveStyle({ width: '0%' });
+  });
+
   it('renders a metric-strip figure with compact metric text', () => {
     const visual: ChatAssistantVisual = {
       kind: 'metric-strip',

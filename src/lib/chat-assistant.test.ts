@@ -62,6 +62,22 @@ describe('buildChatAssistantResponse', () => {
     expect(JSON.stringify(response)).not.toMatch(bannedCurrencyPattern);
   });
 
+  it('keeps an explicitly selected persona first even when it has lower opportunity', () => {
+    const selectedSegment = latestSegments[0];
+    const selectedPersona = personaRecords.find((persona) => persona.name === 'Private Dining Hosts')!;
+    const response = buildChatAssistantResponse('Which persona should we target first?', {
+      methodology,
+      segments: latestSegments,
+      selectedSegmentId: selectedSegment.id,
+      selectedPersonaId: selectedPersona.id,
+      personas: personaRecords,
+    });
+
+    expect(response.intent).toBe('persona');
+    expect(response.answer).toMatch(/ranks Private Dining Hosts first/i);
+    expect(response.visual.items[0]?.label).toBe('Private Dining Hosts');
+  });
+
   it('ignores stale selectedPersonaId values outside the selected segment', () => {
     const selectedSegment = latestSegments[0];
     const scopedPersonas = personaRecords.filter((persona) => persona.segmentId === selectedSegment.id);
@@ -123,7 +139,7 @@ describe('buildChatAssistantResponse', () => {
     expect(response.intent).toBe('fallback');
     expect(response.visual.kind).toBe('metric-strip');
     expect(response.suggestedQuestions).toEqual(
-      expect.arrayContaining(['Which segment has the largest leakage gap?']),
+      expect.arrayContaining(['Which leakage driver is largest for the selected segment?']),
     );
   });
 

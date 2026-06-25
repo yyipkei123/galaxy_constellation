@@ -23,6 +23,8 @@ function mockAppState(segments: Segment[] = latestSegments) {
     selectedSegment: latestSegments[0],
     selectedSegmentId: latestSegments[0].id,
     setSelectedSegmentId: vi.fn(),
+    selectedPersonaId: '',
+    setSelectedPersonaId: vi.fn(),
     methodology,
     filters: {
       segmentIds: segments.map((segment) => segment.id),

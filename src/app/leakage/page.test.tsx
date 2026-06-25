@@ -53,6 +53,8 @@ function mockAppState(
     selectedSegment: selectedSegment as Segment,
     selectedSegmentId: selectedSegment?.id ?? '',
     setSelectedSegmentId,
+    selectedPersonaId: '',
+    setSelectedPersonaId: vi.fn(),
     methodology,
     filters: {
       segmentIds: segments.map((segment) => segment.id),

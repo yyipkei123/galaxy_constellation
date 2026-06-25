@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import type { MouseEventHandler, ReactNode } from 'react';
 import { beforeEach, vi } from 'vitest';
-import { latestQuarter, latestSegments, methodology, quarters } from '@/data';
+import { latestQuarter, latestSegments, methodology, personaRecords, quarters } from '@/data';
 import { useAppState } from '@/store/app-store';
 import { ChatAssistantLauncher } from './chat-assistant-launcher';
 
@@ -38,7 +38,7 @@ vi.mock('next/link', () => ({
   ),
 }));
 
-function mockAppState() {
+function mockAppState({ selectedPersonaId = '' }: { selectedPersonaId?: string } = {}) {
   vi.mocked(useAppState).mockReturnValue({
     quarters,
     selectedQuarter: latestQuarter,
@@ -48,6 +48,8 @@ function mockAppState() {
     selectedSegment: latestSegments[0],
     selectedSegmentId: latestSegments[0].id,
     setSelectedSegmentId: vi.fn(),
+    selectedPersonaId,
+    setSelectedPersonaId: vi.fn(),
     methodology,
     filters: {
       segmentIds: latestSegments.map((segment) => segment.id),
@@ -64,8 +66,8 @@ function mockAppState() {
   });
 }
 
-function renderLauncher() {
-  mockAppState();
+function renderLauncher(options?: Parameters<typeof mockAppState>[0]) {
+  mockAppState(options);
   return render(<ChatAssistantLauncher />);
 }
 
@@ -102,7 +104,7 @@ describe('ChatAssistantLauncher', () => {
     await waitFor(() => expect(launcher).toHaveFocus());
   });
 
-  it('moves focus into the dialog, reaches the textbox with Tab, and closes with Escape', async () => {
+  it('moves focus into the dialog, lets Tab leave the non-modal drawer, and closes with Escape', async () => {
     renderLauncher();
 
     const launcher = screen.getByRole('button', { name: 'Open AI insight assistant' });
@@ -111,14 +113,14 @@ describe('ChatAssistantLauncher', () => {
 
     const dialog = openAssistant();
     const closeButton = within(dialog).getByRole('button', { name: 'Close AI insight assistant' });
-    const textbox = within(dialog).getByRole('textbox', { name: 'Ask the AI insight assistant' });
 
     expect(dialog).toContainElement(document.activeElement);
     expect(closeButton).toHaveFocus();
-    for (let index = 0; index < 8 && document.activeElement !== textbox; index += 1) {
-      fireEvent.keyDown(document.activeElement ?? closeButton, { key: 'Tab' });
-    }
-    expect(textbox).toHaveFocus();
+    expect(dialog).not.toHaveAttribute('aria-modal');
+
+    const tabEvent = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+    dialog.dispatchEvent(tabEvent);
+    expect(tabEvent.defaultPrevented).toBe(false);
 
     fireEvent.keyDown(dialog, { key: 'Escape' });
     expect(screen.queryByRole('dialog', { name: 'AI insight assistant' })).not.toBeInTheDocument();
@@ -156,13 +158,55 @@ describe('ChatAssistantLauncher', () => {
     expect(dialog).not.toHaveTextContent(/\b(?:MOP|HKD)\b|\$|元|澳門幣|5000/i);
   });
 
+  it('sanitizes standalone amount tokens from sensitive displayed user prompts', () => {
+    renderLauncher();
+    const dialog = openAssistant();
+
+    fireEvent.change(
+      within(dialog).getByRole('textbox', { name: 'Ask the AI insight assistant' }),
+      { target: { value: 'Show 5000 leakage' } },
+    );
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Send question' }));
+
+    expect(within(dialog).getByText('Leakage opportunity answer')).toBeInTheDocument();
+    expect(dialog).not.toHaveTextContent(/5000/i);
+  });
+
+  it('sanitizes standalone amount tokens for all leakage intent wording', () => {
+    renderLauncher();
+    const dialog = openAssistant();
+
+    fireEvent.change(
+      within(dialog).getByRole('textbox', { name: 'Ask the AI insight assistant' }),
+      { target: { value: 'Show 5000 gap' } },
+    );
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Send question' }));
+
+    expect(within(dialog).getByText('Leakage opportunity answer')).toBeInTheDocument();
+    expect(dialog).not.toHaveTextContent(/5000/i);
+  });
+
   it('runs suggested persona prompts from the latest response', () => {
     renderLauncher();
+    const dialog = openAssistant();
+
+    expect(within(dialog).queryByRole('button', { name: 'Which segment has the largest leakage gap?' })).not.toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Which leakage driver is largest for the selected segment?' })).toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Which persona should we target first?' }));
+
+    expect(within(dialog).getByText('Persona targeting answer')).toBeInTheDocument();
+    expect(within(dialog).getByRole('figure', { name: 'Top personas' })).toBeInTheDocument();
+  });
+
+  it('uses the selected persona id from app state in persona answers', () => {
+    const selectedPersona = personaRecords.find((persona) => persona.name === 'Private Dining Hosts');
+    expect(selectedPersona).toBeDefined();
+    renderLauncher({ selectedPersonaId: selectedPersona?.id });
     const dialog = openAssistant();
 
     fireEvent.click(within(dialog).getByRole('button', { name: 'Which persona should we target first?' }));
 
     expect(within(dialog).getByText('Persona targeting answer')).toBeInTheDocument();
-    expect(within(dialog).getByRole('figure', { name: 'Top personas' })).toBeInTheDocument();
+    expect(within(dialog).getByText(/ranks Private Dining Hosts first/i)).toBeInTheDocument();
   });
 });

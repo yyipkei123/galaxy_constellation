@@ -13,7 +13,7 @@ import { Bot, Send, X } from 'lucide-react';
 import { CdeChip } from '@/components/ui/cde-chip';
 import {
   buildChatAssistantResponse,
-  sanitizeChatAssistantText,
+  sanitizeChatAssistantPromptText,
   type ChatAssistantContext,
   type ChatAssistantResponse,
   type ChatAssistantVisual,
@@ -42,7 +42,7 @@ type UserMessage = {
 
 type ChatMessage = AssistantMessage | UserMessage;
 
-const STARTER_PROMPT = 'Which segment has the largest leakage gap?';
+const STARTER_PROMPT = 'Which leakage driver is largest for the selected segment?';
 
 function getResponseLabel(response: ChatAssistantResponse, isStarter: boolean): string {
   if (isStarter) return 'Opening insight answer';
@@ -190,7 +190,7 @@ export function ChatAssistantPanel({ context, onClose }: ChatAssistantPanelProps
     if (!nextQuestion) return;
 
     const response = buildChatAssistantResponse(nextQuestion, context);
-    const displayQuestion = sanitizeChatAssistantText(nextQuestion);
+    const displayQuestion = sanitizeChatAssistantPromptText(nextQuestion);
 
     setMessages((current) => {
       const nextIndex = current.length;
@@ -218,36 +218,10 @@ export function ChatAssistantPanel({ context, onClose }: ChatAssistantPanelProps
     submitQuestion(question);
   }
 
-  function getFocusableDialogElements(): HTMLElement[] {
-    return Array.from(
-      dialogRef.current?.querySelectorAll<HTMLElement>(
-        'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      ) ?? [],
-    ).filter((element) => element.getAttribute('aria-hidden') !== 'true');
-  }
-
   function handleDialogKeyDown(event: KeyboardEvent<HTMLElement>) {
     if (event.key === 'Escape') {
       event.preventDefault();
       onClose();
-      return;
-    }
-
-    if (event.key === 'Tab') {
-      const focusableElements = getFocusableDialogElements();
-      if (focusableElements.length === 0) return;
-
-      event.preventDefault();
-
-      const currentIndex = document.activeElement instanceof HTMLElement
-        ? focusableElements.indexOf(document.activeElement)
-        : -1;
-      const lastIndex = focusableElements.length - 1;
-      const nextIndex = event.shiftKey
-        ? currentIndex <= 0 ? lastIndex : currentIndex - 1
-        : currentIndex >= lastIndex ? 0 : currentIndex + 1;
-
-      focusableElements[nextIndex].focus();
     }
   }
 

@@ -79,6 +79,8 @@ beforeAll(() => {
 });
 
 function mockAppState(segments: Segment[] = latestSegments, selectedSegment: Segment | undefined = segments[0]) {
+  const setSelectedPersonaId = vi.fn();
+
   vi.mocked(useAppState).mockReturnValue({
     quarters,
     selectedQuarter: latestQuarter,
@@ -88,6 +90,8 @@ function mockAppState(segments: Segment[] = latestSegments, selectedSegment: Seg
     selectedSegment: selectedSegment as Segment,
     selectedSegmentId: selectedSegment?.id ?? '',
     setSelectedSegmentId: vi.fn(),
+    selectedPersonaId: '',
+    setSelectedPersonaId,
     methodology,
     filters: {
       segmentIds: segments.map((segment) => segment.id),
@@ -102,11 +106,15 @@ function mockAppState(segments: Segment[] = latestSegments, selectedSegment: Seg
     pushCampaign: vi.fn(),
     clearCampaignToast: vi.fn(),
   });
+
+  return { setSelectedPersonaId };
 }
 
 function renderSegments(segments?: Segment[], selectedSegment?: Segment) {
-  mockAppState(segments, selectedSegment);
-  return render(<SegmentsPage />);
+  const mocks = mockAppState(segments, selectedSegment);
+  const result = render(<SegmentsPage />);
+
+  return { ...result, mocks };
 }
 
 describe('segments route', () => {
@@ -165,7 +173,7 @@ describe('segments route', () => {
   });
 
   it('renders selected persona recommendation kit and updates after card selection', () => {
-    renderSegments();
+    const { mocks } = renderSegments();
 
     expect(screen.getByRole('heading', { name: /Persona recommendation kit/i })).toBeInTheDocument();
     let recommendationKit = within(screen.getByLabelText('Persona recommendation kit'));
@@ -180,6 +188,7 @@ describe('segments route', () => {
     expect(recommendationKit.getByRole('heading', { name: 'Private Dining Hosts', level: 3 })).toBeInTheDocument();
     expect(recommendationKit.getByText(/Chef-table to promenade path/i)).toBeInTheDocument();
     expect(recommendationKit.queryByText(/Limited-edition appointment queue/i)).not.toBeInTheDocument();
+    expect(mocks.setSelectedPersonaId).toHaveBeenCalledWith(expect.stringContaining('private-dining'));
   });
 
   it('keeps the recommendation kit aligned with the filtered persona results', () => {

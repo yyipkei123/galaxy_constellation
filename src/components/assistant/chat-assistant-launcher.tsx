@@ -7,15 +7,16 @@ import { useAppState } from '@/store/app-store';
 import { CHAT_ASSISTANT_DIALOG_ID, ChatAssistantPanel } from './chat-assistant-panel';
 
 export function ChatAssistantLauncher() {
-  const { methodology, segments, selectedSegment } = useAppState();
+  const { methodology, segments, selectedPersonaId, selectedSegment } = useAppState();
   const [isOpen, setIsOpen] = useState(false);
   const launcherRef = useRef<HTMLButtonElement>(null);
   const context = useMemo(() => ({
     methodology,
     personas: personaRecords,
     segments,
+    selectedPersonaId,
     selectedSegment,
-  }), [methodology, segments, selectedSegment]);
+  }), [methodology, segments, selectedPersonaId, selectedSegment]);
   const launcherLabel = isOpen ? 'Close AI insight assistant' : 'Open AI insight assistant';
 
   function restoreLauncherFocus() {

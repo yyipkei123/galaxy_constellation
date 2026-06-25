@@ -22,7 +22,7 @@ function formatWidth(value: number): string {
 
 function getBarWidth(value: number, maxValue: number): string {
   if (!Number.isFinite(value) || value <= 0 || !Number.isFinite(maxValue) || maxValue <= 0) {
-    return '6%';
+    return '0%';
   }
 
   return formatWidth(Math.min(100, Math.max(6, (value / maxValue) * 100)));

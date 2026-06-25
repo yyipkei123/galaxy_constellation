@@ -47,6 +47,8 @@ interface AppStateValue {
   selectedSegment: Segment;
   selectedSegmentId: string;
   setSelectedSegmentId: (segmentId: string) => void;
+  selectedPersonaId: string;
+  setSelectedPersonaId: (personaId: string) => void;
   methodology: Methodology;
   filters: AudienceFilters;
   setFilters: (filters: SetStateAction<AudienceFilters>) => void;
@@ -69,6 +71,7 @@ const AppStateContext = createContext<AppStateValue | null>(null);
 export function AppStateProvider({ children }: { children: ReactNode }) {
   const [selectedQuarterId, setSelectedQuarterIdState] = useState(latestQuarter.id);
   const [selectedSegmentId, setSelectedSegmentIdState] = useState(latestSegments[0].id);
+  const [selectedPersonaId, setSelectedPersonaIdState] = useState('');
   const [filters, setFiltersState] = useState<AudienceFilters>(defaultAudienceFilters);
   const [savedAudiences, setSavedAudiences] = useState<SavedAudience[]>([]);
   const [campaignToast, setCampaignToast] = useState<CampaignToast | null>(null);
@@ -82,6 +85,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     const nextSegments = segmentsByQuarter[nextQuarter.id] ?? latestSegments;
 
     setSelectedQuarterIdState(nextQuarter.id);
+    setSelectedPersonaIdState('');
     setSelectedSegmentIdState((currentSegmentId) => (
       nextSegments.some((segment) => segment.id === currentSegmentId)
         ? currentSegmentId
@@ -91,6 +95,11 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
   const setSelectedSegmentId = useCallback((segmentId: string) => {
     setSelectedSegmentIdState(segmentId);
+    setSelectedPersonaIdState('');
+  }, []);
+
+  const setSelectedPersonaId = useCallback((personaId: string) => {
+    setSelectedPersonaIdState(personaId);
   }, []);
 
   const setFilters = useCallback((nextFilters: SetStateAction<AudienceFilters>) => {
@@ -129,6 +138,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     selectedSegment,
     selectedSegmentId: selectedSegment.id,
     setSelectedSegmentId,
+    selectedPersonaId,
+    setSelectedPersonaId,
     methodology,
     filters,
     setFilters,
@@ -147,7 +158,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     segments,
     selectedQuarter,
     selectedSegment,
+    selectedPersonaId,
     setFilters,
+    setSelectedPersonaId,
     setSelectedQuarterId,
     setSelectedSegmentId,
   ]);
