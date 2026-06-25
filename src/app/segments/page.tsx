@@ -187,6 +187,23 @@ export default function SegmentsPage() {
         )}
       />
 
+      <Panel className="border-galaxy-gold/30 bg-galaxy-gold/10">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Close the loop</p>
+            <p className="mt-2 text-sm leading-6 text-galaxy-muted">
+              Lens A grows wallet from known guests. Lens B finds the next source markets to acquire.
+            </p>
+          </div>
+          <Link
+            href="/corridors"
+            className="inline-flex rounded-md bg-galaxy-gold px-4 py-2 text-sm font-semibold text-galaxy-ink hover:bg-galaxy-gold-lite"
+          >
+            Explore acquisition corridors
+          </Link>
+        </div>
+      </Panel>
+
       {activeSegment ? (
         <>
           <div className="grid gap-6 xl:grid-cols-[22rem_minmax(0,1fr)]">

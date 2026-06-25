@@ -118,6 +118,12 @@ function renderSegments(segments?: Segment[], selectedSegment?: Segment) {
 }
 
 describe('segments route', () => {
+  it('offers a cross-link from retained segments to acquisition corridors', () => {
+    renderSegments();
+
+    expect(screen.getByRole('link', { name: /Explore acquisition corridors/i })).toHaveAttribute('href', '/corridors');
+  });
+
   it('renders six segment buttons and selected segment details', () => {
     renderSegments();
 

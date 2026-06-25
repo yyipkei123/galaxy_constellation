@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const routes = ['/', '/wallet', '/segments', '/leakage', '/propensity', '/activation', '/marketscan'];
+const routes = ['/', '/wallet', '/segments', '/leakage', '/propensity', '/activation', '/marketscan', '/corridors', '/corridors/korea', '/acquisition'];
 const interruptedNavigationMessage = 'is interrupted by another navigation';
 const fallbackBaseUrl = 'http://127.0.0.1:3000';
 
@@ -104,6 +104,27 @@ test.describe('Galaxy Constellation rendered compliance', () => {
         await expect(personaRecommendationKit.getByText('Mastercard CDE reveal')).toBeVisible();
       }
 
+      if (route === '/corridors') {
+        const koreaRow = page.getByRole('row', { name: /#1 Korea/i });
+
+        await expect(page.getByRole('heading', { name: /Source-Market & Corridor Intelligence/i })).toBeVisible();
+        await expect(page.getByText(/10–20% panel/i)).toBeVisible();
+        await expect(page.getByText(/aggregate inbound panel, no PII/i)).toBeVisible();
+        await expect(koreaRow).toBeVisible();
+      }
+
+      if (route === '/corridors/korea') {
+        await expect(page.getByRole('heading', { name: /Korea Corridor Detail/i })).toBeVisible();
+        await expect(page.getByText('2020 base · refresh pending')).toBeVisible();
+        await expect(page.getByRole('link', { name: /Generate campaign content/i })).toBeVisible();
+      }
+
+      if (route === '/acquisition') {
+        await expect(page.getByRole('heading', { name: /Priority Corridor Acquisition/i })).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Content draft/i })).toBeVisible();
+        await expect(page.getByText(/No live model call/i)).toBeVisible();
+      }
+
       if (route === '/leakage') {
         await expect(page.getByText('Generated opportunity narrative')).toBeVisible();
         await expect(page.getByRole('heading', { name: /Opportunity ladder/i })).toBeVisible();
@@ -164,6 +185,24 @@ test.describe('Galaxy Constellation rendered compliance', () => {
     await expect(assistant).not.toContainText(/HKD|MOP|\$|元|澳門幣|5000/i);
   });
 
+  test('acquisition lens keeps corridor data aggregate and CDE-safe', async ({ page }) => {
+    await page.goto('/corridors');
+
+    const koreaRow = page.getByRole('row', { name: /#1 Korea/i });
+    await expect(page.getByRole('navigation', { name: /Lens switch/i }).getByText(/Corridors Acquisition/i)).toBeVisible();
+    await expect(page.getByText(/10–20% panel/i)).toBeVisible();
+    await expect(page.getByText(/aggregate inbound panel, no PII/i)).toBeVisible();
+    await expect(koreaRow).toBeVisible();
+    await expect(koreaRow.getByText('2020 base · refresh pending')).toBeVisible();
+    await expect(page.locator('body')).not.toContainText(/HKD|MOP|\$|元|澳門幣/);
+
+    await page.getByRole('link', { name: /Open acquisition recommendation/i }).click();
+    await expect(page).toHaveURL(/\/acquisition\?corridor=korea/);
+    await expect(page.getByRole('heading', { name: /Content draft/i })).toBeVisible();
+    await expect(page.getByText(/No live model call/i)).toBeVisible();
+    await expect(page.locator('body')).not.toContainText(/HKD|MOP|\$|元|澳門幣/);
+  });
+
   test('desktop projector viewport has visible nav, top bar, and main hero', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
@@ -194,6 +233,16 @@ test.describe('Galaxy Constellation rendered compliance', () => {
 
     expect(box.top).toBeLessThan(620);
     expect(box.bottom).toBeLessThanOrEqual(844);
+    expect(await documentScrollWidth(page)).toBeLessThanOrEqual(390);
+  });
+
+  test('mobile Korea corridor detail keeps content within viewport width', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/corridors/korea');
+
+    await expect(page.getByRole('heading', { name: /Korea Corridor Detail/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Generate campaign content/i })).toBeVisible();
+    await expect(page.locator('body')).not.toContainText(/HKD|MOP|\$|元|澳門幣/);
     expect(await documentScrollWidth(page)).toBeLessThanOrEqual(390);
   });
 
