@@ -1,6 +1,24 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 const routes = ['/', '/wallet', '/segments', '/leakage', '/propensity', '/activation', '/marketscan'];
+const interruptedNavigationMessage = 'is interrupted by another navigation';
+
+async function gotoStableRoute(page: Page, route: string) {
+  try {
+    await page.goto(route);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+
+    if (!message.includes(interruptedNavigationMessage)) {
+      throw error;
+    }
+
+    await page.waitForLoadState('load');
+    await page.goto(route);
+  }
+
+  await expect(page).toHaveURL(new RegExp(`${route.replaceAll('/', '\\/')}$`));
+}
 
 test.describe('Galaxy Constellation rendered compliance', () => {
   for (const route of routes) {
@@ -148,6 +166,34 @@ test.describe('Galaxy Constellation rendered compliance', () => {
 
       const scrollWidth = await page.evaluate(() => document.body.scrollWidth);
       expect(scrollWidth).toBeLessThanOrEqual(viewport.width);
+    });
+  }
+
+  for (const viewport of [
+    { label: 'iPhone', width: 390, height: 844 },
+    { label: 'iPad', width: 820, height: 1180 },
+    { label: 'desktop', width: 1440, height: 900 },
+  ]) {
+    test(`refined shell and decision visuals fit ${viewport.label}`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+
+      for (const route of ['/wallet', '/segments', '/activation']) {
+        await gotoStableRoute(page, route);
+        await expect(page.getByRole('banner')).toContainText(/CDE metrics/i);
+        await expect(page.getByRole('button', { name: /Open AI insight assistant/i })).toBeVisible();
+
+        const activeNav = await page.locator('nav a[aria-current="page"]').boundingBox();
+        expect(activeNav).not.toBeNull();
+        expect(activeNav!.x).toBeGreaterThanOrEqual(-1);
+        expect(activeNav!.x + activeNav!.width).toBeLessThanOrEqual(viewport.width + 1);
+
+        const launcher = await page.getByRole('button', { name: /Open AI insight assistant/i }).boundingBox();
+        expect(launcher).not.toBeNull();
+        expect(launcher!.y + launcher!.height).toBeLessThanOrEqual(viewport.height);
+
+        const scrollWidth = await page.evaluate(() => document.body.scrollWidth);
+        expect(scrollWidth).toBeLessThanOrEqual(viewport.width);
+      }
     });
   }
 });
