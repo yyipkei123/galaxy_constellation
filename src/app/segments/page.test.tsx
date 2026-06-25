@@ -157,16 +157,18 @@ describe('segments route', () => {
     renderSegments();
 
     expect(screen.getByRole('heading', { name: /Persona recommendation kit/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Suite-First Patrons' })).toBeInTheDocument();
-    expect(screen.getByText(/Host-led suite retention path/i)).toBeInTheDocument();
-    expect(screen.getByText(/Galaxy first-party signal/i)).toBeInTheDocument();
-    expect(screen.getByText(/Mastercard CDE reveal/i)).toBeInTheDocument();
+    let recommendationKit = within(screen.getByLabelText('Persona recommendation kit'));
+    expect(recommendationKit.getByRole('heading', { name: 'Suite-First Patrons', level: 3 })).toBeInTheDocument();
+    expect(recommendationKit.getByText(/Host-led suite retention path/i)).toBeInTheDocument();
+    expect(recommendationKit.getByText(/Galaxy first-party signal/i)).toBeInTheDocument();
+    expect(recommendationKit.getByText(/Mastercard CDE reveal/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'persona: Private Dining Hosts' }));
 
-    expect(screen.getByRole('heading', { name: 'Private Dining Hosts' })).toBeInTheDocument();
-    expect(screen.getByText(/Chef-table to promenade path/i)).toBeInTheDocument();
-    expect(screen.queryByText(/Host-led suite retention path/i)).not.toBeInTheDocument();
+    recommendationKit = within(screen.getByLabelText('Persona recommendation kit'));
+    expect(recommendationKit.getByRole('heading', { name: 'Private Dining Hosts', level: 3 })).toBeInTheDocument();
+    expect(recommendationKit.getByText(/Chef-table to promenade path/i)).toBeInTheDocument();
+    expect(recommendationKit.queryByText(/Host-led suite retention path/i)).not.toBeInTheDocument();
   });
 
   it('renders active CDE metrics, propensity labels, spend radar, and recommended plays', () => {
