@@ -1,7 +1,13 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { vi } from 'vitest';
+import { beforeEach, vi } from 'vitest';
 import { AppStateProvider, useAppState } from '@/store/app-store';
 import { TopBar } from './top-bar';
+
+let mockPathname = '/wallet';
+
+vi.mock('next/navigation', () => ({
+  usePathname: () => mockPathname,
+}));
 
 function StoreContractProbe() {
   const state = useAppState();
@@ -72,6 +78,10 @@ function StoreBehaviorProbe() {
 }
 
 describe('TopBar', () => {
+  beforeEach(() => {
+    mockPathname = '/wallet';
+  });
+
   afterEach(() => {
     externalSegmentIds.splice(0, externalSegmentIds.length, 'diamond-high-rollers');
     vi.restoreAllMocks();
@@ -176,5 +186,17 @@ describe('TopBar', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Clear campaign' }));
 
     expect(screen.getByLabelText('campaign toast')).toHaveTextContent('none');
+  });
+
+  it('renders the lens switch beside methodology metadata', () => {
+    render(
+      <AppStateProvider>
+        <TopBar />
+      </AppStateProvider>,
+    );
+
+    expect(screen.getByRole('navigation', { name: /Lens switch/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Wallet Retention/i })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link', { name: /Corridors Acquisition/i })).toHaveAttribute('href', '/corridors');
   });
 });

@@ -39,4 +39,14 @@ describe('Nav', () => {
     expect(screen.getByRole('link', { name: /Activation/i })).toHaveAttribute('aria-current', 'page');
     expect(scrollIntoView).toHaveBeenCalledWith({ block: 'nearest', inline: 'center' });
   });
+
+  it('swaps to acquisition nav links on corridor routes', () => {
+    mockPathname = '/corridors';
+
+    render(<Nav />);
+
+    expect(screen.getByRole('link', { name: /Source Markets/i })).toHaveAttribute('href', '/corridors');
+    expect(screen.getByRole('link', { name: /Acquisition/i })).toHaveAttribute('href', '/acquisition');
+    expect(screen.queryByRole('link', { name: /^Wallet$/i })).not.toBeInTheDocument();
+  });
 });

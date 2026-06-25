@@ -8,7 +8,9 @@ import {
   Gem,
   Map,
   Megaphone,
+  PlaneTakeoff,
   Radar,
+  Route,
   ScanSearch,
   WalletCards,
   type LucideIcon,
@@ -16,7 +18,7 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-const navItems: Array<{ href: string; label: string; icon: LucideIcon }> = [
+const walletNavItems: Array<{ href: string; label: string; icon: LucideIcon }> = [
   { href: '/', label: 'Overview', icon: BarChart3 },
   { href: '/wallet', label: 'Wallet', icon: WalletCards },
   { href: '/segments', label: 'Segments', icon: Gem },
@@ -26,8 +28,18 @@ const navItems: Array<{ href: string; label: string; icon: LucideIcon }> = [
   { href: '/marketscan', label: 'Market Scan', icon: Radar },
 ];
 
+const acquisitionNavItems: Array<{ href: string; label: string; icon: LucideIcon }> = [
+  { href: '/corridors', label: 'Source Markets', icon: Route },
+  { href: '/acquisition', label: 'Acquisition', icon: PlaneTakeoff },
+];
+
+function isAcquisitionLens(pathname: string) {
+  return pathname.startsWith('/corridors') || pathname.startsWith('/acquisition');
+}
+
 export function Nav() {
   const pathname = usePathname();
+  const navItems = isAcquisitionLens(pathname) ? acquisitionNavItems : walletNavItems;
   const activeLinkRef = useRef<HTMLAnchorElement>(null);
 
   useEffect(() => {
@@ -66,7 +78,7 @@ export function Nav() {
       })}
       <div className="mt-4 hidden items-center gap-2 rounded-md border border-galaxy-border px-3 py-2 text-xs text-galaxy-muted lg:flex">
         <Map aria-hidden="true" className="h-4 w-4 text-galaxy-gold" />
-        Cotai wallet view
+        {isAcquisitionLens(pathname) ? 'Inbound corridor view' : 'Cotai wallet view'}
       </div>
     </nav>
   );
