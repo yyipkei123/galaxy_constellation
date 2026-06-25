@@ -159,14 +159,30 @@ describe('segments route', () => {
 
     expect(screen.queryByText('Zoom to a segment')).not.toBeInTheDocument();
     expect(screen.getByText('Guest segmentation')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Guest Segments', level: 1 })).toHaveClass('font-sans');
+    const pageTitle = screen.getByRole('heading', { name: 'Guest Segments', level: 1 });
+    expect(pageTitle).toHaveClass('font-sans');
+    expect(pageTitle.closest('section')).toHaveAttribute('data-variant', 'compact');
 
-    const personaUniverseHeading = screen.getByRole('heading', { name: /Persona universe/i });
-    const personaKitHeading = screen.getByRole('heading', { name: /Persona recommendation kit/i });
-    const categoryProfileHeading = screen.getByRole('heading', { name: /Indexed category profile/i });
+    function expectBefore(earlierNode: Element, laterNode: Element) {
+      expect(Boolean(earlierNode.compareDocumentPosition(laterNode) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+    }
 
-    expect(Boolean(personaUniverseHeading.compareDocumentPosition(categoryProfileHeading) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
-    expect(Boolean(personaKitHeading.compareDocumentPosition(categoryProfileHeading) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+    const personaDecisionNodes = [
+      screen.getByRole('heading', { name: /Persona universe/i }),
+      screen.getByRole('heading', { name: /Persona explorer/i }),
+      screen.getByRole('heading', { name: /Persona recommendation kit/i }),
+    ];
+    const technicalNodes = [
+      screen.getByRole('heading', { name: /Indexed category profile/i }),
+      screen.getByRole('heading', { name: /Activation signals/i }),
+      screen.getByText('7 active CDE metrics'),
+    ];
+
+    personaDecisionNodes.forEach((personaNode) => {
+      technicalNodes.forEach((technicalNode) => {
+        expectBefore(personaNode, technicalNode);
+      });
+    });
   });
 
   it('filters second-level personas by selected top-level segment and search text', () => {
