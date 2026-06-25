@@ -72,8 +72,10 @@ test.describe('Galaxy Constellation rendered compliance', () => {
       await page.goto(route);
 
       const body = page.locator('body');
+      const banner = page.getByRole('banner');
       await expect(page.getByText(/Enriched figures are modelled estimates/i)).toBeVisible();
-      await expect(page.getByRole('banner').getByText('7 active CDE metrics', { exact: true })).toBeVisible();
+      await expect(banner.getByText('7 CDE metrics', { exact: true })).toBeVisible();
+      await expect(banner.locator('[aria-label="7 active CDE metrics"]')).toBeVisible();
       await expect(body).not.toContainText('HKD');
       await expect(body).not.toContainText('$');
 
