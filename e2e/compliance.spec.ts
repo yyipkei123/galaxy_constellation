@@ -13,6 +13,21 @@ test.describe('Galaxy Constellation rendered compliance', () => {
       await expect(body).not.toContainText('HKD');
       await expect(body).not.toContainText('$');
 
+      if (route === '/') {
+        await expect(page.getByRole('heading', { name: /This period's headline findings/i })).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Insight engine/i })).toBeVisible();
+      }
+
+      if (route === '/segments') {
+        await expect(page.getByText('AI-style insight brief')).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Why this segment matters now/i })).toBeVisible();
+      }
+
+      if (route === '/leakage') {
+        await expect(page.getByText('Generated opportunity narrative')).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Opportunity ladder/i })).toBeVisible();
+      }
+
       if (route !== '/activation') {
         await expect(body).not.toContainText('MOP');
       } else {

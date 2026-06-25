@@ -3,11 +3,18 @@
 import { useMemo } from 'react';
 import Link from 'next/link';
 import { LeakageFlow } from '@/components/charts/leakage-flow';
+import { OpportunityLadder } from '@/components/charts/opportunity-ladder';
+import {
+  ChartCallout,
+  ExecutiveSummaryPanel,
+  HeadlineFindings,
+} from '@/components/panels/insight-storytelling';
 import { BandValue, IndexValue } from '@/components/ui/formatted-values';
 import { Overline } from '@/components/ui/overline';
 import { Panel } from '@/components/ui/panel';
 import { CORE_CATEGORIES, type CoreCategory, type Segment } from '@/data';
 import { formatEnriched } from '@/lib/format';
+import { buildLeakageInsightNarrative } from '@/lib/insights';
 import { useAppState } from '@/store/app-store';
 
 const CATEGORY_LABELS: Record<CoreCategory, string> = {
@@ -155,6 +162,7 @@ export default function LeakagePage() {
     () => [...safeSegments].sort((first, second) => second.opportunityIndex - first.opportunityIndex),
     [safeSegments],
   );
+  const insightNarrative = buildLeakageInsightNarrative(activeSegment, safeSegments);
 
   return (
     <div className="space-y-6 text-galaxy-cream">
@@ -183,6 +191,8 @@ export default function LeakagePage() {
           </div>
         </div>
       </section>
+
+      <ExecutiveSummaryPanel narrative={insightNarrative} />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <Panel>
@@ -214,7 +224,22 @@ export default function LeakagePage() {
           <h2 className="mt-3 font-serif text-3xl text-galaxy-cream">Where the wallet leaves Galaxy</h2>
         </div>
         <LeakageFlow segment={activeSegment} />
+        <div className="mt-5">
+          <ChartCallout>{insightNarrative.chartCallout}</ChartCallout>
+        </div>
       </Panel>
+
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
+        <Panel>
+          <div className="mb-5">
+            <Overline>Ranked leakage drivers</Overline>
+            <h2 className="mt-3 font-serif text-3xl text-galaxy-cream">Opportunity ladder</h2>
+          </div>
+          <OpportunityLadder segment={activeSegment} />
+        </Panel>
+
+        <HeadlineFindings title="Leakage action findings" findings={insightNarrative.findings.slice(0, 3)} />
+      </div>
 
       <Panel>
         <div className="mb-5 flex flex-wrap items-start justify-between gap-4">

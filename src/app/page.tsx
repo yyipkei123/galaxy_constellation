@@ -1,8 +1,13 @@
 'use client';
 
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { CategoryStackedBar } from '@/components/charts/category-stacked-bar';
+import {
+  ChartCallout,
+  EvidenceStrip,
+  ExecutiveSummaryPanel,
+  HeadlineFindings,
+} from '@/components/panels/insight-storytelling';
 import { CdeChip } from '@/components/ui/cde-chip';
 import { IndexValue, PercentValue } from '@/components/ui/formatted-values';
 import { KpiCard } from '@/components/ui/kpi-card';
@@ -10,6 +15,7 @@ import { Overline } from '@/components/ui/overline';
 import { Panel } from '@/components/ui/panel';
 import { CORE_CATEGORIES, type Methodology, type Quarter, type Segment } from '@/data';
 import { formatPropensity } from '@/lib/format';
+import { buildPortfolioInsightNarrative } from '@/lib/insights';
 import { useAppState } from '@/store/app-store';
 
 function finiteNumber(value: number | undefined): number {
@@ -73,9 +79,8 @@ function OverviewRoute({ selectedQuarter, segments, methodology }: OverviewRoute
   const topOpportunityIndex = safeSegments.length > 0
     ? Math.max(...safeSegments.map((segment) => finiteNumber(segment?.opportunityIndex)))
     : 0;
-  const topOpportunities = [...safeSegments]
-    .sort((first, second) => finiteNumber(second?.opportunityIndex) - finiteNumber(first?.opportunityIndex))
-    .slice(0, 3);
+  const insightNarrative = buildPortfolioInsightNarrative(safeSegments, methodology);
+  const topFindings = insightNarrative.findings.slice(0, 3);
 
   return (
     <div className="space-y-6 text-galaxy-cream">
@@ -90,7 +95,7 @@ function OverviewRoute({ selectedQuarter, segments, methodology }: OverviewRoute
           <div>
             <h1 className="font-serif text-5xl text-galaxy-cream md:text-6xl">Galaxy Constellation</h1>
             <p className="mt-5 max-w-3xl text-base leading-8 text-galaxy-muted md:text-lg">
-              Guest Wallet Intelligence enriched by Mastercard CDE reveals Galaxy&apos;s captured wallet and
+              Guest Wallet Intelligence enriched by Mastercard CDE surfaces Galaxy&apos;s captured wallet and
               modelled off-property wallet headroom, turning share, visit, channel, and rewards propensity
               signals into quarterly growth priorities.
             </p>
@@ -107,6 +112,8 @@ function OverviewRoute({ selectedQuarter, segments, methodology }: OverviewRoute
           </div>
         </div>
       </motion.section>
+
+      <ExecutiveSummaryPanel narrative={insightNarrative} />
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <KpiCard
@@ -135,6 +142,8 @@ function OverviewRoute({ selectedQuarter, segments, methodology }: OverviewRoute
         />
       </section>
 
+      <EvidenceStrip steps={insightNarrative.fusionSteps} />
+
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_26rem]">
         <Panel>
           <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
@@ -158,38 +167,12 @@ function OverviewRoute({ selectedQuarter, segments, methodology }: OverviewRoute
               </p>
             )}
           </div>
-        </Panel>
-
-        <Panel>
-          <Overline>Priority Plays</Overline>
-          <h2 className="mt-3 font-serif text-3xl text-galaxy-cream">Top 3 opportunities this quarter</h2>
-          <div className="mt-6 space-y-4">
-            {topOpportunities.length > 0 ? (
-              topOpportunities.map((segment, index) => (
-                <Link
-                  key={segment.id}
-                  href="/leakage"
-                  className="block rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4 transition hover:border-galaxy-gold/60 hover:bg-galaxy-gold/10 focus:outline-none focus:ring-2 focus:ring-galaxy-gold"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-galaxy-gold">
-                        Opportunity {index + 1}
-                      </p>
-                      <h3 className="mt-2 text-lg font-semibold text-galaxy-cream">{segment.name}</h3>
-                    </div>
-                    <IndexValue value={finiteNumber(segment.opportunityIndex)} />
-                  </div>
-                  <p className="mt-3 text-sm leading-6 text-galaxy-muted">{segment.signatureTrait}</p>
-                </Link>
-              ))
-            ) : (
-              <p className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4 text-sm text-galaxy-muted">
-                No opportunity segments available for this quarter.
-              </p>
-            )}
+          <div className="mt-5">
+            <ChartCallout>{insightNarrative.chartCallout}</ChartCallout>
           </div>
         </Panel>
+
+        <HeadlineFindings title="This period's headline findings" findings={topFindings} />
       </div>
     </div>
   );

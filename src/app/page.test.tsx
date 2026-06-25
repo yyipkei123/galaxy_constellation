@@ -69,7 +69,11 @@ describe('overview route', () => {
     });
 
     expect(screen.getByRole('heading', { name: /Category wallet snapshot/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Top 3 opportunities this quarter/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /This period's headline findings/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Insight engine/i })).toBeInTheDocument();
+    expect(screen.getByText(/Galaxy first-party signal/i)).toBeInTheDocument();
+    expect(screen.getByText(/Mastercard CDE reveal/i)).toBeInTheDocument();
+    expect(screen.getByText(/Discovered opportunity/i)).toBeInTheDocument();
     expect(screen.getAllByText('CDE').length).toBeGreaterThanOrEqual(4);
   });
 
@@ -98,7 +102,7 @@ describe('overview route', () => {
     expect(screen.getByText('Index 0')).toBeInTheDocument();
     expect(screen.queryByText(/NaN|Infinity/i)).not.toBeInTheDocument();
     expect(screen.getByText('No category wallet segments available for this quarter.')).toBeInTheDocument();
-    expect(screen.getByText('No opportunity segments available for this quarter.')).toBeInTheDocument();
+    expect(screen.getByText('No active CDE segment insights available for this quarter.')).toBeInTheDocument();
   });
 
   it('does not surface non-finite aggregate values from unexpected segment data', () => {

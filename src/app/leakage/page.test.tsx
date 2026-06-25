@@ -86,6 +86,9 @@ describe('cross-property leakage route', () => {
     expect(screen.getByText('Find the money')).toBeInTheDocument();
     expect(screen.getByText(/other hotels in cash/i)).toBeInTheDocument();
     expect(screen.getByText(/opportunity cost Galaxy can recapture/i)).toBeInTheDocument();
+    expect(screen.getByText('Generated opportunity narrative')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Opportunity ladder/i })).toBeInTheDocument();
+    expect(screen.getByText(/Insight callout/i)).toBeInTheDocument();
 
     const headline = screen.getByRole('region', { name: 'Headline opportunity index' });
     expect(within(headline).getByText('Headline opportunity index')).toBeInTheDocument();

@@ -120,6 +120,12 @@ describe('segments route', () => {
 
     expect(screen.getByRole('heading', { name: latestSegments[0].name })).toBeInTheDocument();
     expect(screen.getAllByText(latestSegments[0].nameZh).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText('AI-style insight brief')).toBeInTheDocument();
+    expect(screen.getByText(/Generated insight narrative/i)).toBeInTheDocument();
+    expect(screen.getByText(/Galaxy first-party signal/i)).toBeInTheDocument();
+    expect(screen.getByText(/Mastercard CDE reveal/i)).toBeInTheDocument();
+    expect(screen.getByText(/Discovered opportunity/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Why this segment matters now/i })).toBeInTheDocument();
   });
 
   it('renders active CDE metrics, propensity labels, spend radar, and recommended plays', () => {
@@ -170,6 +176,7 @@ describe('segments route', () => {
 
     expect(screen.getByRole('heading', { name: latestSegments[2].name })).toBeInTheDocument();
     expect(screen.getAllByText(latestSegments[2].nameZh).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(new RegExp(`${latestSegments[2].name} combines`, 'i'))).toBeInTheDocument();
   });
 
   it('renders append-to-CRM rows with masked IDs and CDE-compliant values only', () => {

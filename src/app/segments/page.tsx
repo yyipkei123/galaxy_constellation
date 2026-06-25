@@ -6,10 +6,17 @@ import { PropensityGauge } from '@/components/charts/propensity-gauge';
 import { SpendRadar } from '@/components/charts/spend-radar';
 import { CdeMetricPanel } from '@/components/panels/cde-metric-panel';
 import { CrmAppendTable } from '@/components/panels/crm-append-table';
+import {
+  ChartCallout,
+  EvidenceStrip,
+  ExecutiveSummaryPanel,
+  HeadlineFindings,
+} from '@/components/panels/insight-storytelling';
 import { SegmentCard } from '@/components/panels/segment-card';
 import { Overline } from '@/components/ui/overline';
 import { Panel } from '@/components/ui/panel';
 import { crmRows, type Segment } from '@/data';
+import { buildSegmentInsightNarrative } from '@/lib/insights';
 import { useAppState } from '@/store/app-store';
 
 function finiteValue(value: number | undefined, fallback = 0) {
@@ -91,6 +98,7 @@ export default function SegmentsPage() {
   const activeSegment = safeSegments.find((segment) => segment.id === focusedSegmentId)
     ?? safeSegments.find((segment) => segment.id === selectedSegment?.id)
     ?? safeSegments[0];
+  const insightNarrative = activeSegment ? buildSegmentInsightNarrative(activeSegment) : null;
 
   function selectSegment(segmentId: string) {
     setFocusedSegmentId(segmentId);
@@ -141,6 +149,14 @@ export default function SegmentsPage() {
                 </p>
               </Panel>
 
+              {insightNarrative ? (
+                <>
+                  <ExecutiveSummaryPanel narrative={insightNarrative} />
+                  <EvidenceStrip steps={insightNarrative.fusionSteps} />
+                  <HeadlineFindings title="Why this segment matters now" findings={insightNarrative.findings} />
+                </>
+              ) : null}
+
               <CdeMetricPanel metrics={activeSegment.metrics} />
             </div>
           </div>
@@ -152,6 +168,11 @@ export default function SegmentsPage() {
                 <h2 className="mt-3 font-serif text-3xl text-galaxy-cream">Indexed category profile</h2>
               </div>
               <SpendRadar segment={activeSegment} />
+              {insightNarrative ? (
+                <div className="mt-5">
+                  <ChartCallout>{insightNarrative.chartCallout}</ChartCallout>
+                </div>
+              ) : null}
               <p className="mt-5 rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4 text-sm leading-6 text-galaxy-muted">
                 Gaming context is first-party indexed only and not a leakage category.
               </p>
