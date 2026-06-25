@@ -17,8 +17,9 @@ import { PersonaDetailKit } from '@/components/panels/persona-detail-kit';
 import { PersonaFilterBar } from '@/components/panels/persona-filter-bar';
 import { PersonaUniverse } from '@/components/panels/persona-universe';
 import { SegmentCard } from '@/components/panels/segment-card';
-import { Overline } from '@/components/ui/overline';
+import { PageHeader } from '@/components/ui/page-header';
 import { Panel } from '@/components/ui/panel';
+import { SectionHeader } from '@/components/ui/section-header';
 import { crmRows, type PersonaPriority, type PersonaWealthTier, type Segment } from '@/data';
 import { buildSegmentInsightNarrative } from '@/lib/insights';
 import {
@@ -166,24 +167,25 @@ export default function SegmentsPage() {
 
   return (
     <div className="space-y-6 text-galaxy-cream">
-      <section className="rounded-lg border border-galaxy-border bg-[radial-gradient(circle_at_top_left,rgba(205,164,92,0.18),transparent_34%),linear-gradient(135deg,rgba(31,27,24,0.96),rgba(8,18,30,0.92))] px-6 py-8 shadow-2xl shadow-black/25 md:px-8">
-        <Overline>Zoom to a segment</Overline>
-        <div className="mt-4 grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-end">
-          <div>
-            <h1 className="font-serif text-5xl text-galaxy-cream md:text-6xl">Guest Segments</h1>
-            <p className="mt-4 max-w-3xl text-base leading-8 text-galaxy-muted md:text-lg">
-              Explore the Customer 360 view for Galaxy guest segments, using masked CRM records and Mastercard CDE
-              enrichments to support activation without exposing raw spend values.
+      <PageHeader
+        variant="compact"
+        eyebrow="Guest segmentation"
+        title="Guest Segments"
+        description={(
+          <>
+            Move from top-level CDE segments into second-level personas, recommendation kits, and activation-ready
+            audience decisions without exposing raw spend values.
+          </>
+        )}
+        aside={(
+          <>
+            <p className="font-semibold text-galaxy-gold">CDE-compliant profile</p>
+            <p className="mt-2">
+              Segment cards, propensity scores, and CRM append fields stay indexed, percentage-based, or banded.
             </p>
-          </div>
-          <div className="rounded-lg border border-galaxy-gold/30 bg-galaxy-ink/45 p-4">
-            <p className="text-sm font-semibold text-galaxy-gold">CDE-compliant profile</p>
-            <p className="mt-2 text-sm leading-6 text-galaxy-muted">
-              Segment cards, propensity scores, and CRM append fields stay at indexed, percentage, or banded levels.
-            </p>
-          </div>
-        </div>
-      </section>
+          </>
+        )}
+      />
 
       {activeSegment ? (
         <>
@@ -201,11 +203,11 @@ export default function SegmentsPage() {
 
             <div className="space-y-6">
               <Panel className="bg-[linear-gradient(135deg,rgba(205,164,92,0.12),rgba(12,23,35,0.78))]">
-                <Overline>{activeSegment.nameZh}</Overline>
-                <h2 className="mt-3 font-serif text-4xl text-galaxy-cream">{activeSegment.name}</h2>
-                <p className="mt-4 max-w-3xl text-base leading-7 text-galaxy-muted">
-                  {activeSegment.signatureTrait}
-                </p>
+                <SectionHeader
+                  eyebrow={activeSegment.nameZh}
+                  title={activeSegment.name}
+                  description={activeSegment.signatureTrait}
+                />
               </Panel>
 
               {insightNarrative ? (
@@ -215,51 +217,18 @@ export default function SegmentsPage() {
                   <HeadlineFindings title="Why this segment matters now" findings={insightNarrative.findings} />
                 </>
               ) : null}
-
-              <CdeMetricPanel metrics={activeSegment.metrics} />
             </div>
-          </div>
-
-          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
-            <Panel>
-              <div className="mb-5">
-                <Overline>Category spend radar</Overline>
-                <h2 className="mt-3 font-serif text-3xl text-galaxy-cream">Indexed category profile</h2>
-              </div>
-              <SpendRadar segment={activeSegment} />
-              {insightNarrative ? (
-                <div className="mt-5">
-                  <ChartCallout>{insightNarrative.chartCallout}</ChartCallout>
-                </div>
-              ) : null}
-              <p className="mt-5 rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4 text-sm leading-6 text-galaxy-muted">
-                Gaming context is first-party indexed only and not a leakage category.
-              </p>
-            </Panel>
-
-            <Panel>
-              <Overline>Propensity</Overline>
-              <h2 className="mt-3 font-serif text-3xl text-galaxy-cream">Activation signals</h2>
-              <div className="mt-5 space-y-4">
-                <PropensityGauge label="High Spender in Luxury Hotels" value={activeSegment.propensities.luxuryHotelSpender} />
-                <PropensityGauge label="Top-Tier Rewards Spender" value={activeSegment.propensities.topTierRewards} />
-                <PropensityGauge label="Co-Brand Look-Alike" value={activeSegment.propensities.coBrandLookAlike} />
-              </div>
-            </Panel>
           </div>
 
           <PersonaUniverse summary={personaSummary} />
 
           <Panel>
             <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <Overline>Persona drill-down</Overline>
-                <h2 className="mt-3 font-serif text-3xl text-galaxy-cream">Persona explorer</h2>
-              </div>
-              <p className="max-w-md text-sm leading-6 text-galaxy-muted">
-                Second-level personas translate the selected Galaxy segment into audience-sized actions, CDE evidence,
-                and activation recommendations.
-              </p>
+              <SectionHeader
+                eyebrow="Persona drill-down"
+                title="Persona explorer"
+                description="Second-level personas translate the selected Galaxy segment into audience-sized actions, CDE evidence, and activation recommendations."
+              />
             </div>
 
             <PersonaFilterBar
@@ -291,15 +260,41 @@ export default function SegmentsPage() {
 
           {selectedPersona ? <PersonaDetailKit persona={selectedPersona} /> : null}
 
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
+            <Panel>
+              <div className="mb-5">
+                <SectionHeader eyebrow="Category spend radar" title="Indexed category profile" />
+              </div>
+              <SpendRadar segment={activeSegment} />
+              {insightNarrative ? (
+                <div className="mt-5">
+                  <ChartCallout>{insightNarrative.chartCallout}</ChartCallout>
+                </div>
+              ) : null}
+              <p className="mt-5 rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4 text-sm leading-6 text-galaxy-muted">
+                Gaming context is first-party indexed only and not a leakage category.
+              </p>
+            </Panel>
+
+            <Panel>
+              <SectionHeader eyebrow="Propensity" title="Activation signals" />
+              <div className="mt-5 space-y-4">
+                <PropensityGauge label="High Spender in Luxury Hotels" value={activeSegment.propensities.luxuryHotelSpender} />
+                <PropensityGauge label="Top-Tier Rewards Spender" value={activeSegment.propensities.topTierRewards} />
+                <PropensityGauge label="Co-Brand Look-Alike" value={activeSegment.propensities.coBrandLookAlike} />
+              </div>
+            </Panel>
+          </div>
+
+          <CdeMetricPanel metrics={activeSegment.metrics} />
+
           <Panel>
             <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <Overline>Why this matters</Overline>
-                <h2 className="mt-3 font-serif text-3xl text-galaxy-cream">Recommended plays</h2>
-              </div>
-              <p className="max-w-md text-sm leading-6 text-galaxy-muted">
-                Use the selected segment profile to move directly into audience building and activation planning.
-              </p>
+              <SectionHeader
+                eyebrow="Why this matters"
+                title="Recommended plays"
+                description="Use the selected segment profile to move directly into audience building and activation planning."
+              />
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               {activeSegment.recommendedPlays.length > 0 ? activeSegment.recommendedPlays.map((play) => (
@@ -323,8 +318,7 @@ export default function SegmentsPage() {
 
           <Panel>
             <div className="mb-5">
-              <Overline>Masked CRM records</Overline>
-              <h2 className="mt-3 font-serif text-3xl text-galaxy-cream">CDE-compliant append fields</h2>
+              <SectionHeader eyebrow="Masked CRM records" title="CDE-compliant append fields" />
             </div>
             <div className="overflow-x-auto">
               <CrmAppendTable rows={crmRows} />
@@ -333,11 +327,11 @@ export default function SegmentsPage() {
         </>
       ) : (
         <Panel>
-          <Overline>Customer 360</Overline>
-          <h2 className="mt-3 font-serif text-3xl text-galaxy-cream">No guest segments available for this quarter.</h2>
-          <p className="mt-3 text-sm leading-6 text-galaxy-muted">
-            Select another quarter or refresh the segment feed when CDE segment profiles are available.
-          </p>
+          <SectionHeader
+            eyebrow="Customer 360"
+            title="No guest segments available for this quarter."
+            description="Select another quarter or refresh the segment feed when CDE segment profiles are available."
+          />
         </Panel>
       )}
     </div>

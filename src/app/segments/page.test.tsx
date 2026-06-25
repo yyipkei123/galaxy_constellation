@@ -122,7 +122,7 @@ describe('segments route', () => {
     renderSegments();
 
     expect(screen.getByRole('heading', { name: 'Guest Segments' })).toBeInTheDocument();
-    expect(screen.getByText('Zoom to a segment')).toBeInTheDocument();
+    expect(screen.getByText('Guest segmentation')).toBeInTheDocument();
     expect(screen.getAllByText(/Customer 360/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText(/masked CRM records/i).length).toBeGreaterThanOrEqual(1);
 
@@ -152,6 +152,21 @@ describe('segments route', () => {
     expect(screen.getByPlaceholderText(/Search persona, need, wallet gap, or tag/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'persona: Suite-First Patrons' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'persona: Private Dining Hosts' })).toBeInTheDocument();
+  });
+
+  it('uses a compact header and places persona decisions before technical charts', () => {
+    renderSegments();
+
+    expect(screen.queryByText('Zoom to a segment')).not.toBeInTheDocument();
+    expect(screen.getByText('Guest segmentation')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Guest Segments', level: 1 })).toHaveClass('font-sans');
+
+    const personaUniverseHeading = screen.getByRole('heading', { name: /Persona universe/i });
+    const personaKitHeading = screen.getByRole('heading', { name: /Persona recommendation kit/i });
+    const categoryProfileHeading = screen.getByRole('heading', { name: /Indexed category profile/i });
+
+    expect(Boolean(personaUniverseHeading.compareDocumentPosition(categoryProfileHeading) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+    expect(Boolean(personaKitHeading.compareDocumentPosition(categoryProfileHeading) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
   });
 
   it('filters second-level personas by selected top-level segment and search text', () => {
