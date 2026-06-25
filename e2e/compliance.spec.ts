@@ -60,6 +60,25 @@ test.describe('Galaxy Constellation rendered compliance', () => {
     });
   }
 
+  test('AI insight assistant answers with CDE-safe visual evidence', async ({ page }) => {
+    await page.goto('/segments');
+
+    await page.getByRole('button', { name: 'Open AI insight assistant' }).click();
+    const assistant = page.getByRole('dialog', { name: 'AI insight assistant' });
+
+    await expect(assistant).toBeVisible();
+    await expect(assistant.getByText(/^(Generated local demo narrative|Generated assistant insight)$/i)).toBeVisible();
+    await expect(assistant.getByRole('figure', { name: 'Leakage drivers' })).toBeVisible();
+
+    await page.getByRole('textbox', { name: 'Ask the AI insight assistant' }).fill('Which persona should we target first?');
+    await assistant.getByRole('button', { name: 'Send question' }).click();
+
+    await expect(assistant.getByText('Persona targeting answer')).toBeVisible();
+    await expect(assistant.getByRole('figure', { name: 'Top personas' })).toBeVisible();
+    await expect(assistant).toContainText('CDE');
+    await expect(assistant).not.toContainText(/HKD|MOP|\$|元|澳門幣/i);
+  });
+
   test('desktop projector viewport has visible nav, top bar, and main hero', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
