@@ -19,8 +19,16 @@ test.describe('Galaxy Constellation rendered compliance', () => {
       }
 
       if (route === '/segments') {
+        const personaRecommendationKit = page.getByLabel('Persona recommendation kit');
+
         await expect(page.getByText('AI-style insight brief')).toBeVisible();
         await expect(page.getByRole('heading', { name: /Why this segment matters now/i })).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Persona universe/i })).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Persona explorer/i })).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Persona recommendation kit/i })).toBeVisible();
+        await expect(page.getByText('Generated persona insight')).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Suite-First Patrons/i })).toBeVisible();
+        await expect(personaRecommendationKit.getByText('Mastercard CDE reveal')).toBeVisible();
       }
 
       if (route === '/leakage') {
