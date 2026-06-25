@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { ChatAssistantLauncher } from '@/components/assistant/chat-assistant-launcher';
 import { MethodologyNote } from '@/components/ui/methodology-note';
 import { CoBrandLockup } from './co-brand-lockup';
 import { Nav } from './nav';
@@ -23,6 +24,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </footer>
         </div>
       </div>
+      <ChatAssistantLauncher />
     </div>
   );
 }
