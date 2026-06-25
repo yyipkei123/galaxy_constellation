@@ -219,8 +219,10 @@ describe('share of wallet route', () => {
     const heatmapHeading = screen.getByRole('heading', { name: 'Segment opportunity heatmap' });
     const snapshotHeading = screen.getByRole('heading', { name: 'Wallet analytics snapshot' });
     const rankingHeading = screen.getByRole('heading', { name: 'Ranked category leakage' });
+    const ladderHeading = screen.getByRole('heading', { name: 'Largest wallet gaps now' });
 
     expect(Boolean(heatmapHeading.compareDocumentPosition(snapshotHeading) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
     expect(Boolean(rankingHeading.compareDocumentPosition(snapshotHeading) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+    expect(Boolean(ladderHeading.compareDocumentPosition(snapshotHeading) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
   });
 });
