@@ -126,6 +126,31 @@ describe('segments route', () => {
     expect(screen.getByText(/Mastercard CDE reveal/i)).toBeInTheDocument();
     expect(screen.getByText(/Discovered opportunity/i)).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Why this segment matters now/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Persona universe/i })).toBeInTheDocument();
+    expect(screen.getByText(/18 personas/i)).toBeInTheDocument();
+    expect(screen.getByText(/second-level persona opportunity/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Persona explorer/i })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Search persona, need, wallet gap, or tag/i)).toBeInTheDocument();
+    expect(screen.getByText('Suite-First Patrons')).toBeInTheDocument();
+    expect(screen.getByText('Private Dining Hosts')).toBeInTheDocument();
+  });
+
+  it('filters second-level personas by selected top-level segment and search text', () => {
+    renderSegments();
+
+    fireEvent.click(screen.getByRole('button', { name: `segment: ${latestSegments[2].name}` }));
+
+    expect(screen.getByText('Same-Week Itinerary Builders')).toBeInTheDocument();
+    expect(screen.getByText('Border Family Daytrippers')).toBeInTheDocument();
+    expect(screen.queryByText('Suite-First Patrons')).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByPlaceholderText(/Search persona, need, wallet gap, or tag/i), {
+      target: { value: 'mobile' },
+    });
+
+    expect(screen.getByText('Same-Week Itinerary Builders')).toBeInTheDocument();
+    expect(screen.getByText('Mobile Deal Optimizers')).toBeInTheDocument();
+    expect(screen.queryByText('Border Family Daytrippers')).not.toBeInTheDocument();
   });
 
   it('renders active CDE metrics, propensity labels, spend radar, and recommended plays', () => {
