@@ -9,6 +9,14 @@ import {
 
 const bannedCurrencyPattern = /\b(?:MOP|HKD)\b|\$|元|澳門幣/i;
 
+function collectNumbers(value: unknown): number[] {
+  if (typeof value === 'number') return [value];
+  if (Array.isArray(value)) return value.flatMap(collectNumbers);
+  if (value && typeof value === 'object') return Object.values(value as Record<string, unknown>).flatMap(collectNumbers);
+
+  return [];
+}
+
 describe('persona segmentation data', () => {
   it('exports eighteen second-level personas grouped under the six Galaxy CDE segments', () => {
     expect(personaClusters).toHaveLength(6);
@@ -52,7 +60,9 @@ describe('persona segmentation selectors', () => {
     const personas = getPersonasForSegment('gba-cross-border-explorers');
 
     expect(personas).toHaveLength(3);
-    expect(personas[0].opportunityIndex).toBeGreaterThanOrEqual(personas[1].opportunityIndex);
+    personas.slice(0, -1).forEach((persona, index) => {
+      expect(persona.opportunityIndex).toBeGreaterThanOrEqual(personas[index + 1].opportunityIndex);
+    });
     expect(personas.every((persona) => persona.segmentId === 'gba-cross-border-explorers')).toBe(true);
   });
 
@@ -80,8 +90,10 @@ describe('persona segmentation selectors', () => {
     const summary = getPersonaUniverseSummary();
     const filtered = filterPersonas({ query: 'retail', sort: 'readiness' });
     const serialized = JSON.stringify({ summary, filtered });
+    const numericValues = collectNumbers({ summary, filtered });
 
-    expect(serialized).not.toMatch(/NaN|Infinity/);
+    expect(numericValues.length).toBeGreaterThan(0);
+    expect(numericValues.every(Number.isFinite)).toBe(true);
     expect(serialized).not.toMatch(bannedCurrencyPattern);
   });
 });
