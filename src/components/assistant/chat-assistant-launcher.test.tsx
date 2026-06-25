@@ -111,7 +111,19 @@ describe('ChatAssistantLauncher', () => {
     expect(launcher).toHaveClass('bottom-[calc(env(safe-area-inset-bottom)+1rem)]');
     expect(launcher).toHaveClass('h-12');
     expect(launcher).toHaveClass('w-12');
+    expect(launcher).toHaveClass('lg:w-auto');
+    expect(launcher).toHaveClass('lg:px-4');
     expect(within(launcher).getByText('Ask CDE AI')).toHaveClass('hidden');
+    expect(within(launcher).getByText('Ask CDE AI')).toHaveClass('lg:inline');
+  });
+
+  it('keeps the assistant panel max height inside the safe-area-adjusted viewport', () => {
+    renderLauncher();
+
+    const dialog = openAssistant();
+
+    expect(dialog).toHaveClass('bottom-[calc(env(safe-area-inset-bottom)+5rem)]');
+    expect(dialog).toHaveClass('max-h-[min(42rem,calc(100dvh_-_env(safe-area-inset-bottom)_-_7rem))]');
   });
 
   it('moves focus into the dialog, lets Tab leave the non-modal drawer, and closes with Escape', async () => {
