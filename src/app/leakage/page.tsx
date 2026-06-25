@@ -11,6 +11,7 @@ import {
 } from '@/components/panels/insight-storytelling';
 import { BandValue, IndexValue } from '@/components/ui/formatted-values';
 import { Overline } from '@/components/ui/overline';
+import { PageHeader } from '@/components/ui/page-header';
 import { Panel } from '@/components/ui/panel';
 import { CORE_CATEGORIES, type CoreCategory, type Segment } from '@/data';
 import { formatEnriched } from '@/lib/format';
@@ -166,21 +167,39 @@ export default function LeakagePage() {
 
   return (
     <div className="space-y-6 text-galaxy-cream">
-      <section className="rounded-lg border border-galaxy-border bg-[radial-gradient(circle_at_top_left,rgba(205,164,92,0.2),transparent_34%),linear-gradient(135deg,rgba(31,27,24,0.96),rgba(8,18,30,0.92))] px-6 py-8 shadow-2xl shadow-black/25 md:px-8">
-        <Overline>Find the money</Overline>
-        <div className="mt-4 grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-end">
+      <PageHeader
+        variant="compact"
+        eyebrow="Leakage review"
+        title="Cross-Property Leakage"
+        description={(
+          <>
+            Track where visible wallet leaves Galaxy, rank leakage drivers, and move validated segment priorities into
+            audience activation.
+          </>
+        )}
+        aside={(
+          <>
+            <p className="font-semibold text-galaxy-gold">CDE-safe opportunity view</p>
+            <p className="mt-2">
+              Only percentages, indices, and equiv./mo bands are shown for enriched wallet signals.
+            </p>
+          </>
+        )}
+      />
+
+      <Panel>
+        <div
+          role="region"
+          aria-label="Headline opportunity index"
+          className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+        >
           <div>
-            <h1 className="font-serif text-5xl text-galaxy-cream md:text-6xl">Cross-Property Leakage</h1>
-            <p className="mt-4 max-w-3xl text-base leading-8 text-galaxy-muted md:text-lg">
-              Quantify where known Galaxy guests are still spending across competitor hotels, retail, dining, and
-              entertainment, then prioritize the segments with the clearest win-back path.
+            <Overline>Opportunity snapshot</Overline>
+            <p className="mt-3 text-sm leading-6 text-galaxy-muted">
+              Current segment recapture headroom remains indexed and banded for CDE compliance.
             </p>
           </div>
-          <div
-            role="region"
-            aria-label="Headline opportunity index"
-            className="rounded-lg border border-galaxy-gold/30 bg-galaxy-ink/45 p-4"
-          >
+          <div className="rounded-lg border border-galaxy-gold/30 bg-galaxy-ink/45 p-4">
             <p className="text-sm font-semibold text-galaxy-gold">Headline opportunity index</p>
             <div className="mt-3 text-3xl font-semibold text-galaxy-cream">
               <IndexValue value={activeSegment.opportunityIndex} />
@@ -190,7 +209,7 @@ export default function LeakagePage() {
             </p>
           </div>
         </div>
-      </section>
+      </Panel>
 
       <ExecutiveSummaryPanel narrative={insightNarrative} />
 

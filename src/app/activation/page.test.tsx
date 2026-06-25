@@ -76,7 +76,8 @@ describe('activation route', () => {
   it('keeps top leakage fallback behavior when no audiences are saved', () => {
     const view = renderActivation();
 
-    expect(screen.getByRole('heading', { name: 'Next-Best-Action' })).toBeInTheDocument();
+    expect(screen.getByText('Activation planning')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Next-Best-Action', level: 1 })).toHaveClass('font-sans');
     expect(screen.getAllByText('Top leakage segments').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('Galaxy Rewards').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('MOP 200 rebate on MOP 500 spend')).toBeInTheDocument();
