@@ -127,6 +127,51 @@ describe('PurchaseHistoryPanel', () => {
     expect(container.textContent).not.toMatch(/NaN|Infinity/i);
   });
 
+  it('drops generated-looking stay ids when display fields are missing or unsafe', () => {
+    const malformedGuest = {
+      ...guests[0],
+      stayHistory: [
+        {
+          id: '1234-stay-1',
+          periodLabel: 'HKD current',
+          property: 'Email test@example.com',
+          roomType: Number.NaN,
+          nightsBand: '2-3 nights',
+          occasion: 'Short break',
+          satisfactionSignal: 'Positive',
+        },
+      ],
+    } as unknown as Guest;
+
+    render(<PurchaseHistoryPanel guest={malformedGuest} />);
+
+    expect(screen.getByText('No stay history available')).toBeInTheDocument();
+    expect(screen.queryByRole('list', { name: 'Stay history' })).not.toBeInTheDocument();
+  });
+
+  it('drops generated-looking purchase ids when category is valid but display fields are missing or unsafe', () => {
+    const malformedGuest = {
+      ...guests[0],
+      purchaseHistory: [
+        {
+          id: '1234-purchase-1',
+          periodLabel: 'MOP current',
+          category: 'fnb',
+          merchantArea: 'Call +853 61234567',
+          itemLabel: Number.POSITIVE_INFINITY,
+          channel: 'Host',
+          ticketBand: 'premium',
+          galaxyOwned: true,
+        },
+      ],
+    } as unknown as Guest;
+
+    render(<PurchaseHistoryPanel guest={malformedGuest} />);
+
+    expect(screen.getByText('No purchase history available')).toBeInTheDocument();
+    expect(screen.queryByRole('list', { name: 'Purchase history' })).not.toBeInTheDocument();
+  });
+
   it('does not render malformed long ticket band tokens', () => {
     const malformedTicketBand = `premium-${'x'.repeat(160)}`;
     const malformedGuest = {

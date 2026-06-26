@@ -68,13 +68,13 @@ function hasUsablePurchaseFields(purchase: Record<string, unknown>) {
 function isValidStay(value: unknown): value is GuestStayHistoryItem {
   if (!isRecord(value)) return false;
 
-  return hasGeneratedStayId(value.id) || hasUsableStayFields(value);
+  return hasGeneratedStayId(value.id) && hasUsableStayFields(value);
 }
 
 function isValidPurchase(value: unknown): value is GuestPurchaseHistoryItem {
   if (!isRecord(value) || !isCoreCategory(value.category)) return false;
 
-  return hasGeneratedPurchaseId(value.id) || hasUsablePurchaseFields(value);
+  return hasGeneratedPurchaseId(value.id) && hasUsablePurchaseFields(value);
 }
 
 function safeStays(value: unknown): GuestStayHistoryItem[] {
