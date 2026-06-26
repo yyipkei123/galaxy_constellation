@@ -12,6 +12,7 @@ describe('SnapshotStatusStrip', () => {
       />,
     );
 
+    expect(screen.getByRole('group', { name: 'CDE snapshot status' })).toBeInTheDocument();
     expect(screen.getByText('2026 Q2 snapshot')).toBeInTheDocument();
     expect(screen.getByText('Quarterly refresh')).toBeInTheDocument();
     expect(screen.getByText('63% matched coverage')).toBeInTheDocument();

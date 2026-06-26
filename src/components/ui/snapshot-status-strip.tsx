@@ -24,6 +24,7 @@ export function SnapshotStatusStrip({
 
   return (
     <div
+      role="group"
       aria-label="CDE snapshot status"
       className={clsx(
         'flex max-w-full flex-wrap items-center gap-2 rounded-lg border border-galaxy-border bg-galaxy-ink/45 p-3 text-xs text-galaxy-muted',
