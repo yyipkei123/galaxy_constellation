@@ -27,7 +27,7 @@ export default function GuestsPage() {
             </p>
           </div>
           <div className="rounded-lg border border-galaxy-border bg-galaxy-ink/45 p-4 text-sm leading-6 text-galaxy-muted">
-            Synthetic masked demo records only. CDE values render as percentages, indices,
+            Masked synthetic demo records only. CDE values render as percentages, indices,
             propensities, or modelled bands.
           </div>
         </div>

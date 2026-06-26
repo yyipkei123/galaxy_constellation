@@ -49,3 +49,11 @@ Deploy to Vercel as a standard Next.js app. The app has no backend, database, or
 5. Close the loop: "Acquire from the right corridor, then grow their wallet on-property. One platform, one loop."
 
 Lens B content generation is a deterministic client-side template. It uses no live LLM call, no API key, no backend, and no client-side model credential. A future governed model route would need to run through a controlled backend or governance layer, not raw browser keys.
+
+## V2 Demo Script
+
+1. Wow open: "This is your guest base as a living constellation. Every star is a guest or segment, and the brightest points are the largest untapped opportunities."
+2. Lead Board: "The platform tells a host who to pitch next, ranked by Galaxy first-party value, Mastercard CDE opportunity, propensity and engagement."
+3. Open a 360: "Left is what Galaxy already knows. Right is what Mastercard CDE adds. The centre is the fused opportunity and Lead Score."
+4. Recommendation and pitch: "The offer, channel, confidence and bilingual pitch are templated from local demo data. There is no live LLM call or client API key."
+5. Close the loop: "From who are my guests to who should I call today and what should I say: Galaxy data plus Mastercard CDE, made actionable."

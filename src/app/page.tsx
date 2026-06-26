@@ -160,7 +160,7 @@ function OverviewRoute({ selectedQuarter, segments, methodology }: OverviewRoute
             {topFindings[0]?.title ?? 'No active CDE segment insights available for this quarter.'}
           </p>
           <p className="mt-3 text-sm leading-6 text-galaxy-muted">
-            {topFindings[0]?.finding ?? 'Refresh the segment feed to generate ranked findings.'}
+            {topFindings[0]?.summary ?? 'Refresh the segment feed to generate ranked findings.'}
           </p>
         </Panel>
         <KpiCard

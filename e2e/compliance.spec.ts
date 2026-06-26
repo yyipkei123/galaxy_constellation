@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const routes = ['/', '/wallet', '/segments', '/leakage', '/propensity', '/activation', '/marketscan', '/corridors', '/corridors/korea', '/acquisition'];
+const routes = ['/', '/wallet', '/segments', '/guests', '/guests/MEM-••••3421', '/leakage', '/propensity', '/activation', '/marketscan', '/corridors', '/corridors/korea', '/acquisition'];
 const interruptedNavigationMessage = 'is interrupted by another navigation';
 const fallbackBaseUrl = 'http://127.0.0.1:3000';
 
@@ -102,6 +102,19 @@ test.describe('Galaxy Constellation rendered compliance', () => {
         await expect(page.getByText('Generated persona insight')).toBeVisible();
         await expect(page.getByRole('button', { name: 'persona: Suite-First Patrons' })).toBeVisible();
         await expect(personaRecommendationKit.getByText('Mastercard CDE reveal')).toBeVisible();
+      }
+
+      if (route === '/guests') {
+        await expect(page.getByRole('heading', { name: /Priority Lead Board/i })).toBeVisible();
+        await expect(page.getByRole('figure', { name: /Priority quadrant/i })).toBeVisible();
+        await expect(page.getByText(/Masked synthetic demo records only\. CDE values render as percentages/i)).toBeVisible();
+      }
+
+      if (route.startsWith('/guests/')) {
+        await expect(page.getByRole('heading', { name: /Customer 360/i })).toBeVisible();
+        await expect(page.getByText('What Galaxy sees')).toBeVisible();
+        await expect(page.getByText('What Mastercard CDE adds')).toBeVisible();
+        await expect(page.getByText('Suggested pitch script')).toBeVisible();
       }
 
       if (route === '/corridors') {
@@ -252,6 +265,23 @@ test.describe('Galaxy Constellation rendered compliance', () => {
     await expect(page.locator('body')).not.toContainText(/HKD|MOP|\$|元|澳門幣/);
     expect(await documentScrollWidth(page)).toBeLessThanOrEqual(390);
   });
+
+  for (const viewport of [
+    { label: 'iPhone', width: 390, height: 844 },
+    { label: 'iPad', width: 820, height: 1180 },
+    { label: 'desktop', width: 1440, height: 900 },
+  ]) {
+    test(`Customer 360 routes remain CDE-safe and responsive on ${viewport.label}`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+
+      for (const route of ['/guests', '/guests/MEM-••••3421']) {
+        await gotoStableRoute(page, route);
+        await expect(page.getByText(/Enriched figures are modelled estimates/i)).toBeVisible();
+        await expect(page.locator('body')).not.toContainText(/HKD|MOP|\$|元|澳門幣/);
+        expect(await documentScrollWidth(page)).toBeLessThanOrEqual(viewport.width);
+      }
+    });
+  }
 
   for (const viewport of [
     { label: 'iPhone', width: 390, height: 844 },

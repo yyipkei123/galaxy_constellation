@@ -64,8 +64,8 @@ function safeProperties(value: unknown) {
 }
 
 export function FusionPanel({ guest }: { guest: Guest }) {
-  const firstParty = isRecord(guest?.firstParty) ? guest.firstParty : {};
-  const cde = isRecord(guest?.cde) ? guest.cde : {};
+  const firstParty: Record<string, unknown> = isRecord(guest?.firstParty) ? guest.firstParty : {};
+  const cde: Record<string, unknown> = isRecord(guest?.cde) ? guest.cde : {};
   const primaryOpportunity = safeCategory(guest?.primaryOpportunity);
   const leadScore = clamp(Math.round(finiteNumber(guest?.leadScore)), 0, 100);
   const stays = clamp(Math.round(finiteNumber(firstParty.staysL12m)), 0, 999);

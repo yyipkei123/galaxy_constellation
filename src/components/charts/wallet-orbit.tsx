@@ -30,7 +30,7 @@ function categoryValue(record: unknown, category: CoreCategory) {
 }
 
 export function WalletOrbit({ guest }: { guest: Guest }) {
-  const cde = isRecord(guest?.cde) ? guest.cde : {};
+  const cde: Record<string, unknown> = isRecord(guest?.cde) ? guest.cde : {};
   const captureByCategory = isRecord(cde.categoryCapturePct) ? cde.categoryCapturePct : {};
   const leakageByCategory = isRecord(cde.categoryLeakagePct) ? cde.categoryLeakagePct : {};
   const indexByCategory = isRecord(cde.categoryWalletIndex) ? cde.categoryWalletIndex : {};

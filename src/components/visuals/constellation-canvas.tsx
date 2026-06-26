@@ -42,31 +42,34 @@ export function ConstellationCanvas() {
     const canvas = canvasRef.current;
     const wrapper = wrapperRef.current;
     if (!canvas || !wrapper) return;
+    const canvasElement = canvas;
+    const wrapperElement = wrapper;
     const supportsIntersectionObserver = typeof IntersectionObserver !== 'undefined';
 
-    const context = canvas.getContext('2d');
+    const context = canvasElement.getContext('2d');
     if (!context) return;
+    const drawingContext = context;
 
     let stars: Star[] = [];
     let animationFrame: number | null = null;
     let isIntersecting = true;
 
     function resize() {
-      const rect = wrapper.getBoundingClientRect();
+      const rect = wrapperElement.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 1.6);
-      canvas.width = Math.max(1, Math.floor(rect.width * dpr));
-      canvas.height = Math.max(1, Math.floor(rect.height * dpr));
-      canvas.style.width = `${rect.width}px`;
-      canvas.style.height = `${rect.height}px`;
-      context.setTransform(dpr, 0, 0, dpr, 0, 0);
+      canvasElement.width = Math.max(1, Math.floor(rect.width * dpr));
+      canvasElement.height = Math.max(1, Math.floor(rect.height * dpr));
+      canvasElement.style.width = `${rect.width}px`;
+      canvasElement.style.height = `${rect.height}px`;
+      drawingContext.setTransform(dpr, 0, 0, dpr, 0, 0);
       stars = createStars(rect.width, rect.height);
     }
 
     function paint(animate: boolean) {
-      const rect = wrapper.getBoundingClientRect();
-      context.clearRect(0, 0, rect.width, rect.height);
-      context.fillStyle = 'rgba(11, 11, 14, 0.2)';
-      context.fillRect(0, 0, rect.width, rect.height);
+      const rect = wrapperElement.getBoundingClientRect();
+      drawingContext.clearRect(0, 0, rect.width, rect.height);
+      drawingContext.fillStyle = 'rgba(11, 11, 14, 0.2)';
+      drawingContext.fillRect(0, 0, rect.width, rect.height);
 
       if (animate) {
         stars.forEach((star) => {
@@ -83,21 +86,21 @@ export function ConstellationCanvas() {
           const second = stars[j];
           const distance = Math.hypot(first.x - second.x, first.y - second.y);
           if (distance < LINK_DISTANCE) {
-            context.strokeStyle = `rgba(${GOLD}, ${0.12 * (1 - distance / LINK_DISTANCE)})`;
-            context.lineWidth = 0.6;
-            context.beginPath();
-            context.moveTo(first.x, first.y);
-            context.lineTo(second.x, second.y);
-            context.stroke();
+            drawingContext.strokeStyle = `rgba(${GOLD}, ${0.12 * (1 - distance / LINK_DISTANCE)})`;
+            drawingContext.lineWidth = 0.6;
+            drawingContext.beginPath();
+            drawingContext.moveTo(first.x, first.y);
+            drawingContext.lineTo(second.x, second.y);
+            drawingContext.stroke();
           }
         }
       }
 
       stars.forEach((star) => {
-        context.fillStyle = `rgba(${GOLD}, ${star.alpha})`;
-        context.beginPath();
-        context.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-        context.fill();
+        drawingContext.fillStyle = `rgba(${GOLD}, ${star.alpha})`;
+        drawingContext.beginPath();
+        drawingContext.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        drawingContext.fill();
       });
     }
 
@@ -165,7 +168,7 @@ export function ConstellationCanvas() {
       }
     });
 
-    observer.observe(wrapper);
+    observer.observe(wrapperElement);
     window.addEventListener('resize', handleResize);
     document.addEventListener('visibilitychange', handleVisibilityChange);
     startLoop();
