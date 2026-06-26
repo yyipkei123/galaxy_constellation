@@ -5,15 +5,14 @@ import GuestDetailPage, { generateStaticParams } from './page';
 const bannedCurrencyPattern = /HKD|MOP|\$|元|澳門幣/i;
 
 describe('guest detail route', () => {
-  it('provides encoded-safe static params for generated guests', () => {
+  it('provides raw static params for generated guests', () => {
     const params = generateStaticParams();
 
-    expect(params).toContainEqual({ id: encodeURIComponent(guests[0].id) });
-    expect(params.every((param) => !param.id.includes('•'))).toBe(true);
+    expect(params).toContainEqual({ id: guests[0].id });
   });
 
-  it('renders Customer 360 fusion, recommendations, and bilingual pitch from an encoded id', () => {
-    const { container } = render(<GuestDetailPage params={{ id: encodeURIComponent(guests[0].id) }} />);
+  it('renders Customer 360 fusion, recommendations, and bilingual pitch from an encoded id', async () => {
+    const { container } = render(await GuestDetailPage({ params: Promise.resolve({ id: encodeURIComponent(guests[0].id) }) }));
 
     expect(screen.getByRole('heading', { name: /Customer 360/i })).toBeInTheDocument();
     expect(screen.getByText('What Galaxy sees')).toBeInTheDocument();
@@ -28,14 +27,14 @@ describe('guest detail route', () => {
     expect(container.textContent).not.toMatch(bannedCurrencyPattern);
   });
 
-  it('also resolves a decoded masked id for direct unit rendering', () => {
-    render(<GuestDetailPage params={{ id: guests[0].id }} />);
+  it('also resolves a decoded masked id for direct unit rendering', async () => {
+    render(await GuestDetailPage({ params: Promise.resolve({ id: guests[0].id }) }));
 
     expect(screen.getByText(guests[0].id)).toBeInTheDocument();
   });
 
-  it('renders a not-found message for an unknown masked id with a safe back link', () => {
-    render(<GuestDetailPage params={{ id: encodeURIComponent('MEM-••••0000') }} />);
+  it('renders a not-found message for an unknown masked id with a safe back link', async () => {
+    render(await GuestDetailPage({ params: Promise.resolve({ id: encodeURIComponent('MEM-••••0000') }) }));
 
     expect(screen.getByText('Guest profile not found.')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Back to Lead Board/i })).toHaveAttribute('href', '/guests');

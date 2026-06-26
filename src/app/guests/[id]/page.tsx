@@ -16,11 +16,12 @@ function decodeGuestParam(id: string) {
 }
 
 export function generateStaticParams() {
-  return guests.map((guest) => ({ id: encodeURIComponent(guest.id) }));
+  return guests.map((guest) => ({ id: guest.id }));
 }
 
-export default function GuestDetailPage({ params }: { params: { id: string } }) {
-  const guest = getGuestById(decodeGuestParam(params.id));
+export default async function GuestDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const guest = getGuestById(decodeGuestParam(id));
 
   if (!guest) {
     return (
