@@ -1,8 +1,8 @@
 import type { Guest, GuestConsentStatus } from '@/data';
 
-const bannedCurrencyPattern = /HKD|MOP|\$|元|澳門幣/gi;
-const directContactPattern = /@|\+\d{6,}|(?:\d[\s-]?){8,}/g;
-const nonFinitePattern = /NaN|Infinity/gi;
+const bannedCurrencyPattern = /HKD|MOP|\$|元|澳門幣/i;
+const directContactPattern = /@|\+\d{6,}|(?:\d[\s-]?){8,}/;
+const nonFinitePattern = /NaN|Infinity/i;
 
 function safeText(value: unknown, fallback: string) {
   if (typeof value !== 'string' && typeof value !== 'number') return fallback;
@@ -13,15 +13,8 @@ function safeText(value: unknown, fallback: string) {
     directContactPattern.test(rawValue) ||
     nonFinitePattern.test(rawValue)
   ) {
-    bannedCurrencyPattern.lastIndex = 0;
-    directContactPattern.lastIndex = 0;
-    nonFinitePattern.lastIndex = 0;
     return fallback;
   }
-
-  bannedCurrencyPattern.lastIndex = 0;
-  directContactPattern.lastIndex = 0;
-  nonFinitePattern.lastIndex = 0;
 
   const cleaned = rawValue.replace(/\s+/g, ' ').trim();
   return cleaned || fallback;
@@ -39,7 +32,7 @@ function safeList(value: unknown, fallback: string[]) {
 }
 
 function consentLabel(value: unknown): GuestConsentStatus {
-  return value === 'service-only' ? 'service-only' : 'marketable';
+  return value === 'marketable' ? 'marketable' : 'service-only';
 }
 
 export function GuestIdentityPanel({ guest }: { guest: Guest }) {
@@ -54,12 +47,12 @@ export function GuestIdentityPanel({ guest }: { guest: Guest }) {
   return (
     <section className="rounded-2xl border border-galaxy-border bg-galaxy-charcoal/65 p-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
+        <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-galaxy-gold">
             First-party profile
           </p>
-          <h2 className="mt-2 text-2xl font-semibold text-galaxy-cream">Synthetic CRM identity</h2>
-          <p className="mt-2 text-sm leading-6 text-galaxy-muted">
+          <h2 className="mt-2 break-words text-2xl font-semibold text-galaxy-cream">Synthetic CRM identity</h2>
+          <p className="mt-2 break-words text-sm leading-6 text-galaxy-muted">
             Demo-only synthetic identity linked to the masked member ID. No real PII is shown.
           </p>
         </div>
@@ -69,68 +62,80 @@ export function GuestIdentityPanel({ guest }: { guest: Guest }) {
       </div>
 
       <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
-        <div className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">
-          <p className="text-sm font-semibold text-galaxy-cream">{displayName}</p>
-          <p className="mt-1 text-sm text-galaxy-muted">{displayNameZh}</p>
+        <div className="min-w-0 rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">
+          <p className="break-words text-sm font-semibold text-galaxy-cream">{displayName}</p>
+          <p className="mt-1 break-words text-sm text-galaxy-muted">{displayNameZh}</p>
           <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
             <div>
               <dt className="text-galaxy-muted">Age band</dt>
-              <dd className="font-semibold text-galaxy-cream">{safeText(profile?.ageBand, 'Unknown')}</dd>
+              <dd className="break-words font-semibold text-galaxy-cream">{safeText(profile?.ageBand, 'Unknown')}</dd>
             </div>
             <div>
               <dt className="text-galaxy-muted">Origin market</dt>
-              <dd className="font-semibold text-galaxy-cream">{safeText(profile?.originMarket, 'Unknown')}</dd>
+              <dd className="break-words font-semibold text-galaxy-cream">
+                {safeText(profile?.originMarket, 'Unknown')}
+              </dd>
             </div>
             <div>
               <dt className="text-galaxy-muted">Travel party</dt>
-              <dd className="font-semibold text-galaxy-cream">{safeText(profile?.travelParty, 'Unknown')}</dd>
+              <dd className="break-words font-semibold text-galaxy-cream">
+                {safeText(profile?.travelParty, 'Unknown')}
+              </dd>
             </div>
             <div>
               <dt className="text-galaxy-muted">Language</dt>
-              <dd className="font-semibold text-galaxy-cream">{safeText(profile?.preferredLanguage, 'Unknown')}</dd>
+              <dd className="break-words font-semibold text-galaxy-cream">
+                {safeText(profile?.preferredLanguage, 'Unknown')}
+              </dd>
             </div>
           </dl>
         </div>
 
-        <div className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">
+        <div className="min-w-0 rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">
           <dl className="grid gap-3 text-sm">
             <div>
               <dt className="text-galaxy-muted">Host owner</dt>
-              <dd className="font-semibold text-galaxy-cream">{safeText(profile?.hostOwner, 'Host Team')}</dd>
+              <dd className="break-words font-semibold text-galaxy-cream">
+                {safeText(profile?.hostOwner, 'Host Team')}
+              </dd>
             </div>
             <div>
               <dt className="text-galaxy-muted">Contactability</dt>
-              <dd className="font-semibold text-galaxy-cream">{safeText(profile?.contactability, 'Service channel')}</dd>
+              <dd className="break-words font-semibold text-galaxy-cream">
+                {safeText(profile?.contactability, 'Service channel')}
+              </dd>
             </div>
             <div>
               <dt className="text-galaxy-muted">Consent</dt>
-              <dd className="font-semibold text-galaxy-cream">{consentLabel(profile?.consentStatus)}</dd>
+              <dd className="break-words font-semibold text-galaxy-cream">{consentLabel(profile?.consentStatus)}</dd>
             </div>
             <div>
               <dt className="text-galaxy-muted">Tenure</dt>
-              <dd className="font-semibold text-galaxy-cream">{safeText(profile?.membershipTenureBand, 'Unknown')}</dd>
+              <dd className="break-words font-semibold text-galaxy-cream">
+                {safeText(profile?.membershipTenureBand, 'Unknown')}
+              </dd>
             </div>
           </dl>
         </div>
       </div>
 
       <div className="mt-4 grid gap-3 text-sm md:grid-cols-3">
-        <div className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">
+        <div className="min-w-0 rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">
           <p className="font-semibold text-galaxy-gold">Favorite signals</p>
           <ul className="mt-3 space-y-2 text-galaxy-muted">
-            {favoriteCategories.map((item) => <li key={item}>{item}</li>)}
+            {favoriteCategories.map((item) => <li className="break-words" key={item}>{item}</li>)}
           </ul>
         </div>
-        <div className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">
+        <div className="min-w-0 rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">
           <p className="font-semibold text-galaxy-gold">Service preferences</p>
           <ul className="mt-3 space-y-2 text-galaxy-muted">
-            {servicePreferences.map((item) => <li key={item}>{item}</li>)}
+            {servicePreferences.map((item) => <li className="break-words" key={item}>{item}</li>)}
           </ul>
         </div>
-        <div className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">
+        <div className="min-w-0 rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">
           <p className="font-semibold text-galaxy-gold">Occasion signals</p>
           <ul className="mt-3 space-y-2 text-galaxy-muted">
-            {occasionSignals.map((item) => <li key={item}>{item}</li>)}
+            {occasionSignals.map((item) => <li className="break-words" key={item}>{item}</li>)}
           </ul>
         </div>
       </div>

@@ -3,6 +3,8 @@ import { guests, type Guest } from '@/data';
 import { GuestIdentityPanel } from './guest-identity-panel';
 
 const bannedCurrencyPattern = /HKD|MOP|\$|元|澳門幣/i;
+const directContactPattern = /@|\+\d{6,}|(?:\d[\s-]?){8,}/;
+const unsafeTextPattern = /HKD|MOP|\$|元|澳門幣|NaN|Infinity|@|\+\d{6,}|(?:\d[\s-]?){8,}/i;
 
 describe('GuestIdentityPanel', () => {
   it('renders synthetic customer identity, demographics, and preferences', () => {
@@ -26,8 +28,12 @@ describe('GuestIdentityPanel', () => {
         ...guests[0].profile,
         displayName: 'HKD raw name',
         displayNameZh: '澳門幣姓名',
+        ageBand: 'NaN',
         originMarket: 'Hong Kong',
+        preferredLanguage: 'Infinity',
         hostOwner: 'Host Team A',
+        contactability: 'Email owner@',
+        consentStatus: 'unknown',
         membershipTenureBand: '99999999',
       },
       preferences: {
@@ -41,6 +47,11 @@ describe('GuestIdentityPanel', () => {
 
     expect(screen.getByText('Synthetic guest')).toBeInTheDocument();
     expect(screen.getByText('姓名未顯示')).toBeInTheDocument();
-    expect(container.textContent).not.toMatch(/HKD|MOP|\$|元|澳門幣|@\w|\+\d{6,}|61234567/i);
+    expect(screen.getByText('No favorite category signal')).toBeInTheDocument();
+    expect(screen.getByText('No service preference signal')).toBeInTheDocument();
+    expect(screen.getByText('No occasion signal')).toBeInTheDocument();
+    expect(screen.getByText('service-only')).toBeInTheDocument();
+    expect(container.textContent).not.toMatch(directContactPattern);
+    expect(container.textContent).not.toMatch(unsafeTextPattern);
   });
 });
