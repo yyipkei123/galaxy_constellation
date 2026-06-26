@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import { WalletOrbit } from '@/components/charts/wallet-orbit';
 import { FusionPanel } from '@/components/panels/fusion-panel';
+import { GuestIdentityPanel } from '@/components/panels/guest-identity-panel';
 import { GuestProfileHeader } from '@/components/panels/guest-profile-header';
 import { GuestTimeline } from '@/components/panels/guest-timeline';
 import { NbaRecommendationCard } from '@/components/panels/nba-recommendation-card';
 import { PitchScriptCard } from '@/components/panels/pitch-script-card';
+import { PurchaseHistoryPanel } from '@/components/panels/purchase-history-panel';
 import { getGuestById, guests } from '@/data';
 
 function decodeGuestParam(id: string) {
@@ -40,6 +42,7 @@ export default async function GuestDetailPage({ params }: { params: Promise<{ id
   return (
     <div className="space-y-6 text-galaxy-cream">
       <GuestProfileHeader guest={guest} />
+      <GuestIdentityPanel guest={guest} />
       <FusionPanel guest={guest} />
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <div className="space-y-4">
@@ -48,6 +51,7 @@ export default async function GuestDetailPage({ params }: { params: Promise<{ id
             <NbaRecommendationCard key={rec.offer} rec={rec} />
           ))}
           <PitchScriptCard guest={guest} />
+          <PurchaseHistoryPanel guest={guest} />
           <GuestTimeline guest={guest} />
         </div>
         <WalletOrbit guest={guest} />

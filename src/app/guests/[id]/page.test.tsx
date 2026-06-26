@@ -15,6 +15,10 @@ describe('guest detail route', () => {
     const { container } = render(await GuestDetailPage({ params: Promise.resolve({ id: encodeURIComponent(guests[0].id) }) }));
 
     expect(screen.getByRole('heading', { name: /Customer 360/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Synthetic CRM identity' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Galaxy purchase and stay history' })).toBeInTheDocument();
+    expect(screen.getByText(guests[0].profile.displayName)).toBeInTheDocument();
+    expect(screen.getByText(guests[0].profile.originMarket)).toBeInTheDocument();
     expect(screen.getByText('What Galaxy sees')).toBeInTheDocument();
     expect(screen.getByText('What Mastercard CDE adds')).toBeInTheDocument();
     expect(screen.getByText('Fused opportunity')).toBeInTheDocument();
