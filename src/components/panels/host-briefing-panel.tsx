@@ -65,11 +65,17 @@ export function HostBriefingPanel({ guest }: { guest: Guest }) {
                 <p className="text-xs font-semibold uppercase tracking-[0.16em]">Next action</p>
               </div>
               <p className="mt-3 text-sm font-semibold leading-6 text-galaxy-cream">
-                {action?.offer ?? `Route to ${primaryLabel} activation`}
+                {action ? action.offer : 'No next action available'}
               </p>
-              <p className="mt-2 text-sm leading-6 text-galaxy-muted">
-                Confidence <PercentValue value={Math.round((action?.confidence ?? 0) * 100)} /> · {action?.channel ?? 'host'} channel.
-              </p>
+              {action ? (
+                <p className="mt-2 text-sm leading-6 text-galaxy-muted">
+                  Confidence <PercentValue value={Math.round(action.confidence * 100)} /> · {action.channel} channel.
+                </p>
+              ) : (
+                <p className="mt-2 text-sm leading-6 text-galaxy-muted">
+                  Review the selected guest profile before creating an activation recommendation.
+                </p>
+              )}
             </article>
           </div>
         </section>

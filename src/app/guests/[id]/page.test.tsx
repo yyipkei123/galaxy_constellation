@@ -83,11 +83,15 @@ describe('guest detail route', () => {
     const evidenceSection = requiredElement(container, '#guest-evidence');
     const actionsSection = requiredElement(container, '#guest-actions');
     const historySection = requiredElement(container, '#guest-history');
+    const navLinks = within(nav).getAllByRole('link');
 
     expect(within(nav).getByRole('link', { name: 'Brief' })).toHaveAttribute('href', '#guest-brief');
     expect(within(nav).getByRole('link', { name: 'Evidence' })).toHaveAttribute('href', '#guest-evidence');
     expect(within(nav).getByRole('link', { name: 'Actions' })).toHaveAttribute('href', '#guest-actions');
     expect(within(nav).getByRole('link', { name: 'History' })).toHaveAttribute('href', '#guest-history');
+    navLinks.forEach((link) => {
+      expect(link).not.toHaveAttribute('aria-current');
+    });
     expect(within(briefing).getByText(/Reason to contact now/i)).toBeInTheDocument();
     expect(within(briefing).getByText(/Next action/i)).toBeInTheDocument();
     expectBefore(header, nav);

@@ -25,4 +25,15 @@ describe('HostBriefingPanel', () => {
     expect(within(briefing).getByText(guests[0].nextBestActions[0].offer)).toBeInTheDocument();
     expect(container.textContent).not.toMatch(/HKD|MOP|\$|元|澳門幣/i);
   });
+
+  it('renders an explicit no-action fallback without confidence metadata', () => {
+    const guestWithoutActions = { ...guests[0], nextBestActions: [] };
+    const { container } = render(<HostBriefingPanel guest={guestWithoutActions} />);
+
+    const briefing = screen.getByRole('region', { name: 'Host briefing summary' });
+
+    expect(within(briefing).getByText('No next action available')).toBeInTheDocument();
+    expect(within(briefing).queryByText(/Confidence 0%/i)).not.toBeInTheDocument();
+    expect(container.textContent).not.toMatch(/HKD|MOP|\$|元|澳門幣/i);
+  });
 });

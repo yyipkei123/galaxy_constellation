@@ -46,7 +46,6 @@ export default async function GuestDetailPage({ params }: { params: Promise<{ id
       <GuestProfileHeader guest={guest} />
       <SectionJumpNav
         label="Customer 360 sections"
-        currentId="guest-brief"
         items={[
           { id: 'guest-brief', label: 'Brief' },
           { id: 'guest-evidence', label: 'Evidence' },
