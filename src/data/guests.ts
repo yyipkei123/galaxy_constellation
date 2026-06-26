@@ -31,6 +31,7 @@ const originMarkets: GuestProfile['originMarket'][] = [
   'Japan',
   'Korea',
 ];
+const languages: GuestPreferredLanguage[] = ['Cantonese', 'Mandarin', 'English', 'Japanese', 'Korean'];
 const travelParties: GuestProfile['travelParty'][] = ['Solo', 'Couple', 'Family', 'Business party', 'Friends'];
 const contactability: GuestProfile['contactability'][] = ['Host-led', 'Digital opt-in', 'Concierge-led', 'Rewards app'];
 const hostTeams: GuestProfile['hostOwner'][] = ['Host Team A', 'Host Team B', 'Host Team C', 'Host Team D'];
@@ -83,7 +84,7 @@ function pick<T>(items: T[], index: number): T {
 
 function profileFor(segment: Segment, index: number, globalIndex: number): GuestProfile {
   const originMarket = pick(originMarkets, globalIndex + segment.name.length);
-  const preferredLanguage: GuestPreferredLanguage = originMarket === 'Japan'
+  const resolvedPreferredLanguage: GuestPreferredLanguage = originMarket === 'Japan'
     ? 'Japanese'
     : originMarket === 'Korea'
       ? 'Korean'
@@ -92,6 +93,7 @@ function profileFor(segment: Segment, index: number, globalIndex: number): Guest
         : originMarket === 'Hong Kong'
           ? 'Cantonese'
           : 'English';
+  const preferredLanguage = languages.includes(resolvedPreferredLanguage) ? resolvedPreferredLanguage : 'English';
   const membershipTenureLow = 1 + (globalIndex % 4);
   const membershipTenureHigh = membershipTenureLow + 2 + (globalIndex % 3);
 
