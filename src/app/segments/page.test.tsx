@@ -122,6 +122,10 @@ describe('segments route', () => {
     renderSegments();
 
     expect(screen.getByRole('link', { name: /Explore acquisition corridors/i })).toHaveAttribute('href', '/corridors');
+    expect(screen.getByRole('link', { name: /See guests in this segment/i })).toHaveAttribute(
+      'href',
+      expect.stringMatching(/^\/guests\?segment=/),
+    );
   });
 
   it('renders six segment buttons and selected segment details', () => {

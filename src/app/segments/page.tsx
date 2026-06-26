@@ -195,12 +195,20 @@ export default function SegmentsPage() {
               Lens A grows wallet from known guests. Lens B finds the next source markets to acquire.
             </p>
           </div>
-          <Link
-            href="/corridors"
-            className="inline-flex rounded-md bg-galaxy-gold px-4 py-2 text-sm font-semibold text-galaxy-ink hover:bg-galaxy-gold-lite"
-          >
-            Explore acquisition corridors
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/corridors"
+              className="inline-flex rounded-md bg-galaxy-gold px-4 py-2 text-sm font-semibold text-galaxy-ink hover:bg-galaxy-gold-lite"
+            >
+              Explore acquisition corridors
+            </Link>
+            <Link
+              href={`/guests?segment=${encodeURIComponent(activeSegment?.id ?? '')}`}
+              className="inline-flex rounded-md border border-galaxy-gold/50 px-4 py-2 text-sm font-semibold text-galaxy-gold hover:bg-galaxy-gold/10"
+            >
+              See guests in this segment
+            </Link>
+          </div>
         </div>
       </Panel>
 
