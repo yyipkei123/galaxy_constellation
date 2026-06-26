@@ -17,7 +17,8 @@ export { CORE_CATEGORIES };
 
 const properties = ['Ritz-Carlton', 'Banyan Tree', 'Capella', 'Hotel Okura', 'Galaxy Hotel'];
 const tierOrder: GalaxyTier[] = ['Privilege', 'Gold', 'Platinum', 'Diamond'];
-const bannedCurrencyPattern = /HKD|MOP|\$|元|澳門幣/i;
+const bannedCurrencyPattern = /\b(?:HKD|MOP)(?=\b|[\s\d$])|\$|元|澳門幣/i;
+const directContactPattern = /@|\+\d{6,}|(?:\d[\s-]?){8,}/;
 const givenNames = ['Avery', 'Blair', 'Casey', 'Dana', 'Elliot', 'Hayden', 'Jamie', 'Morgan'];
 const zhNames = ['陳雅文', '李卓賢', '王凱琳', '何俊朗', '張曉晴', '林子謙', '黃嘉欣', '趙明軒'];
 const originMarkets: GuestProfile['originMarket'][] = [
@@ -30,7 +31,6 @@ const originMarkets: GuestProfile['originMarket'][] = [
   'Japan',
   'Korea',
 ];
-const languages: GuestPreferredLanguage[] = ['Cantonese', 'Mandarin', 'English', 'Japanese', 'Korean'];
 const travelParties: GuestProfile['travelParty'][] = ['Solo', 'Couple', 'Family', 'Business party', 'Friends'];
 const contactability: GuestProfile['contactability'][] = ['Host-led', 'Digital opt-in', 'Concierge-led', 'Rewards app'];
 const hostTeams: GuestProfile['hostOwner'][] = ['Host Team A', 'Host Team B', 'Host Team C', 'Host Team D'];
@@ -83,7 +83,7 @@ function pick<T>(items: T[], index: number): T {
 
 function profileFor(segment: Segment, index: number, globalIndex: number): GuestProfile {
   const originMarket = pick(originMarkets, globalIndex + segment.name.length);
-  const preferredLanguage = originMarket === 'Japan'
+  const preferredLanguage: GuestPreferredLanguage = originMarket === 'Japan'
     ? 'Japanese'
     : originMarket === 'Korea'
       ? 'Korean'
@@ -92,7 +92,8 @@ function profileFor(segment: Segment, index: number, globalIndex: number): Guest
         : originMarket === 'Hong Kong'
           ? 'Cantonese'
           : 'English';
-  const languageIndex = languages.indexOf(preferredLanguage);
+  const membershipTenureLow = 1 + (globalIndex % 4);
+  const membershipTenureHigh = membershipTenureLow + 2 + (globalIndex % 3);
 
   return {
     displayName: `${pick(givenNames, globalIndex)} ${String.fromCharCode(65 + (globalIndex % 20))}.`,
@@ -100,13 +101,13 @@ function profileFor(segment: Segment, index: number, globalIndex: number): Guest
     syntheticName: true,
     ageBand: pick(['25-34', '35-44', '45-54', '55-64'] as const, index + segment.name.length),
     originMarket,
-    preferredLanguage: pick(languages, languageIndex),
+    preferredLanguage,
     travelParty: pick(travelParties, index + globalIndex),
     hostOwner: pick(hostTeams, globalIndex),
     contactability: pick(contactability, index + segment.opportunityIndex),
     consentStatus: index % 5 === 0 ? 'service-only' : 'marketable',
     homeProperty: pick(properties, index + globalIndex),
-    membershipTenureBand: `${1 + (globalIndex % 4)}-${3 + (globalIndex % 5)} years`,
+    membershipTenureBand: `${membershipTenureLow}-${membershipTenureHigh} years`,
   };
 }
 
@@ -244,6 +245,35 @@ function actionFor(category: CoreCategory, propensities: Propensities): NbaRec[]
   ];
 }
 
+function displaySafePayloadFor(guest: Guest) {
+  return {
+    id: guest.id,
+    segmentId: guest.segmentId,
+    persona: guest.persona,
+    galaxyTier: guest.galaxyTier,
+    profile: guest.profile,
+    preferences: guest.preferences,
+    firstParty: guest.firstParty,
+    stayHistory: guest.stayHistory,
+    purchaseHistory: guest.purchaseHistory,
+    cde: guest.cde,
+    leadScore: guest.leadScore,
+    projectedUpsideBand: guest.projectedUpsideBand,
+    primaryOpportunity: guest.primaryOpportunity,
+    scoreDrivers: guest.scoreDrivers,
+    nextBestActions: guest.nextBestActions,
+    pitchScript: guest.pitchScript,
+  };
+}
+
+function assertDisplaySafeGuest(guest: Guest) {
+  const payloadText = JSON.stringify(displaySafePayloadFor(guest));
+
+  if (bannedCurrencyPattern.test(payloadText) || directContactPattern.test(payloadText)) {
+    throw new Error('Guest data must remain display-safe');
+  }
+}
+
 function buildGuest(segment: Segment, index: number, globalIndex: number): Guest {
   const random = mulberry32(9000 + globalIndex * 19);
   const categoryCapturePct = Object.fromEntries(CORE_CATEGORIES.map((category) => {
@@ -316,20 +346,7 @@ function buildGuest(segment: Segment, index: number, globalIndex: number): Guest
   const englishPitch = `${leadLabel} indexes high on ${primary} opportunity. Invite them to ${baseGuest.nextBestActions[0].offer} through ${baseGuest.nextBestActions[0].channel} outreach.`;
   const zhPitch = `${baseGuest.galaxyTier} 會員在 ${primary} 機會指數偏高，建議以${baseGuest.nextBestActions[0].channel}渠道邀請體驗：${baseGuest.nextBestActions[0].offer}。`;
 
-  if (bannedCurrencyPattern.test(JSON.stringify({
-    cde: baseGuest.cde,
-    englishPitch,
-    projectedUpsideBand,
-    profile: baseGuest.profile,
-    preferences: baseGuest.preferences,
-    purchaseHistory: baseGuest.purchaseHistory,
-    stayHistory: baseGuest.stayHistory,
-    zhPitch,
-  }))) {
-    throw new Error('Guest data must remain CDE-safe');
-  }
-
-  return {
+  const guest = {
     ...baseGuest,
     leadScore,
     projectedUpsideBand,
@@ -338,6 +355,9 @@ function buildGuest(segment: Segment, index: number, globalIndex: number): Guest
       zh: zhPitch,
     },
   };
+  assertDisplaySafeGuest(guest);
+
+  return guest;
 }
 
 export const guests: Guest[] = latestSegments.flatMap((segment, segmentIndex) => (

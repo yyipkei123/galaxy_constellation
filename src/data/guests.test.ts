@@ -1,8 +1,66 @@
 import { latestSegments } from './generate';
 import { CORE_CATEGORIES, guests, getGuestById, getGuestsBySegmentId, topPriorityGuests } from './guests';
 
-const bannedCurrencyPattern = /HKD|MOP|\$|元|澳門幣/i;
+const bannedCurrencyPattern = /\b(?:HKD|MOP)(?=\b|[\s\d$])|\$|元|澳門幣/i;
+const directContactPattern = /@|\+\d{6,}|(?:\d[\s-]?){8,}/;
 const maskedIdPattern = /^MEM-••••\d{4}$/;
+const displaySafePayloadKeys = [
+  'cde',
+  'firstParty',
+  'galaxyTier',
+  'id',
+  'leadScore',
+  'nextBestActions',
+  'persona',
+  'pitchScript',
+  'preferences',
+  'primaryOpportunity',
+  'profile',
+  'projectedUpsideBand',
+  'purchaseHistory',
+  'scoreDrivers',
+  'segmentId',
+  'stayHistory',
+] as const;
+
+function displaySafePayloadFor(guest: (typeof guests)[number]) {
+  return {
+    id: guest.id,
+    segmentId: guest.segmentId,
+    persona: guest.persona,
+    galaxyTier: guest.galaxyTier,
+    firstParty: guest.firstParty,
+    profile: guest.profile,
+    preferences: guest.preferences,
+    stayHistory: guest.stayHistory,
+    purchaseHistory: guest.purchaseHistory,
+    cde: guest.cde,
+    leadScore: guest.leadScore,
+    primaryOpportunity: guest.primaryOpportunity,
+    scoreDrivers: guest.scoreDrivers,
+    nextBestActions: guest.nextBestActions,
+    projectedUpsideBand: guest.projectedUpsideBand,
+    pitchScript: guest.pitchScript,
+  };
+}
+
+function enrichedGuestFingerprint(guest: (typeof guests)[number]) {
+  return {
+    id: guest.id,
+    segmentId: guest.segmentId,
+    persona: guest.persona,
+    galaxyTier: guest.galaxyTier,
+    leadScore: guest.leadScore,
+    projectedUpsideBand: guest.projectedUpsideBand,
+    primaryOpportunity: guest.primaryOpportunity,
+    profile: guest.profile,
+    preferences: guest.preferences,
+    firstStay: guest.stayHistory[0],
+    firstPurchase: guest.purchaseHistory[0],
+    scoreDrivers: guest.scoreDrivers,
+    nextBestAction: guest.nextBestActions[0],
+  };
+}
 
 describe('guest lead data', () => {
   it('generates deterministic masked guests across existing segments', () => {
@@ -45,8 +103,6 @@ describe('guest lead data', () => {
   });
 
   it('generates synthetic profile, demographics, stay history, and purchase history', () => {
-    const directContactPattern = /@|\+\d{6,}|(?:\d[\s-]?){8,}/;
-
     for (const guest of guests) {
       expect(guest.profile).toEqual(expect.any(Object));
       expect(guest.preferences).toEqual(expect.any(Object));
@@ -63,6 +119,11 @@ describe('guest lead data', () => {
       expect(guest.profile.travelParty).toMatch(/Solo|Couple|Family|Business party|Friends/);
       expect(guest.profile.homeProperty).toBeTruthy();
       expect(guest.profile.membershipTenureBand).toMatch(/^\d-\d years$/);
+      const tenureMatch = guest.profile.membershipTenureBand.match(/^(\d)-(\d) years$/);
+      expect(tenureMatch).not.toBeNull();
+      if (tenureMatch) {
+        expect(Number(tenureMatch[1])).toBeLessThanOrEqual(Number(tenureMatch[2]));
+      }
       expect(guest.preferences.favoriteCategories.length).toBeGreaterThanOrEqual(2);
       expect(guest.preferences.servicePreferences.length).toBeGreaterThanOrEqual(2);
       expect(guest.stayHistory).toHaveLength(3);
@@ -79,14 +140,32 @@ describe('guest lead data', () => {
     }
   });
 
-  it('keeps enriched guest fields CDE-safe', () => {
+  it('keeps the full enriched guest display payload CDE-safe and contact-safe', () => {
     for (const guest of guests) {
-      expect(JSON.stringify(guest.cde)).not.toMatch(bannedCurrencyPattern);
+      const payload = displaySafePayloadFor(guest);
+      expect(Object.keys(payload).sort()).toEqual([...displaySafePayloadKeys].sort());
+
+      const payloadText = JSON.stringify(payload);
+      expect(payloadText).not.toMatch(bannedCurrencyPattern);
+      expect(payloadText).not.toMatch(directContactPattern);
       expect(guest.cde.crossPropertyCashBand).toMatch(/^\d+-\d+k equiv\.\/mo$/);
       expect(guest.projectedUpsideBand).toMatch(/^\d+-\d+k equiv\.\/mo$/);
-      expect(guest.pitchScript.en).not.toMatch(bannedCurrencyPattern);
-      expect(guest.pitchScript.zh).not.toMatch(bannedCurrencyPattern);
     }
+  });
+
+  it('keeps enriched guest fingerprints stable across fresh module imports', async () => {
+    const baseline = guests.slice(0, 8).map(enrichedGuestFingerprint);
+
+    vi.resetModules();
+    const firstImport = await import('./guests');
+    const firstFingerprint = firstImport.guests.slice(0, 8).map(enrichedGuestFingerprint);
+
+    vi.resetModules();
+    const secondImport = await import('./guests');
+    const secondFingerprint = secondImport.guests.slice(0, 8).map(enrichedGuestFingerprint);
+
+    expect(firstFingerprint).toEqual(baseline);
+    expect(secondFingerprint).toEqual(baseline);
   });
 
   it('looks up guests by id and segment id', () => {
