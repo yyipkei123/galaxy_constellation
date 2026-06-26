@@ -10,6 +10,11 @@ describe('AcquisitionRecommendation', () => {
     expect(screen.getByText(/Merging to the World/i)).toBeInTheDocument();
     expect(screen.getByText('2020 base · refresh pending')).toBeInTheDocument();
     expect(screen.getByText(/22-36k equiv.\/mo/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Corridor priority score/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/100 = Mastercard corridor baseline/i)).toBeInTheDocument();
+    expect(screen.getByText(/Metric meaning: priority score blends non-gaming momentum, arrivals growth, visit frequency, and addressability/i)).toBeInTheDocument();
+    expect(screen.getByText(/Action hint: use this as the hand-off evidence for acquisition planning/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Aggregate CDE signal, no PII/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/strong signal, validating/i)).toBeInTheDocument();
   });
 

@@ -10,6 +10,9 @@ describe('PersonaAffinityChart', () => {
     expect(screen.getByText('28%')).toBeInTheDocument();
     expect(screen.getByText(/K-pop adjacent events/i)).toBeInTheDocument();
     expect(screen.getByText(/arena shows/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Metric meaning: persona share within this source-market corridor/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Action hint: tailor creative and offer copy to the leading persona/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Aggregate CDE signal, no PII/i).length).toBeGreaterThan(0);
   });
 
   it('clamps persona share bar widths to valid percentages', () => {

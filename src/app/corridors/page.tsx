@@ -33,7 +33,7 @@ export default function CorridorsPage() {
         aside={(
           <>
             <p className="font-semibold text-galaxy-gold">{methodology.panelSharePct} panel</p>
-            <p className="mt-2">{methodology.lensBNote}. Corridor figures are directional, indexed, and best blended with first-party and other sources.</p>
+            <p className="mt-2">{methodology.lensBNote}. Corridor figures use labelled CDE indices with 100 as baseline, then blend with first-party and other sources.</p>
           </>
         )}
       />
@@ -44,7 +44,7 @@ export default function CorridorsPage() {
             <SectionHeader
               eyebrow="Top inbound markets"
               title="Corridor ranking"
-              description="Top source markets ranked by computed acquisition attractiveness using only aggregate indices, percentages, ranks, and bands."
+              description="Top source markets ranked by computed acquisition attractiveness using labelled indices, percentages, ranks, and bands."
             />
             <div className="flex flex-wrap gap-3">
               <div

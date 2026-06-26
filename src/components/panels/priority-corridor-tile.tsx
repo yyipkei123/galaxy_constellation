@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { IndexValue } from '@/components/ui/formatted-values';
+import { CorridorIndexBaseline, CorridorIndexValue } from '@/components/ui/corridor-index-value';
+import { InsightTooltip } from '@/components/ui/insight-tooltip';
 import { Overline } from '@/components/ui/overline';
 import { Panel } from '@/components/ui/panel';
 import type { Corridor } from '@/data';
@@ -22,12 +23,22 @@ export function PriorityCorridorTile({ corridor }: { corridor: Corridor }) {
           ) : null}
         </div>
         <div className="text-right">
-          <p className="text-xs uppercase tracking-[0.16em] text-galaxy-muted">Priority score</p>
+          <p className="text-xs uppercase tracking-[0.16em] text-galaxy-muted">Acquisition priority score</p>
           <div className="mt-2 text-2xl font-semibold">
-            <IndexValue value={corridor.priorityIndex} />
+            <InsightTooltip
+              title="Acquisition priority score"
+              lines={[
+                'Metric meaning: priority score blends non-gaming momentum, arrivals growth, visit frequency, and addressability.',
+                'Action hint: open the acquisition recommendation to convert evidence into content.',
+                'Aggregate CDE signal, no PII.',
+              ]}
+            >
+              <CorridorIndexValue label="Priority" value={corridor.priorityIndex} />
+            </InsightTooltip>
           </div>
         </div>
       </div>
+      <CorridorIndexBaseline className="mt-4" />
       <Link
         href={`/acquisition?corridor=${corridor.id}`}
         className="mt-5 inline-flex rounded-md bg-galaxy-gold px-4 py-2 text-sm font-semibold text-galaxy-ink hover:bg-galaxy-gold-lite"

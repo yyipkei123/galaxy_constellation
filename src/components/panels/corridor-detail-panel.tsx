@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { GamingSplitBar } from '@/components/charts/gaming-split-bar';
 import { PersonaAffinityChart } from '@/components/charts/persona-affinity-chart';
 import { SeasonalityHeatmap } from '@/components/charts/seasonality-heatmap';
-import { IndexValue } from '@/components/ui/formatted-values';
+import { CorridorIndexBaseline, CorridorIndexValue } from '@/components/ui/corridor-index-value';
+import { InsightTooltip } from '@/components/ui/insight-tooltip';
 import { Panel } from '@/components/ui/panel';
 import { SectionHeader } from '@/components/ui/section-header';
 import type { Corridor } from '@/data';
@@ -48,20 +49,30 @@ export function CorridorDetailPanel({ corridor }: { corridor: Corridor }) {
         </Panel>
       </div>
 
-      <Panel>
+      <Panel className="min-w-0">
         <SectionHeader
           eyebrow="Corridor signals"
           title="Seasonality and channel signals"
           description="Aggregate seasonality, gaming/non-gaming split, and frequency indices support timing and offer design."
         />
-        <div className="mt-5 grid gap-6 lg:grid-cols-[20rem_minmax(0,1fr)]">
+        <div className="mt-5 grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-[20rem_minmax(0,1fr)]">
           <div className="space-y-5">
             <GamingSplitBar corridor={corridor} />
             <div className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">
-              <p className="text-xs uppercase tracking-[0.16em] text-galaxy-muted">Same-card frequency</p>
+              <p className="text-xs uppercase tracking-[0.16em] text-galaxy-muted">Same-card visit frequency index</p>
               <div className="mt-3 text-2xl font-semibold text-galaxy-cream">
-                <IndexValue value={corridor.txnFrequencyIndex} />
+                <InsightTooltip
+                  title="Same-card visit frequency index"
+                  lines={[
+                    'Metric meaning: same-card visit frequency compared with corridor baseline 100.',
+                    'Action hint: use stronger visit frequency to support retargeting cadence.',
+                    'Aggregate CDE signal, no PII.',
+                  ]}
+                >
+                  <CorridorIndexValue label="Visit frequency" value={corridor.txnFrequencyIndex} />
+                </InsightTooltip>
               </div>
+              <CorridorIndexBaseline className="mt-2" />
             </div>
           </div>
           <div className="min-w-0">

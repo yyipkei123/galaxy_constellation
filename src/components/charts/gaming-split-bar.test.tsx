@@ -13,6 +13,9 @@ describe('GamingSplitBar', () => {
       expect(chip.closest('[aria-hidden="true"]')).toBeNull();
     });
     expect(screen.getByRole('img', { name: /Taiwan gaming split/i })).toBeInTheDocument();
+    expect(screen.getByText(/Metric meaning: gaming versus non-gaming share for the corridor/i)).toBeInTheDocument();
+    expect(screen.getByText(/Action hint: use non-gaming weight to shape acquisition bundles/i)).toBeInTheDocument();
+    expect(screen.getByText(/Aggregate CDE signal, no PII/i)).toBeInTheDocument();
   });
 
   it('clamps split segment widths to valid percentages', () => {

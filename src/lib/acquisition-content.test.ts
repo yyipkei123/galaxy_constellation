@@ -12,6 +12,8 @@ describe('buildAcquisitionDraft', () => {
     expect(draft.variants).toHaveLength(2);
     expect(draft.variants[0].subject).toContain('Korea');
     expect(draft.variants[0].body).toContain('Merging to the World');
+    expect(draft.variants[0].body).toContain('labelled Mastercard CDE indices');
+    expect(draft.variants[0].body).toContain('100 baseline');
     expect(draft.variants[1].kvCaption).toContain('Arena-first Rewards package');
     expect(draft.versionHistory).toEqual(['v1 corridor signal', 'v2 persona offer', 'v3 compliance copy']);
     expect(JSON.stringify(draft)).not.toMatch(bannedCurrencyPattern);

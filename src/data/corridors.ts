@@ -5,9 +5,9 @@ export const CORRIDOR_YEARS = ['2020', '2024'] as const satisfies readonly Corri
 export const CORRIDOR_METRICS = ['arrivals', 'spend', 'txnFrequency', 'gamingSplit'] as const satisfies readonly CorridorMetric[];
 
 export const CORRIDOR_METRIC_LABELS: Record<CorridorMetric, string> = {
-  arrivals: 'Arrivals index',
-  spend: 'Spend index',
-  txnFrequency: 'Transaction frequency index',
+  arrivals: 'Arrival demand index',
+  spend: 'Spend intensity index',
+  txnFrequency: 'Visit frequency index',
   gamingSplit: 'Gaming / non-gaming split',
 };
 

@@ -1,4 +1,5 @@
 import type { Corridor } from '@/data';
+import { InsightTooltip } from '@/components/ui/insight-tooltip';
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -12,6 +13,9 @@ function heatClass(value: number) {
 export function SeasonalityHeatmap({ corridors, showNotes = true }: { corridors: Corridor[]; showNotes?: boolean }) {
   return (
     <div>
+      <p className="mb-3 text-xs leading-5 text-galaxy-muted">
+        Travel intensity index by month; 100 = this corridor monthly baseline.
+      </p>
       <div className="overflow-x-auto">
         <table
           role="table"
@@ -35,14 +39,21 @@ export function SeasonalityHeatmap({ corridors, showNotes = true }: { corridors:
                 {corridor.seasonality.map((value, index) => (
                   <td
                     key={months[index]}
-                    aria-label={`${corridor.name} ${months[index]} index ${value}`}
+                    aria-label={`${corridor.name} ${months[index]} travel intensity index ${value} vs this corridor monthly baseline 100`}
                     className="px-1 py-1"
                   >
-                    <span
-                      className={`block rounded px-2 py-2 text-center font-mono ${heatClass(value)}`}
+                    <InsightTooltip
+                      block
+                      title={`${corridor.name} ${months[index]} timing signal`}
+                      triggerClassName={`block rounded px-2 py-2 text-center font-mono ${heatClass(value)}`}
+                      lines={[
+                        'Metric meaning: monthly travel intensity compared with this corridor baseline 100.',
+                        'Action hint: align campaign timing to high-intensity months.',
+                        'Aggregate CDE signal, no PII.',
+                      ]}
                     >
                       {value}
-                    </span>
+                    </InsightTooltip>
                   </td>
                 ))}
               </tr>

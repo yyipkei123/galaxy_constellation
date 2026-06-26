@@ -1,4 +1,6 @@
-import { BandValue, IndexValue } from '@/components/ui/formatted-values';
+import { CorridorIndexBaseline, CorridorIndexValue } from '@/components/ui/corridor-index-value';
+import { BandValue } from '@/components/ui/formatted-values';
+import { InsightTooltip } from '@/components/ui/insight-tooltip';
 import { Panel } from '@/components/ui/panel';
 import { SectionHeader } from '@/components/ui/section-header';
 import type { Corridor } from '@/data';
@@ -39,15 +41,34 @@ export function AcquisitionRecommendation({ corridor }: { corridor: Corridor }) 
           </p>
         </div>
         <div>
-          <p className="text-xs uppercase tracking-[0.16em] text-galaxy-muted">Priority index</p>
+          <p className="text-xs uppercase tracking-[0.16em] text-galaxy-muted">Corridor priority score</p>
           <div className="mt-2 text-xl font-semibold">
-            <IndexValue value={corridor.priorityIndex} />
+            <InsightTooltip
+              title="Corridor priority score"
+              lines={[
+                'Metric meaning: priority score blends non-gaming momentum, arrivals growth, visit frequency, and addressability.',
+                'Action hint: use this as the hand-off evidence for acquisition planning.',
+                'Aggregate CDE signal, no PII.',
+              ]}
+            >
+              <CorridorIndexValue label="Priority" value={corridor.priorityIndex} />
+            </InsightTooltip>
           </div>
+          <CorridorIndexBaseline className="mt-2" />
         </div>
         <div>
           <p className="text-xs uppercase tracking-[0.16em] text-galaxy-muted">Projected value band</p>
           <div className="mt-2 text-xl font-semibold">
-            <BandValue value={corridor.projectedValueBand} />
+            <InsightTooltip
+              title="Projected value band"
+              lines={[
+                'Metric meaning: modelled opportunity band expressed as an equivalent monthly range.',
+                'Action hint: use the band for prioritization without exposing raw spend.',
+                'Aggregate CDE signal, no PII.',
+              ]}
+            >
+              <BandValue value={corridor.projectedValueBand} />
+            </InsightTooltip>
           </div>
         </div>
       </div>

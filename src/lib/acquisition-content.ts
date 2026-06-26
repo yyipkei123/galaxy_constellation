@@ -23,7 +23,7 @@ export function buildAcquisitionDraft(corridor: Corridor, personaKey: PersonaKey
       {
         id: 'A',
         subject: `${corridor.name} ${persona.label}: ${theme}`,
-        body: `Invite ${corridor.name} ${persona.label} travelers with ${persona.recommendedOffer} under ${theme}. Use aggregate corridor indices and ${projectedValueBand} opportunity bands only.`,
+        body: `Invite ${corridor.name} ${persona.label} travelers with ${persona.recommendedOffer} under ${theme}. Use labelled Mastercard CDE indices with a 100 baseline and ${projectedValueBand} opportunity bands only.`,
         kvCaption: `${theme}: ${persona.kvBrief}`,
       },
       {

@@ -16,7 +16,15 @@ describe('CorridorRankTable', () => {
     expect(screen.getByRole('row', { name: /Singapore/i })).toHaveTextContent('Non-gaming 71%');
     expect(screen.getByRole('link', { name: 'Taiwan' })).toHaveAttribute('href', '/corridors/taiwan');
     expect(screen.getByRole('link', { name: 'Taiwan' }).closest('th')).toHaveAttribute('scope', 'row');
-    expect(screen.getAllByText(/Index 153/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Spend intensity index 153/i)).toBeInTheDocument();
+    expect(screen.getByText(/Arrival demand index 132/i)).toBeInTheDocument();
+    expect(screen.getByText(/Visit frequency index 136/i)).toBeInTheDocument();
+    expect(screen.getByText(/100 = Mastercard corridor baseline/i)).toBeInTheDocument();
+    expect(screen.queryByText(/^Index 153$/i)).not.toBeInTheDocument();
+    expect(screen.getAllByText(/Metric meaning: spend intensity compares Mastercard CDE corridor spend signal against baseline 100/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Action hint: prioritize high-spend corridors for acquisition offers/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Aggregate CDE signal, no PII/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByLabelText(/Metric meaning: spend intensity compares Mastercard CDE corridor spend signal/i)[0]).toHaveAttribute('tabindex', '0');
   });
 
   it('renders gaming split selected metric as a percent instead of an index', () => {

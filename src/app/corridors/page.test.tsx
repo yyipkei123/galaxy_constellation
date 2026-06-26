@@ -13,7 +13,8 @@ describe('corridors route', () => {
     expect(within(rankingTable).getByRole('row', { name: /#1 Korea/i })).toHaveTextContent('2020 base · refresh pending');
     expect(screen.getByText('Merging to the World')).toBeInTheDocument();
     expect(screen.getByText(/10–20% panel/i)).toBeInTheDocument();
-    expect(screen.getByText(/directional, indexed/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/100 = Mastercard corridor baseline/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/labelled indices/i)).toBeInTheDocument();
   });
 
   it('updates year and metric controls without losing corridor contrasts', () => {
@@ -29,7 +30,7 @@ describe('corridors route', () => {
     expect(screen.getByRole('combobox', { name: /Corridor metric/i })).toHaveValue('spend');
     const rankingTable = screen.getByRole('table', { name: /Inbound corridor ranking/i });
     const taiwanRow = within(rankingTable).getByRole('row', { name: /Taiwan/i });
-    expect(within(taiwanRow).getAllByRole('cell')[1]).toHaveTextContent('Index 144');
+    expect(within(taiwanRow).getAllByRole('cell')[1]).toHaveTextContent('Selected spend signal index 144');
     expect(taiwanRow).toHaveTextContent('Gaming 62%');
     expect(within(rankingTable).getByRole('row', { name: /Singapore/i })).toHaveTextContent('Non-gaming 71%');
     expect(screen.getByText(/Japan peaks around festival periods/i)).toBeInTheDocument();

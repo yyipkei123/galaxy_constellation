@@ -1,5 +1,6 @@
 import type { Corridor } from '@/data';
 import { PercentValue } from '@/components/ui/formatted-values';
+import { InsightTooltip } from '@/components/ui/insight-tooltip';
 import { clampPct } from './utils';
 
 export function PersonaAffinityChart({ corridor }: { corridor: Corridor }) {
@@ -13,7 +14,16 @@ export function PersonaAffinityChart({ corridor }: { corridor: Corridor }) {
               <p className="mt-1 text-xs text-galaxy-muted">{persona.topCategories.join(' + ')}</p>
             </div>
             <span className="font-mono text-galaxy-gold">
-              <PercentValue value={persona.sharePct} />
+              <InsightTooltip
+                title={`${persona.label} affinity share`}
+                lines={[
+                  'Metric meaning: persona share within this source-market corridor.',
+                  'Action hint: tailor creative and offer copy to the leading persona.',
+                  'Aggregate CDE signal, no PII.',
+                ]}
+              >
+                <PercentValue value={persona.sharePct} />
+              </InsightTooltip>
             </span>
           </div>
           <div className="mt-3 h-2 rounded-full bg-galaxy-slate">

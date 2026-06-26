@@ -20,10 +20,13 @@ describe('SeasonalityHeatmap', () => {
     expect(screen.getByRole('rowheader', { name: 'Japan' })).toHaveAttribute('scope', 'row');
     expect(screen.getByText(/Japan peaks around festival periods/i)).toBeInTheDocument();
     expect(screen.getByText(/Southeast Asia clusters on long weekends/i)).toBeInTheDocument();
-    expect(screen.getByRole('cell', { name: 'Japan Mar index 136' })).toHaveAttribute(
+    expect(screen.getByRole('cell', { name: 'Japan Mar travel intensity index 136 vs this corridor monthly baseline 100' })).toHaveAttribute(
       'aria-label',
-      'Japan Mar index 136',
+      'Japan Mar travel intensity index 136 vs this corridor monthly baseline 100',
     );
+    expect(screen.getAllByText(/Metric meaning: monthly travel intensity compared with this corridor baseline/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Action hint: align campaign timing to high-intensity months/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Aggregate CDE signal, no PII/i).length).toBeGreaterThan(0);
   });
 
   it('can hide board-level pattern annotations for embedded detail views', () => {
