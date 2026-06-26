@@ -51,11 +51,11 @@ export default async function GuestDetailPage({ params }: { params: Promise<{ id
             <NbaRecommendationCard key={rec.offer} rec={rec} />
           ))}
           <PitchScriptCard guest={guest} />
-          <PurchaseHistoryPanel guest={guest} />
           <GuestTimeline guest={guest} />
         </div>
         <WalletOrbit guest={guest} />
       </div>
+      <PurchaseHistoryPanel guest={guest} />
     </div>
   );
 }
