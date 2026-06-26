@@ -18,9 +18,11 @@ describe('HostBriefingPanel', () => {
     expect(within(briefing).getByRole('heading', { name: 'Host briefing' })).toBeInTheDocument();
     expect(within(briefing).getByText(guests[0].profile.displayName)).toBeInTheDocument();
     expect(within(briefing).getByText(guests[0].profile.originMarket)).toBeInTheDocument();
+    expect(within(briefing).getByText(guests[0].profile.travelParty)).toBeInTheDocument();
     expect(within(briefing).getByText(categoryLabels[guests[0].primaryOpportunity])).toBeInTheDocument();
     expect(within(briefing).getByText(/Reason to contact now/i)).toBeInTheDocument();
     expect(within(briefing).getByText(/Next action/i)).toBeInTheDocument();
+    expect(within(briefing).getByText(guests[0].nextBestActions[0].offer)).toBeInTheDocument();
     expect(container.textContent).not.toMatch(/HKD|MOP|\$|元|澳門幣/i);
   });
 });

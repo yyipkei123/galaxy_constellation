@@ -22,6 +22,19 @@ function parentElement(element: HTMLElement) {
   return parent;
 }
 
+function requiredElement(container: HTMLElement, selector: string) {
+  const element = container.querySelector(selector);
+  if (!element) {
+    throw new Error(`Expected ${selector} to be rendered`);
+  }
+
+  return element;
+}
+
+function expectBefore(earlier: Element, later: Element) {
+  expect(Boolean(earlier.compareDocumentPosition(later) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+}
+
 describe('guest detail route', () => {
   it('provides raw static params for generated guests', () => {
     const params = generateStaticParams();
@@ -61,10 +74,15 @@ describe('guest detail route', () => {
   });
 
   it('places a host briefing and section navigation near the top of Customer 360', async () => {
-    render(await GuestDetailPage({ params: Promise.resolve({ id: guests[0].id }) }));
+    const { container } = render(await GuestDetailPage({ params: Promise.resolve({ id: guests[0].id }) }));
 
+    const header = screen.getByRole('heading', { name: /Customer 360/i });
     const nav = screen.getByRole('navigation', { name: 'Customer 360 sections' });
     const briefing = screen.getByRole('region', { name: 'Host briefing summary' });
+    const briefSection = requiredElement(container, '#guest-brief');
+    const evidenceSection = requiredElement(container, '#guest-evidence');
+    const actionsSection = requiredElement(container, '#guest-actions');
+    const historySection = requiredElement(container, '#guest-history');
 
     expect(within(nav).getByRole('link', { name: 'Brief' })).toHaveAttribute('href', '#guest-brief');
     expect(within(nav).getByRole('link', { name: 'Evidence' })).toHaveAttribute('href', '#guest-evidence');
@@ -72,6 +90,11 @@ describe('guest detail route', () => {
     expect(within(nav).getByRole('link', { name: 'History' })).toHaveAttribute('href', '#guest-history');
     expect(within(briefing).getByText(/Reason to contact now/i)).toBeInTheDocument();
     expect(within(briefing).getByText(/Next action/i)).toBeInTheDocument();
+    expectBefore(header, nav);
+    expectBefore(nav, briefSection);
+    expectBefore(briefSection, evidenceSection);
+    expectBefore(evidenceSection, actionsSection);
+    expectBefore(actionsSection, historySection);
   });
 
   it('renders a not-found message for an unknown masked id with a safe back link', async () => {
