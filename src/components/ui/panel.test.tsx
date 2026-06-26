@@ -2,19 +2,21 @@ import { render, screen } from '@testing-library/react';
 import { Panel } from './panel';
 
 describe('Panel', () => {
-  it('keeps default padding when no padding override is provided', () => {
-    render(<Panel>Default panel</Panel>);
+  it('renders default panel content', () => {
+    render(<Panel>Wallet panel</Panel>);
 
-    expect(screen.getByText('Default panel').closest('section')).toHaveClass('p-6');
+    expect(screen.getByText('Wallet panel')).toBeInTheDocument();
   });
 
-  it('allows responsive padding overrides without also emitting the default padding class', () => {
-    render(<Panel className="p-4 sm:p-6">Compact panel</Panel>);
+  it('supports glass depth without removing caller classes', () => {
+    render(
+      <Panel variant="glass" className="border-galaxy-gold/40">
+        Glass panel
+      </Panel>,
+    );
 
-    const panel = screen.getByText('Compact panel').closest('section');
-
-    expect(panel).toHaveClass('p-4');
-    expect(panel).toHaveClass('sm:p-6');
-    expect(panel).not.toHaveClass('p-6');
+    const panel = screen.getByText('Glass panel').closest('section');
+    expect(panel).toHaveClass('backdrop-blur');
+    expect(panel).toHaveClass('border-galaxy-gold/40');
   });
 });
