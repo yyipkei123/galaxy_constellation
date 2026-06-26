@@ -44,6 +44,41 @@ describe('guest lead data', () => {
     }
   });
 
+  it('generates synthetic profile, demographics, stay history, and purchase history', () => {
+    const directContactPattern = /@|\+\d{6,}|(?:\d[\s-]?){8,}/;
+
+    for (const guest of guests) {
+      expect(guest.profile).toEqual(expect.any(Object));
+      expect(guest.preferences).toEqual(expect.any(Object));
+      expect(guest.stayHistory).toEqual(expect.any(Array));
+      expect(guest.purchaseHistory).toEqual(expect.any(Array));
+      expect(guest.profile.displayName).toMatch(/^[A-Z][a-z]+ [A-Z]\.$/);
+      expect(guest.profile.syntheticName).toBe(true);
+      expect(guest.profile.ageBand).toMatch(/^\d{2}-\d{2}$/);
+      expect(guest.profile.originMarket).toMatch(/Hong Kong|Guangdong|Taiwan|Singapore|Malaysia|Thailand|Japan|Korea/);
+      expect(guest.profile.preferredLanguage).toMatch(/English|Cantonese|Mandarin|Korean|Japanese/);
+      expect(guest.profile.hostOwner).toMatch(/^Host Team [A-D]$/);
+      expect(guest.profile.contactability).toMatch(/Host-led|Digital opt-in|Concierge-led|Rewards app/);
+      expect(guest.profile.consentStatus).toMatch(/marketable|service-only/);
+      expect(guest.profile.travelParty).toMatch(/Solo|Couple|Family|Business party|Friends/);
+      expect(guest.profile.homeProperty).toBeTruthy();
+      expect(guest.profile.membershipTenureBand).toMatch(/^\d-\d years$/);
+      expect(guest.preferences.favoriteCategories.length).toBeGreaterThanOrEqual(2);
+      expect(guest.preferences.servicePreferences.length).toBeGreaterThanOrEqual(2);
+      expect(guest.stayHistory).toHaveLength(3);
+      expect(guest.purchaseHistory).toHaveLength(5);
+
+      const firstPartyProfileText = JSON.stringify({
+        profile: guest.profile,
+        preferences: guest.preferences,
+        stayHistory: guest.stayHistory,
+        purchaseHistory: guest.purchaseHistory,
+      });
+      expect(firstPartyProfileText).not.toMatch(bannedCurrencyPattern);
+      expect(firstPartyProfileText).not.toMatch(directContactPattern);
+    }
+  });
+
   it('keeps enriched guest fields CDE-safe', () => {
     for (const guest of guests) {
       expect(JSON.stringify(guest.cde)).not.toMatch(bannedCurrencyPattern);

@@ -1,12 +1,65 @@
 import { clamp, jitter, mulberry32 } from '@/lib/rng';
 import { CORE_CATEGORIES, latestSegments } from './generate';
-import type { CoreCategory, GalaxyTier, Guest, NbaRec, Propensities, Segment } from './types';
+import type {
+  CoreCategory,
+  GalaxyTier,
+  Guest,
+  GuestPreferredLanguage,
+  GuestProfile,
+  GuestPurchaseHistoryItem,
+  GuestStayHistoryItem,
+  NbaRec,
+  Propensities,
+  Segment,
+} from './types';
 
 export { CORE_CATEGORIES };
 
 const properties = ['Ritz-Carlton', 'Banyan Tree', 'Capella', 'Hotel Okura', 'Galaxy Hotel'];
 const tierOrder: GalaxyTier[] = ['Privilege', 'Gold', 'Platinum', 'Diamond'];
 const bannedCurrencyPattern = /HKD|MOP|\$|元|澳門幣/i;
+const givenNames = ['Avery', 'Blair', 'Casey', 'Dana', 'Elliot', 'Hayden', 'Jamie', 'Morgan'];
+const zhNames = ['陳雅文', '李卓賢', '王凱琳', '何俊朗', '張曉晴', '林子謙', '黃嘉欣', '趙明軒'];
+const originMarkets: GuestProfile['originMarket'][] = [
+  'Hong Kong',
+  'Guangdong',
+  'Taiwan',
+  'Singapore',
+  'Malaysia',
+  'Thailand',
+  'Japan',
+  'Korea',
+];
+const languages: GuestPreferredLanguage[] = ['Cantonese', 'Mandarin', 'English', 'Japanese', 'Korean'];
+const travelParties: GuestProfile['travelParty'][] = ['Solo', 'Couple', 'Family', 'Business party', 'Friends'];
+const contactability: GuestProfile['contactability'][] = ['Host-led', 'Digital opt-in', 'Concierge-led', 'Rewards app'];
+const hostTeams: GuestProfile['hostOwner'][] = ['Host Team A', 'Host Team B', 'Host Team C', 'Host Team D'];
+const roomTypes: GuestStayHistoryItem['roomType'][] = ['Suite', 'Club room', 'Premium room', 'Family room', 'Business room'];
+const satisfactionSignals: GuestStayHistoryItem['satisfactionSignal'][] = ['Positive', 'Neutral', 'Service recovery'];
+const purchaseChannels: GuestPurchaseHistoryItem['channel'][] = ['Host', 'Concierge', 'Rewards app', 'On-property', 'Pre-arrival'];
+
+const categoryPurchaseThemes: Record<CoreCategory, Array<{ merchantArea: string; itemLabel: string }>> = {
+  hospitality: [
+    { merchantArea: 'Hotel tower', itemLabel: 'Suite upgrade interest' },
+    { merchantArea: 'Spa concierge', itemLabel: 'Wellness appointment' },
+    { merchantArea: 'Club lounge', itemLabel: 'Premium arrival service' },
+  ],
+  fnb: [
+    { merchantArea: 'Fine dining', itemLabel: 'Chef-led dinner' },
+    { merchantArea: 'Private dining', itemLabel: 'Celebration table' },
+    { merchantArea: 'Nightlife', itemLabel: 'Late-evening lounge visit' },
+  ],
+  entertainment: [
+    { merchantArea: 'Galaxy Arena', itemLabel: 'Premium show access' },
+    { merchantArea: 'Family attractions', itemLabel: 'Weekend attraction bundle' },
+    { merchantArea: 'Event desk', itemLabel: 'Presale inquiry' },
+  ],
+  retailLuxury: [
+    { merchantArea: 'Promenade', itemLabel: 'Private boutique appointment' },
+    { merchantArea: 'Luxury retail', itemLabel: 'Watch and jewellery interest' },
+    { merchantArea: 'Beauty retail', itemLabel: 'Curated gifting visit' },
+  ],
+};
 
 function stableDigits(index: number) {
   return String(3421 + index * 137).slice(-4).padStart(4, '0');
@@ -22,6 +75,97 @@ function tierFor(segment: Segment, index: number): GalaxyTier {
   if (segment.opportunityIndex >= 155 && index % 3 !== 1) return 'Diamond';
   if (segment.opportunityIndex >= 130) return index % 2 === 0 ? 'Platinum' : 'Diamond';
   return tierOrder[(index + segment.name.length) % tierOrder.length];
+}
+
+function pick<T>(items: T[], index: number): T {
+  return items[index % items.length];
+}
+
+function profileFor(segment: Segment, index: number, globalIndex: number): GuestProfile {
+  const originMarket = pick(originMarkets, globalIndex + segment.name.length);
+  const preferredLanguage = originMarket === 'Japan'
+    ? 'Japanese'
+    : originMarket === 'Korea'
+      ? 'Korean'
+      : originMarket === 'Taiwan' || originMarket === 'Guangdong'
+        ? 'Mandarin'
+        : originMarket === 'Hong Kong'
+          ? 'Cantonese'
+          : 'English';
+  const languageIndex = languages.indexOf(preferredLanguage);
+
+  return {
+    displayName: `${pick(givenNames, globalIndex)} ${String.fromCharCode(65 + (globalIndex % 20))}.`,
+    displayNameZh: pick(zhNames, globalIndex),
+    syntheticName: true,
+    ageBand: pick(['25-34', '35-44', '45-54', '55-64'] as const, index + segment.name.length),
+    originMarket,
+    preferredLanguage: pick(languages, languageIndex),
+    travelParty: pick(travelParties, index + globalIndex),
+    hostOwner: pick(hostTeams, globalIndex),
+    contactability: pick(contactability, index + segment.opportunityIndex),
+    consentStatus: index % 5 === 0 ? 'service-only' : 'marketable',
+    homeProperty: pick(properties, index + globalIndex),
+    membershipTenureBand: `${1 + (globalIndex % 4)}-${3 + (globalIndex % 5)} years`,
+  };
+}
+
+function preferencesFor(segment: Segment, primary: CoreCategory, index: number) {
+  const secondary = CORE_CATEGORIES.filter((category) => category !== primary)
+    .sort((first, second) => (
+      segment.categories[second].totalWalletIndex - segment.categories[first].totalWalletIndex
+    ))[0];
+
+  return {
+    favoriteCategories: [
+      categoryPurchaseThemes[primary][0].merchantArea,
+      categoryPurchaseThemes[secondary][0].merchantArea,
+      segment.signatureTrait,
+    ],
+    servicePreferences: [
+      index % 2 === 0 ? 'Pre-arrival planning' : 'On-property host check-in',
+      index % 3 === 0 ? 'Private appointment windows' : 'Rewards app reminders',
+    ],
+    occasionSignals: [
+      index % 2 === 0 ? 'Weekend leisure' : 'Midweek stay',
+      index % 3 === 0 ? 'Celebration planning' : 'Return visit prompt',
+    ],
+  };
+}
+
+function stayHistoryFor(profile: GuestProfile, index: number, globalIndex: number): GuestStayHistoryItem[] {
+  return Array.from({ length: 3 }, (_, historyIndex) => ({
+    id: `${stableDigits(globalIndex)}-stay-${historyIndex + 1}`,
+    periodLabel: historyIndex === 0 ? 'Last 30 days' : historyIndex === 1 ? 'Last quarter' : 'Prior half-year',
+    property: pick(properties, globalIndex + historyIndex),
+    nightsBand: `${1 + ((index + historyIndex) % 3)}-${3 + ((globalIndex + historyIndex) % 4)} nights`,
+    roomType: pick(roomTypes, globalIndex + historyIndex),
+    occasion: historyIndex === 0 ? profile.travelParty : pick(['Celebration', 'Business trip', 'Short break', 'Family leisure'], index + historyIndex),
+    satisfactionSignal: pick(satisfactionSignals, globalIndex + historyIndex),
+  }));
+}
+
+function purchaseHistoryFor(primary: CoreCategory, index: number, globalIndex: number): GuestPurchaseHistoryItem[] {
+  const orderedCategories = [
+    primary,
+    ...CORE_CATEGORIES.filter((category) => category !== primary),
+  ];
+
+  return Array.from({ length: 5 }, (_, historyIndex) => {
+    const category = orderedCategories[historyIndex % orderedCategories.length];
+    const theme = pick(categoryPurchaseThemes[category], index + historyIndex);
+
+    return {
+      id: `${stableDigits(globalIndex)}-purchase-${historyIndex + 1}`,
+      periodLabel: historyIndex === 0 ? 'Most recent' : historyIndex === 1 ? 'Last 60 days' : historyIndex === 2 ? 'Last quarter' : historyIndex === 3 ? 'Prior quarter' : 'Earlier signal',
+      category,
+      merchantArea: theme.merchantArea,
+      itemLabel: theme.itemLabel,
+      channel: pick(purchaseChannels, globalIndex + historyIndex),
+      ticketBand: historyIndex === 0 && primary === 'retailLuxury' ? 'ultra' : historyIndex < 3 ? 'premium' : 'entry',
+      galaxyOwned: true,
+    };
+  });
 }
 
 function valueScore(guest: Omit<Guest, 'leadScore'>) {
@@ -118,6 +262,10 @@ function buildGuest(segment: Segment, index: number, globalIndex: number): Guest
     coBrandLookAlike: Number(clamp(segment.propensities.coBrandLookAlike + (random() - 0.5) * 0.18, 0, 1).toFixed(2)),
   };
   const primary = primaryOpportunity(categoryCapturePct, categoryWalletIndex);
+  const profile = profileFor(segment, index, globalIndex);
+  const preferences = preferencesFor(segment, primary, index);
+  const stayHistory = stayHistoryFor(profile, index, globalIndex);
+  const purchaseHistory = purchaseHistoryFor(primary, index, globalIndex);
   const primaryPropertyIndex = (index + globalIndex) % properties.length;
   const secondaryPropertyIndex = (primaryPropertyIndex + 1 + (index % (properties.length - 1))) % properties.length;
   const baseGuest: Omit<Guest, 'leadScore'> = {
@@ -125,6 +273,8 @@ function buildGuest(segment: Segment, index: number, globalIndex: number): Guest
     segmentId: segment.id,
     persona: segment.name,
     galaxyTier: tierFor(segment, index),
+    profile,
+    preferences,
     firstParty: {
       lifetimeBand: lifetimeBand(segment, index),
       staysL12m: Math.max(1, Math.round(2 + segment.metrics.shareOfVisits / 18 + random() * 4)),
@@ -137,6 +287,8 @@ function buildGuest(segment: Segment, index: number, globalIndex: number): Guest
       rewardsPoints: Math.round(1800 + segment.metrics.avgTxnSizeIndex * 72 + random() * 4200),
       gamingContextIndex: segment.gamingContextIndex,
     },
+    stayHistory,
+    purchaseHistory,
     cde: {
       categoryCapturePct,
       categoryLeakagePct,
@@ -168,6 +320,10 @@ function buildGuest(segment: Segment, index: number, globalIndex: number): Guest
     cde: baseGuest.cde,
     englishPitch,
     projectedUpsideBand,
+    profile: baseGuest.profile,
+    preferences: baseGuest.preferences,
+    purchaseHistory: baseGuest.purchaseHistory,
+    stayHistory: baseGuest.stayHistory,
     zhPitch,
   }))) {
     throw new Error('Guest data must remain CDE-safe');

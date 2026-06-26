@@ -211,6 +211,53 @@ export type GalaxyTier = 'Privilege' | 'Gold' | 'Platinum' | 'Diamond';
 export type GuestCategory = CoreCategory;
 export type NbaChannel = 'online' | 'physical' | 'host';
 
+export type GuestPreferredLanguage = 'English' | 'Cantonese' | 'Mandarin' | 'Korean' | 'Japanese';
+export type GuestConsentStatus = 'marketable' | 'service-only';
+export type GuestTravelParty = 'Solo' | 'Couple' | 'Family' | 'Business party' | 'Friends';
+export type GuestPurchaseChannel = 'Host' | 'Concierge' | 'Rewards app' | 'On-property' | 'Pre-arrival';
+
+export interface GuestProfile {
+  displayName: string;
+  displayNameZh: string;
+  syntheticName: true;
+  ageBand: '25-34' | '35-44' | '45-54' | '55-64';
+  originMarket: 'Hong Kong' | 'Guangdong' | 'Taiwan' | 'Singapore' | 'Malaysia' | 'Thailand' | 'Japan' | 'Korea';
+  preferredLanguage: GuestPreferredLanguage;
+  travelParty: GuestTravelParty;
+  hostOwner: 'Host Team A' | 'Host Team B' | 'Host Team C' | 'Host Team D';
+  contactability: 'Host-led' | 'Digital opt-in' | 'Concierge-led' | 'Rewards app';
+  consentStatus: GuestConsentStatus;
+  homeProperty: string;
+  membershipTenureBand: string;
+}
+
+export interface GuestPreferences {
+  favoriteCategories: string[];
+  servicePreferences: string[];
+  occasionSignals: string[];
+}
+
+export interface GuestStayHistoryItem {
+  id: string;
+  periodLabel: string;
+  property: string;
+  nightsBand: string;
+  roomType: 'Suite' | 'Club room' | 'Premium room' | 'Family room' | 'Business room';
+  occasion: string;
+  satisfactionSignal: 'Positive' | 'Neutral' | 'Service recovery';
+}
+
+export interface GuestPurchaseHistoryItem {
+  id: string;
+  periodLabel: string;
+  category: GuestCategory;
+  merchantArea: string;
+  itemLabel: string;
+  channel: GuestPurchaseChannel;
+  ticketBand: 'entry' | 'premium' | 'ultra';
+  galaxyOwned: true;
+}
+
 export interface NbaRec {
   offer: string;
   rationale: string;
@@ -224,6 +271,8 @@ export interface Guest {
   segmentId: string;
   persona: string;
   galaxyTier: GalaxyTier;
+  profile: GuestProfile;
+  preferences: GuestPreferences;
   firstParty: {
     lifetimeBand: 'mid' | 'high' | 'ultra';
     staysL12m: number;
@@ -236,6 +285,8 @@ export interface Guest {
     rewardsPoints: number;
     gamingContextIndex?: number;
   };
+  stayHistory: GuestStayHistoryItem[];
+  purchaseHistory: GuestPurchaseHistoryItem[];
   cde: {
     categoryCapturePct: Record<GuestCategory, number>;
     categoryLeakagePct: Record<GuestCategory, number>;
