@@ -1,0 +1,26 @@
+import { render, screen, within } from '@testing-library/react';
+import { guests } from '@/data';
+import { HostBriefingPanel } from './host-briefing-panel';
+
+const categoryLabels = {
+  hospitality: 'Hospitality',
+  fnb: 'F&B',
+  entertainment: 'Entertainment',
+  retailLuxury: 'Retail-Luxury',
+};
+
+describe('HostBriefingPanel', () => {
+  it('summarizes a synthetic guest for host action without banned currency', () => {
+    const { container } = render(<HostBriefingPanel guest={guests[0]} />);
+
+    const briefing = screen.getByRole('region', { name: 'Host briefing summary' });
+
+    expect(within(briefing).getByRole('heading', { name: 'Host briefing' })).toBeInTheDocument();
+    expect(within(briefing).getByText(guests[0].profile.displayName)).toBeInTheDocument();
+    expect(within(briefing).getByText(guests[0].profile.originMarket)).toBeInTheDocument();
+    expect(within(briefing).getByText(categoryLabels[guests[0].primaryOpportunity])).toBeInTheDocument();
+    expect(within(briefing).getByText(/Reason to contact now/i)).toBeInTheDocument();
+    expect(within(briefing).getByText(/Next action/i)).toBeInTheDocument();
+    expect(container.textContent).not.toMatch(/HKD|MOP|\$|元|澳門幣/i);
+  });
+});

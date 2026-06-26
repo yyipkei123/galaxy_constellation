@@ -44,7 +44,7 @@ describe('guest detail route', () => {
     expect(screen.getByText('Fused opportunity')).toBeInTheDocument();
     expect(walletGrid).toHaveClass('grid', 'xl:grid-cols-[minmax(0,1fr)_24rem]');
     expect(walletGrid).not.toContainElement(historySection);
-    expect(walletGrid.nextElementSibling).toBe(historySection);
+    expect(walletGrid.nextElementSibling).toBe(historySection.closest('#guest-history'));
     expect(screen.getByRole('figure', { name: /Wallet orbit/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Next-Best-Action/i })).toBeInTheDocument();
     expect(screen.getByText('Suggested pitch script')).toBeInTheDocument();
@@ -58,6 +58,20 @@ describe('guest detail route', () => {
     render(await GuestDetailPage({ params: Promise.resolve({ id: guests[0].id }) }));
 
     expect(screen.getByText(guests[0].id)).toBeInTheDocument();
+  });
+
+  it('places a host briefing and section navigation near the top of Customer 360', async () => {
+    render(await GuestDetailPage({ params: Promise.resolve({ id: guests[0].id }) }));
+
+    const nav = screen.getByRole('navigation', { name: 'Customer 360 sections' });
+    const briefing = screen.getByRole('region', { name: 'Host briefing summary' });
+
+    expect(within(nav).getByRole('link', { name: 'Brief' })).toHaveAttribute('href', '#guest-brief');
+    expect(within(nav).getByRole('link', { name: 'Evidence' })).toHaveAttribute('href', '#guest-evidence');
+    expect(within(nav).getByRole('link', { name: 'Actions' })).toHaveAttribute('href', '#guest-actions');
+    expect(within(nav).getByRole('link', { name: 'History' })).toHaveAttribute('href', '#guest-history');
+    expect(within(briefing).getByText(/Reason to contact now/i)).toBeInTheDocument();
+    expect(within(briefing).getByText(/Next action/i)).toBeInTheDocument();
   });
 
   it('renders a not-found message for an unknown masked id with a safe back link', async () => {
