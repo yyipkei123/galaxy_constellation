@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { NbaCard } from '@/components/panels/nba-card';
 import { Overline } from '@/components/ui/overline';
+import { PageHeader } from '@/components/ui/page-header';
 import { Panel } from '@/components/ui/panel';
 import type { RecommendedPlay, Segment } from '@/data';
 import { useAppState, type SavedAudience } from '@/store/app-store';
@@ -133,24 +134,25 @@ export default function ActivationPage() {
 
   return (
     <div className="space-y-6 text-galaxy-cream">
-      <section className="rounded-lg border border-galaxy-border bg-[radial-gradient(circle_at_top_left,rgba(205,164,92,0.2),transparent_34%),linear-gradient(135deg,rgba(31,27,24,0.96),rgba(8,18,30,0.92))] px-4 py-7 shadow-2xl shadow-black/25 sm:px-6 md:px-8 md:py-8">
-        <Overline>Act</Overline>
-        <div className="mt-4 grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-end">
-          <div>
-            <h1 className="break-words font-serif text-4xl text-galaxy-cream sm:text-5xl md:text-6xl">Next-Best-Action</h1>
-            <p className="mt-4 max-w-3xl text-base leading-8 text-galaxy-muted md:text-lg">
-              Move saved propensity audiences into Galaxy Rewards activation with segment-level rationale, compliant
-              CDE sizing, and a suggested campaign channel.
-            </p>
-          </div>
-          <Panel className="bg-galaxy-ink/45 p-4">
-            <p className="text-sm font-semibold text-galaxy-gold">Galaxy Rewards</p>
-            <p className="mt-2 text-sm leading-6 text-galaxy-muted">
+      <PageHeader
+        variant="compact"
+        eyebrow="Activation planning"
+        title="Next-Best-Action"
+        description={(
+          <>
+            Move saved propensity audiences into Galaxy Rewards activation with segment-level rationale, compliant CDE
+            sizing, and a suggested campaign channel.
+          </>
+        )}
+        aside={(
+          <>
+            <p className="font-semibold text-galaxy-gold">Galaxy Rewards</p>
+            <p className="mt-2">
               Campaign mechanics can include offer terms while CDE estimates remain indexed or banded.
             </p>
-          </Panel>
-        </div>
-      </section>
+          </>
+        )}
+      />
 
       {campaignToast ? (
         <div role="status" className="rounded-lg border border-galaxy-gold/30 bg-galaxy-gold/10 p-4 text-sm font-semibold text-galaxy-cream">

@@ -300,6 +300,9 @@ export const methodology: Methodology = {
   basis: 'demi-decile average',
   refresh: 'quarterly',
   activeMetricCount: 7,
+  panelSharePct: '10–20%',
+  dataYears: ['2020', '2024'],
+  lensBNote: 'aggregate inbound panel, no PII',
 };
 
 const categoryWeights: Record<CoreCategory, number> = {

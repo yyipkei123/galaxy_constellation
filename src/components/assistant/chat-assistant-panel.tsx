@@ -232,7 +232,7 @@ export function ChatAssistantPanel({ context, onClose }: ChatAssistantPanelProps
       role="dialog"
       aria-label="AI insight assistant"
       onKeyDown={handleDialogKeyDown}
-      className="fixed bottom-24 right-4 z-50 flex max-h-[min(42rem,calc(100vh-7rem))] w-[min(calc(100vw-2rem),26rem)] flex-col overflow-hidden rounded-lg border border-galaxy-border bg-galaxy-ink/96 shadow-2xl shadow-black/45 backdrop-blur sm:right-6"
+      className="fixed bottom-[calc(env(safe-area-inset-bottom)+5rem)] right-4 z-50 flex max-h-[min(42rem,calc(100dvh_-_env(safe-area-inset-bottom)_-_7rem))] w-[min(calc(100vw-2rem),26rem)] flex-col overflow-hidden rounded-lg border border-galaxy-border bg-galaxy-ink/96 shadow-2xl shadow-black/45 backdrop-blur sm:right-6"
     >
       <header className="flex items-start justify-between gap-4 border-b border-galaxy-border bg-galaxy-charcoal/90 p-4">
         <div>

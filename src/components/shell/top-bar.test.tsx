@@ -1,7 +1,13 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { vi } from 'vitest';
+import { beforeEach, vi } from 'vitest';
 import { AppStateProvider, useAppState } from '@/store/app-store';
 import { TopBar } from './top-bar';
+
+let mockPathname = '/wallet';
+
+vi.mock('next/navigation', () => ({
+  usePathname: () => mockPathname,
+}));
 
 function StoreContractProbe() {
   const state = useAppState();
@@ -72,22 +78,39 @@ function StoreBehaviorProbe() {
 }
 
 describe('TopBar', () => {
+  beforeEach(() => {
+    mockPathname = '/wallet';
+  });
+
   afterEach(() => {
     externalSegmentIds.splice(0, externalSegmentIds.length, 'diamond-high-rollers');
     vi.restoreAllMocks();
   });
 
-  it('shows active CDE methodology metrics and defaults the quarter selector to Q2 2026', () => {
+  it('shows compact CDE methodology metrics and defaults the quarter selector to Q2 2026', () => {
     render(
       <AppStateProvider>
         <TopBar />
       </AppStateProvider>,
     );
 
-    expect(screen.getByText('7 active CDE metrics')).toBeInTheDocument();
-    expect(screen.getByText('Matched coverage 63%')).toBeInTheDocument();
+    expect(screen.getByText('7 CDE metrics')).toBeInTheDocument();
+    expect(screen.getByText('Coverage 63%')).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: /quarter selector/i })).toHaveValue('2026-q2');
     expect(screen.getByRole('option', { name: '2026 Q2' })).toBeInTheDocument();
+  });
+
+  it('renders compact mobile metadata without losing the full accessible metric text', () => {
+    render(
+      <AppStateProvider>
+        <TopBar />
+      </AppStateProvider>,
+    );
+
+    expect(screen.getByText('7 CDE metrics')).toBeInTheDocument();
+    expect(screen.getByText('7 CDE metrics')).toHaveAttribute('aria-label', '7 active CDE metrics');
+    expect(screen.getByText('Coverage 63%')).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: /quarter selector/i })).toHaveValue('2026-q2');
   });
 
   it('updates the selected reporting quarter from the accessible selector', async () => {
@@ -163,5 +186,17 @@ describe('TopBar', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Clear campaign' }));
 
     expect(screen.getByLabelText('campaign toast')).toHaveTextContent('none');
+  });
+
+  it('renders the lens switch beside methodology metadata', () => {
+    render(
+      <AppStateProvider>
+        <TopBar />
+      </AppStateProvider>,
+    );
+
+    expect(screen.getByRole('navigation', { name: /Lens switch/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Wallet Retention/i })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link', { name: /Corridors Acquisition/i })).toHaveAttribute('href', '/corridors');
   });
 });

@@ -105,6 +105,9 @@ export interface Methodology {
   basis: 'demi-decile average';
   refresh: 'quarterly';
   activeMetricCount: 7;
+  panelSharePct: '10–20%';
+  dataYears: ['2020', '2024'];
+  lensBNote: 'aggregate inbound panel, no PII';
 }
 
 export interface CrmRow {
@@ -121,4 +124,85 @@ export interface MarketScanTile {
   sourceType: 'competitor calendar' | 'social sentiment' | 'PR/news' | 'share of voice' | 'footfall signal';
   signal: string;
   implication: string;
+}
+
+export type CorridorId =
+  | 'taiwan'
+  | 'hongkong'
+  | 'gba_mainland'
+  | 'japan'
+  | 'korea'
+  | 'singapore'
+  | 'malaysia'
+  | 'thailand'
+  | 'indonesia'
+  | 'philippines';
+
+export type CorridorYear = '2020' | '2024';
+export type CorridorMetric = 'arrivals' | 'spend' | 'txnFrequency' | 'gamingSplit';
+export type CorridorHaul = 'short' | 'long';
+export type DraftLanguage =
+  | 'EN'
+  | '繁中'
+  | '简中'
+  | '日本語'
+  | '한국어'
+  | 'English'
+  | 'Bahasa Melayu'
+  | 'ไทย'
+  | 'Bahasa Indonesia'
+  | 'Filipino';
+export type PersonaKey =
+  | 'fnb_seeker'
+  | 'entertainment_lover'
+  | 'travel_lover'
+  | 'luxury_shopper'
+  | 'family_leisure';
+
+export interface PersonaAffinity {
+  persona: PersonaKey;
+  label: string;
+  sharePct: number;
+  topCategories: string[];
+  recommendedOffer: string;
+  kvBrief: string;
+}
+
+export interface Corridor {
+  id: CorridorId;
+  name: string;
+  nameZh: string;
+  language: 'zh-TW' | 'zh-HK' | 'zh-CN' | 'ja' | 'ko' | 'en-SG' | 'ms' | 'th' | 'id' | 'fil';
+  languageLabel: string;
+  haul: CorridorHaul;
+  arrivalsIndex: Record<CorridorYear, number>;
+  spendIndex: Record<CorridorYear, number>;
+  txnFrequencyIndex: number;
+  avgTicketBand: 'mass' | 'upper-mid' | 'premium' | 'luxury';
+  projectedValueBand: string;
+  gamingSharePct: number;
+  nonGamingSharePct: number;
+  // Values are category indices, not percentage shares.
+  nonGamingMix: { hospitality: number; fnb: number; entertainment: number; retail: number };
+  seasonality: number[];
+  personas: PersonaAffinity[];
+  priorityIndex: number;
+  priorityRank: number;
+  dataVintage: CorridorYear;
+  note?: string;
+}
+
+export interface AcquisitionDraftVariant {
+  id: 'A' | 'B';
+  subject: string;
+  body: string;
+  kvCaption: string;
+}
+
+export interface AcquisitionDraft {
+  corridorId: CorridorId;
+  persona: PersonaKey;
+  languages: DraftLanguage[];
+  variants: AcquisitionDraftVariant[];
+  versionHistory: string[];
 }

@@ -1,6 +1,9 @@
 @import "tailwindcss";
 
 @theme {
+  --font-display: var(--font-galaxy-display);
+  --font-sans: var(--font-galaxy-sans);
+  --font-mono: var(--font-galaxy-mono);
   --color-galaxy-ink: #0b0b0e;
   --color-galaxy-charcoal: #15151b;
   --color-galaxy-slate: #1f1f27;

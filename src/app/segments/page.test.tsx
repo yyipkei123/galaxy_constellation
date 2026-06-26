@@ -118,11 +118,17 @@ function renderSegments(segments?: Segment[], selectedSegment?: Segment) {
 }
 
 describe('segments route', () => {
+  it('offers a cross-link from retained segments to acquisition corridors', () => {
+    renderSegments();
+
+    expect(screen.getByRole('link', { name: /Explore acquisition corridors/i })).toHaveAttribute('href', '/corridors');
+  });
+
   it('renders six segment buttons and selected segment details', () => {
     renderSegments();
 
     expect(screen.getByRole('heading', { name: 'Guest Segments' })).toBeInTheDocument();
-    expect(screen.getByText('Zoom to a segment')).toBeInTheDocument();
+    expect(screen.getByText('Guest segmentation')).toBeInTheDocument();
     expect(screen.getAllByText(/Customer 360/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText(/masked CRM records/i).length).toBeGreaterThanOrEqual(1);
 
@@ -152,6 +158,37 @@ describe('segments route', () => {
     expect(screen.getByPlaceholderText(/Search persona, need, wallet gap, or tag/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'persona: Suite-First Patrons' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'persona: Private Dining Hosts' })).toBeInTheDocument();
+  });
+
+  it('uses a compact header and places persona decisions before technical charts', () => {
+    renderSegments();
+
+    expect(screen.queryByText('Zoom to a segment')).not.toBeInTheDocument();
+    expect(screen.getByText('Guest segmentation')).toBeInTheDocument();
+    const pageTitle = screen.getByRole('heading', { name: 'Guest Segments', level: 1 });
+    expect(pageTitle).toHaveClass('font-sans');
+    expect(pageTitle.closest('section')).toHaveAttribute('data-variant', 'compact');
+
+    function expectBefore(earlierNode: Element, laterNode: Element) {
+      expect(Boolean(earlierNode.compareDocumentPosition(laterNode) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+    }
+
+    const personaDecisionNodes = [
+      screen.getByRole('heading', { name: /Persona universe/i }),
+      screen.getByRole('heading', { name: /Persona explorer/i }),
+      screen.getByRole('heading', { name: /Persona recommendation kit/i }),
+    ];
+    const technicalNodes = [
+      screen.getByRole('heading', { name: /Indexed category profile/i }),
+      screen.getByRole('heading', { name: /Activation signals/i }),
+      screen.getByText('7 active CDE metrics'),
+    ];
+
+    personaDecisionNodes.forEach((personaNode) => {
+      technicalNodes.forEach((technicalNode) => {
+        expectBefore(personaNode, technicalNode);
+      });
+    });
   });
 
   it('filters second-level personas by selected top-level segment and search text', () => {
