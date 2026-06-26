@@ -98,6 +98,8 @@ function renderWallet(segments?: Segment[]) {
   return render(<WalletPage />);
 }
 
+const BANNED_CURRENCY_RE = /\b(?:HKD|MOP)\b|\$|元|澳門幣/i;
+
 describe('share of wallet route', () => {
   it('renders the wallet overview panels and category toggles', () => {
     renderWallet();
@@ -109,6 +111,8 @@ describe('share of wallet route', () => {
     expect(screen.getByRole('heading', { name: 'Ranked category leakage' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Segment opportunity heatmap' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Largest wallet gaps now' })).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: 'Wallet dashboard sections' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'CDE snapshot status' })).toBeInTheDocument();
 
     ['All', 'Hospitality', 'F&B', 'Entertainment', 'Retail-Luxury'].forEach((label) => {
       expect(screen.getByRole('button', { name: label })).toBeInTheDocument();
@@ -131,8 +135,36 @@ describe('share of wallet route', () => {
     expect(screen.getByText(/Average online payment share/i)).toBeInTheDocument();
     expect(screen.getAllByText('Insight callout').length).toBeGreaterThanOrEqual(2);
     expect(screen.getAllByText(/CDE/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.queryByText(/MOP|HKD|\$/)).not.toBeInTheDocument();
+    expect(screen.queryByText(BANNED_CURRENCY_RE)).not.toBeInTheDocument();
     expect(screen.queryByRole('main')).not.toBeInTheDocument();
+  });
+
+  it('shows a selected heatmap cell detail and updates it after cell selection', () => {
+    renderWallet();
+
+    expect(screen.getByRole('region', { name: 'Selected wallet opportunity detail' })).toBeInTheDocument();
+    expect(screen.getByText(/Selected opportunity/i)).toBeInTheDocument();
+
+    const heatmap = screen.getByRole('table', { name: 'Segment opportunity heatmap table' });
+    const privateDiningCell = within(heatmap).getByRole('button', {
+      name: /Cosmopolitan Connoisseurs F&B relative wallet gap/i,
+    });
+
+    fireEvent.click(privateDiningCell);
+
+    const detail = screen.getByRole('region', { name: 'Selected wallet opportunity detail' });
+    expect(within(detail).getByText('Cosmopolitan Connoisseurs')).toBeInTheDocument();
+    expect(within(detail).getByText('F&B')).toBeInTheDocument();
+    expect(within(detail).getByText(/Recommended action/i)).toBeInTheDocument();
+    expect(within(detail).queryByText(BANNED_CURRENCY_RE)).not.toBeInTheDocument();
+  });
+
+  it('exposes chart evidence tooltips for wallet analytics metrics', () => {
+    renderWallet();
+    const detail = screen.getByRole('region', { name: 'Selected wallet opportunity detail' });
+
+    expect(within(detail).getByLabelText(/Wallet intensity index/i)).toBeInTheDocument();
+    expect(within(detail).getByLabelText(/Relative wallet gap priority/i)).toBeInTheDocument();
   });
 
   it('updates ranked category leakage when a category filter is selected', () => {

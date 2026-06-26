@@ -8,16 +8,24 @@ import { WalletGauge } from '@/components/charts/wallet-gauge';
 import { ChartCallout } from '@/components/panels/insight-storytelling';
 import { CdeChip } from '@/components/ui/cde-chip';
 import { IndexValue, PercentValue } from '@/components/ui/formatted-values';
+import { InsightTooltip } from '@/components/ui/insight-tooltip';
 import { MetricTile } from '@/components/ui/metric-tile';
 import { Overline } from '@/components/ui/overline';
 import { PageHeader } from '@/components/ui/page-header';
 import { Panel } from '@/components/ui/panel';
 import { SectionHeader } from '@/components/ui/section-header';
+import { SectionJumpNav } from '@/components/ui/section-jump-nav';
+import { SnapshotStatusStrip } from '@/components/ui/snapshot-status-strip';
 import { CORE_CATEGORIES, type CoreCategory, type Segment } from '@/data';
 import { buildWalletAnalytics, type WalletAnalytics } from '@/lib/wallet-analytics';
 import { useAppState } from '@/store/app-store';
 
 type CategorySelection = CoreCategory | 'all';
+
+interface SelectedWalletCell {
+  segmentId: string;
+  category: CoreCategory;
+}
 
 const CATEGORY_LABELS: Record<CoreCategory, string> = {
   hospitality: 'Hospitality',
@@ -33,6 +41,33 @@ const CATEGORY_OPTIONS: Array<{ label: string; value: CategorySelection }> = [
   { label: CATEGORY_LABELS.entertainment, value: 'entertainment' },
   { label: CATEGORY_LABELS.retailLuxury, value: 'retailLuxury' },
 ];
+
+function selectedCellKey(cell: SelectedWalletCell) {
+  return `${cell.segmentId}:${cell.category}`;
+}
+
+function defaultSelectedWalletCell(analytics: WalletAnalytics): SelectedWalletCell | null {
+  const topSegment = analytics.segments[0];
+  const topCategory = analytics.categories[0];
+
+  if (!topSegment || !topCategory) return null;
+
+  return {
+    segmentId: topSegment.id,
+    category: topCategory.category,
+  };
+}
+
+function resolveSelectedWalletCell(analytics: WalletAnalytics, selectedCell: SelectedWalletCell | null) {
+  const defaultCell = defaultSelectedWalletCell(analytics);
+
+  if (!selectedCell) return defaultCell;
+
+  const hasSelectedSegment = analytics.segments.some((segment) => segment.id === selectedCell.segmentId);
+  const hasSelectedCategory = analytics.categories.some((category) => category.category === selectedCell.category);
+
+  return hasSelectedSegment && hasSelectedCategory ? selectedCell : defaultCell;
+}
 
 function validNumber(value: number | undefined): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
@@ -240,104 +275,310 @@ function heatmapCellClass(score: number, maxScore: number) {
   return 'border-galaxy-border bg-galaxy-ink/35 text-galaxy-muted';
 }
 
-function SegmentOpportunityHeatmap({ analytics, hasSegments }: { analytics: WalletAnalytics; hasSegments: boolean }) {
-  const maxScore = Math.max(
+function heatmapMaxScore(analytics: WalletAnalytics) {
+  return Math.max(
     ...analytics.segments.flatMap((segment) => Object.values(segment.categoryLeakageScores).map((score) => score ?? 0)),
     0,
   );
+}
+
+function HeatmapCellButton({
+  segment,
+  category,
+  relative,
+  score,
+  maxScore,
+  isSelected,
+  onSelectCell,
+}: {
+  segment: WalletAnalytics['segments'][number];
+  category: WalletAnalytics['categories'][number];
+  relative: number;
+  score: number;
+  maxScore: number;
+  isSelected: boolean;
+  onSelectCell: (cell: SelectedWalletCell) => void;
+}) {
+  const cell = { segmentId: segment.id, category: category.category };
+
+  return (
+    <InsightTooltip
+      title="Relative wallet gap priority"
+      lines={[
+        `${segment.name} x ${category.label}: ${relative}% of the strongest visible wallet gap.`,
+        'CDE combines category leakage and wallet intensity into a relative action queue without raw spend values.',
+      ]}
+      block
+      triggerClassName="block"
+    >
+      <button
+        type="button"
+        aria-pressed={isSelected}
+        onClick={() => onSelectCell(cell)}
+        className={clsx(
+          'block min-h-12 w-full rounded-lg border p-3 text-left text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-galaxy-gold',
+          heatmapCellClass(score, maxScore),
+          isSelected ? 'ring-2 ring-galaxy-gold ring-offset-2 ring-offset-galaxy-charcoal' : 'hover:border-galaxy-gold/70',
+        )}
+        aria-label={`${segment.name} ${category.label} relative wallet gap ${relative}%`}
+      >
+        <span className="flex items-center justify-between gap-2">
+          <span className="md:hidden">{category.label}</span>
+          <span>{relative}%</span>
+        </span>
+      </button>
+    </InsightTooltip>
+  );
+}
+
+function SegmentOpportunityHeatmap({
+  analytics,
+  hasSegments,
+  selectedCell,
+  onSelectCell,
+}: {
+  analytics: WalletAnalytics;
+  hasSegments: boolean;
+  selectedCell: SelectedWalletCell | null;
+  onSelectCell: (cell: SelectedWalletCell) => void;
+}) {
+  const maxScore = heatmapMaxScore(analytics);
   const gridTemplateColumns = {
     gridTemplateColumns: `minmax(11rem,1.35fr) repeat(${Math.max(analytics.categories.length, 1)}, minmax(6rem,1fr))`,
   };
+  const selectedKey = selectedCell ? selectedCellKey(selectedCell) : null;
 
   return (
-    <Panel className="p-4 sm:p-6">
-      <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <Overline>Segment x category</Overline>
-          <h2 className="mt-3 font-serif text-3xl text-galaxy-cream">Segment opportunity heatmap</h2>
+    <div id="wallet-heatmap" className="scroll-mt-24">
+      <Panel className="p-4 sm:p-6">
+        <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <Overline>Segment x category</Overline>
+            <h2 className="mt-3 font-serif text-3xl text-galaxy-cream">Segment opportunity heatmap</h2>
+          </div>
+          <p className="max-w-md text-sm leading-6 text-galaxy-muted">
+            Heat shows relative wallet-gap priority by segment and visible category, using only CDE percentages and indices.
+          </p>
         </div>
-        <p className="max-w-md text-sm leading-6 text-galaxy-muted">
-          Heat shows relative wallet-gap priority by segment and visible category, using only CDE percentages and indices.
-        </p>
-      </div>
-      {hasSegments ? (
-        <>
-          <div className="grid gap-3 md:hidden">
-            {analytics.segments.map((segment) => (
-              <article key={segment.id} className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="text-sm font-semibold text-galaxy-cream">{segment.name}</h3>
-                    <p className="mt-1 text-xs text-galaxy-muted">{segment.leadingCategoryLabel} leads the gap</p>
-                  </div>
-                  <CdeChip />
-                </div>
-                <div className="mt-4 grid gap-2">
-                  {analytics.categories.map((category) => {
-                    const score = segment.categoryLeakageScores[category.category] ?? 0;
-                    const relative = relativeScorePct(score, maxScore);
-
-                    return (
-                      <div
-                        key={category.category}
-                        className={clsx('rounded-lg border px-3 py-2 text-sm', heatmapCellClass(score, maxScore))}
-                        aria-label={`${segment.name} ${category.label} relative wallet gap ${relative}%`}
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <span>{category.label}</span>
-                          <span className="font-semibold">{relative}%</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </article>
-            ))}
-          </div>
-          <div className="hidden md:block" role="table" aria-label="Segment opportunity heatmap table">
-            <div
-              role="row"
-              className="grid gap-2 border-b border-galaxy-border pb-3 text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-muted"
-              style={gridTemplateColumns}
-            >
-              <span role="columnheader">Segment</span>
-              {analytics.categories.map((category) => (
-                <span key={category.category} role="columnheader">{category.label}</span>
-              ))}
-            </div>
-            <div className="mt-3 space-y-2">
+        {hasSegments ? (
+          <>
+            <div className="grid gap-3 md:hidden">
               {analytics.segments.map((segment) => (
-                <div key={segment.id} role="row" className="grid gap-2" style={gridTemplateColumns}>
-                  <div role="cell" className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-3">
-                    <p className="text-sm font-semibold text-galaxy-cream">{segment.name}</p>
-                    <p className="mt-1 text-xs text-galaxy-muted">{segment.leadingCategoryLabel} leads the gap</p>
+                <article key={segment.id} className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-sm font-semibold text-galaxy-cream">{segment.name}</h3>
+                      <p className="mt-1 text-xs text-galaxy-muted">{segment.leadingCategoryLabel} leads the gap</p>
+                    </div>
+                    <CdeChip />
                   </div>
-                  {analytics.categories.map((category) => {
-                    const score = segment.categoryLeakageScores[category.category] ?? 0;
-                    const relative = relativeScorePct(score, maxScore);
+                  <div className="mt-4 grid gap-2">
+                    {analytics.categories.map((category) => {
+                      const score = segment.categoryLeakageScores[category.category] ?? 0;
+                      const relative = relativeScorePct(score, maxScore);
+                      const cell = { segmentId: segment.id, category: category.category };
 
-                    return (
-                      <div
-                        key={category.category}
-                        role="cell"
-                        className={clsx('rounded-lg border p-3 text-sm font-semibold', heatmapCellClass(score, maxScore))}
-                        aria-label={`${segment.name} ${category.label} relative wallet gap ${relative}%`}
-                      >
-                        {relative}%
-                      </div>
-                    );
-                  })}
-                </div>
+                      return (
+                        <HeatmapCellButton
+                          key={category.category}
+                          segment={segment}
+                          category={category}
+                          relative={relative}
+                          score={score}
+                          maxScore={maxScore}
+                          isSelected={selectedKey === selectedCellKey(cell)}
+                          onSelectCell={onSelectCell}
+                        />
+                      );
+                    })}
+                  </div>
+                </article>
               ))}
             </div>
+            <div className="hidden md:block" role="table" aria-label="Segment opportunity heatmap table">
+              <div
+                role="row"
+                className="grid gap-2 border-b border-galaxy-border pb-3 text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-muted"
+                style={gridTemplateColumns}
+              >
+                <span role="columnheader">Segment</span>
+                {analytics.categories.map((category) => (
+                  <span key={category.category} role="columnheader">{category.label}</span>
+                ))}
+              </div>
+              <div className="mt-3 space-y-2">
+                {analytics.segments.map((segment) => (
+                  <div key={segment.id} role="row" className="grid gap-2" style={gridTemplateColumns}>
+                    <div role="cell" className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-3">
+                      <p className="text-sm font-semibold text-galaxy-cream">{segment.name}</p>
+                      <p className="mt-1 text-xs text-galaxy-muted">{segment.leadingCategoryLabel} leads the gap</p>
+                    </div>
+                    {analytics.categories.map((category) => {
+                      const score = segment.categoryLeakageScores[category.category] ?? 0;
+                      const relative = relativeScorePct(score, maxScore);
+                      const cell = { segmentId: segment.id, category: category.category };
+
+                      return (
+                        <HeatmapCellButton
+                          key={category.category}
+                          segment={segment}
+                          category={category}
+                          relative={relative}
+                          score={score}
+                          maxScore={maxScore}
+                          isSelected={selectedKey === selectedCellKey(cell)}
+                          onSelectCell={onSelectCell}
+                        />
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        ) : (
+          <p className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4 text-sm leading-6 text-galaxy-muted">
+            No segment-level heatmap available for this quarter.
+          </p>
+        )}
+      </Panel>
+    </div>
+  );
+}
+
+function selectedWalletOpportunity(analytics: WalletAnalytics, selectedCell: SelectedWalletCell | null) {
+  if (!selectedCell) return null;
+
+  const segment = analytics.segments.find((item) => item.id === selectedCell.segmentId);
+  const category = analytics.categories.find((item) => item.category === selectedCell.category);
+
+  if (!segment || !category) return null;
+
+  const maxScore = heatmapMaxScore(analytics);
+  const score = segment.categoryLeakageScores[category.category] ?? 0;
+
+  return {
+    segment,
+    category,
+    relativePriority: relativeScorePct(score, maxScore),
+  };
+}
+
+function recommendedWalletAction(segmentName: string, categoryLabel: string, relativePriority: number) {
+  if (relativePriority >= 72) {
+    return `Recommended action: Move ${segmentName} into a ${categoryLabel} recapture queue with host-owned prompts, early eligibility checks, and a follow-up audience for the next high-intent visit.`;
+  }
+
+  if (relativePriority >= 45) {
+    return `Recommended action: Keep ${segmentName} warm with ${categoryLabel} cross-sell prompts and validate the category signal before scaling the audience.`;
+  }
+
+  return `Recommended action: Monitor ${segmentName} for ${categoryLabel} movement and reserve activation effort for stronger visible wallet gaps.`;
+}
+
+function SelectedWalletOpportunityDetail({
+  analytics,
+  selectedCell,
+}: {
+  analytics: WalletAnalytics;
+  selectedCell: SelectedWalletCell | null;
+}) {
+  const opportunity = selectedWalletOpportunity(analytics, selectedCell);
+
+  return (
+    <section
+      id="wallet-selected-detail"
+      role="region"
+      aria-label="Selected wallet opportunity detail"
+      className="scroll-mt-24"
+    >
+      <Panel className="p-4 sm:p-6">
+        {opportunity ? (
+          <>
+            <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <Overline>Selected opportunity</Overline>
+                <h2 className="mt-3 font-serif text-3xl text-galaxy-cream">
+                  {opportunity.segment.name} x {opportunity.category.label}
+                </h2>
+              </div>
+              <CdeChip />
+            </div>
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,0.55fr)]">
+              <div className="grid gap-4 sm:grid-cols-3">
+                <MetricTile
+                  label="Relative priority"
+                  value={(
+                    <InsightTooltip
+                      title="Relative wallet gap priority"
+                      lines={[
+                        `${opportunity.segment.name} x ${opportunity.category.label} ranks at ${opportunity.relativePriority}% of the strongest visible gap.`,
+                        'The priority normalizes segment and category scores for comparison inside the current dashboard cut.',
+                      ]}
+                    >
+                      <PercentValue value={opportunity.relativePriority} />
+                    </InsightTooltip>
+                  )}
+                  detail="Compared with the highest visible cell."
+                />
+                <MetricTile
+                  label="Category leakage"
+                  value={<PercentValue value={opportunity.category.leakagePct} />}
+                  detail={`${opportunity.category.label} market remainder visible in CDE.`}
+                />
+                <MetricTile
+                  label="Wallet intensity"
+                  value={(
+                    <InsightTooltip
+                      title="Wallet intensity index"
+                      lines={[
+                        `${opportunity.category.label} wallet intensity is ${opportunity.category.walletIndex} index.`,
+                        'Index values compare category demand against the modelled CDE baseline without raw spend values.',
+                      ]}
+                    >
+                      <IndexValue value={opportunity.category.walletIndex} />
+                    </InsightTooltip>
+                  )}
+                  detail="Category-level CDE demand signal."
+                />
+              </div>
+              <div className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">
+                <div className="grid gap-3 text-sm text-galaxy-muted sm:grid-cols-2 lg:grid-cols-1">
+                  <div>
+                    <p className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-galaxy-muted">
+                      Segment
+                    </p>
+                    <p className="mt-1 font-semibold text-galaxy-cream">{opportunity.segment.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-galaxy-muted">
+                      Category
+                    </p>
+                    <p className="mt-1 font-semibold text-galaxy-cream">{opportunity.category.label}</p>
+                  </div>
+                </div>
+                <p className="mt-4 text-sm leading-6 text-galaxy-muted">
+                  {recommendedWalletAction(
+                    opportunity.segment.name,
+                    opportunity.category.label,
+                    opportunity.relativePriority,
+                  )}
+                </p>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div>
+            <Overline>Selected opportunity</Overline>
+            <h2 className="mt-3 font-serif text-3xl text-galaxy-cream">No selected opportunity</h2>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-galaxy-muted">
+              No segment-level wallet opportunity is available for this quarter. Once CDE segments load, selecting a
+              heatmap cell will show the relative priority, leakage, intensity, and recommended action.
+            </p>
           </div>
-        </>
-      ) : (
-        <p className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4 text-sm leading-6 text-galaxy-muted">
-          No segment-level heatmap available for this quarter.
-        </p>
-      )}
-    </Panel>
+        )}
+      </Panel>
+    </section>
   );
 }
 
@@ -449,8 +690,9 @@ function CategoryDrill({ selectedCategory, segments }: { selectedCategory: Categ
 }
 
 export default function WalletPage() {
-  const { selectedQuarter, segments } = useAppState();
+  const { methodology, selectedQuarter, segments } = useAppState();
   const [selectedCategory, setSelectedCategory] = useState<CategorySelection>('all');
+  const [selectedCell, setSelectedCell] = useState<SelectedWalletCell | null>(null);
   const safeSegments = useMemo(() => (segments ?? []).filter(isSegment), [segments]);
   const scatterSegments = useMemo(() => chartReadySegments(safeSegments), [safeSegments]);
   const categories = useMemo(() => visibleCategories(selectedCategory), [selectedCategory]);
@@ -458,6 +700,7 @@ export default function WalletPage() {
     () => buildWalletAnalytics(safeSegments, categories),
     [safeSegments, categories],
   );
+  const resolvedSelectedCell = resolveSelectedWalletCell(walletAnalytics, selectedCell);
   const hasSegments = safeSegments.length > 0;
   const averageOnlinePct = roundedAverage(safeSegments.map((segment) => validNumber(segment.metrics?.channelShareOnlinePct)));
 
@@ -508,9 +751,32 @@ export default function WalletPage() {
         </div>
       </div>
 
-      <SegmentOpportunityHeatmap analytics={walletAnalytics} hasSegments={hasSegments} />
+      <SectionJumpNav
+        label="Wallet dashboard sections"
+        currentId="wallet-heatmap"
+        items={[
+          { id: 'wallet-heatmap', label: 'Heatmap' },
+          { id: 'wallet-selected-detail', label: 'Detail' },
+          { id: 'wallet-drivers', label: 'Drivers' },
+          { id: 'wallet-evidence', label: 'Evidence' },
+        ]}
+      />
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
+      <SnapshotStatusStrip
+        quarterLabel={selectedQuarter.label}
+        methodology={methodology}
+        context="Wallet model"
+      />
+
+      <SegmentOpportunityHeatmap
+        analytics={walletAnalytics}
+        hasSegments={hasSegments}
+        selectedCell={resolvedSelectedCell}
+        onSelectCell={setSelectedCell}
+      />
+      <SelectedWalletOpportunityDetail analytics={walletAnalytics} selectedCell={resolvedSelectedCell} />
+
+      <div id="wallet-drivers" className="grid scroll-mt-24 gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <RankedCategoryLeakage analytics={walletAnalytics} hasSegments={hasSegments} />
         <SegmentGapLadder analytics={walletAnalytics} hasSegments={hasSegments} />
       </div>
@@ -546,7 +812,7 @@ export default function WalletPage() {
         <CategoryDrill selectedCategory={selectedCategory} segments={safeSegments} />
       </Panel>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
+      <div id="wallet-evidence" className="grid scroll-mt-24 gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <Panel className="p-4 sm:p-6">
           <div className="mb-5">
             <Overline>Visit conversion</Overline>
