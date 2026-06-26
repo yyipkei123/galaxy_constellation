@@ -112,6 +112,10 @@ test.describe('Galaxy Constellation rendered compliance', () => {
 
       if (route.startsWith('/guests/')) {
         await expect(page.getByRole('heading', { name: /Customer 360/i })).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Synthetic CRM identity/i })).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Galaxy purchase and stay history/i })).toBeVisible();
+        await expect(page.getByText(/Demo-only synthetic identity/i)).toBeVisible();
+        await expect(page.getByText(/Galaxy first-party/i)).toBeVisible();
         await expect(page.getByText('What Galaxy sees')).toBeVisible();
         await expect(page.getByText('What Mastercard CDE adds')).toBeVisible();
         await expect(page.getByText('Suggested pitch script')).toBeVisible();
@@ -277,6 +281,10 @@ test.describe('Galaxy Constellation rendered compliance', () => {
       for (const route of ['/guests', '/guests/MEM-••••3421']) {
         await gotoStableRoute(page, route);
         await expect(page.getByText(/Enriched figures are modelled estimates/i)).toBeVisible();
+        if (route.startsWith('/guests/')) {
+          await expect(page.getByRole('heading', { name: /Synthetic CRM identity/i })).toBeVisible();
+          await expect(page.getByRole('heading', { name: /Galaxy purchase and stay history/i })).toBeVisible();
+        }
         await expect(page.locator('body')).not.toContainText(/HKD|MOP|\$|元|澳門幣/);
         expect(await documentScrollWidth(page)).toBeLessThanOrEqual(viewport.width);
       }
