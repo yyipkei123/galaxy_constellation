@@ -29,9 +29,9 @@ export function AnimatedCount({
   className,
 }: AnimatedCountProps) {
   const shouldReduceMotion = useReducedMotion();
-  const [displayValue, setDisplayValue] = useState(value);
-  const frameRef = useRef<number | null>(null);
   const safeValue = Number.isFinite(value) ? value : 0;
+  const [displayValue, setDisplayValue] = useState(safeValue);
+  const frameRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (shouldReduceMotion || typeof window === 'undefined') {

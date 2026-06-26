@@ -41,15 +41,15 @@ export function ConstellationCanvas() {
   useEffect(() => {
     const canvas = canvasRef.current;
     const wrapper = wrapperRef.current;
-    if (!canvas || !wrapper || reduceMotion) return;
-    if (typeof IntersectionObserver === 'undefined') return;
+    if (!canvas || !wrapper) return;
+    if (!reduceMotion && typeof IntersectionObserver === 'undefined') return;
 
     const context = canvas.getContext('2d');
     if (!context) return;
 
     let stars: Star[] = [];
-    let animationFrame = 0;
-    let visible = true;
+    let animationFrame: number | null = null;
+    let isIntersecting = true;
 
     function resize() {
       const rect = wrapper.getBoundingClientRect();
@@ -62,18 +62,20 @@ export function ConstellationCanvas() {
       stars = createStars(rect.width, rect.height);
     }
 
-    function draw() {
+    function paint(animate: boolean) {
       const rect = wrapper.getBoundingClientRect();
       context.clearRect(0, 0, rect.width, rect.height);
       context.fillStyle = 'rgba(11, 11, 14, 0.2)';
       context.fillRect(0, 0, rect.width, rect.height);
 
-      stars.forEach((star) => {
-        star.x += star.vx;
-        star.y += star.vy;
-        if (star.x < 0 || star.x > rect.width) star.vx *= -1;
-        if (star.y < 0 || star.y > rect.height) star.vy *= -1;
-      });
+      if (animate) {
+        stars.forEach((star) => {
+          star.x += star.vx;
+          star.y += star.vy;
+          if (star.x < 0 || star.x > rect.width) star.vx *= -1;
+          if (star.y < 0 || star.y > rect.height) star.vy *= -1;
+        });
+      }
 
       for (let i = 0; i < stars.length; i += 1) {
         for (let j = i + 1; j < stars.length; j += 1) {
@@ -97,30 +99,82 @@ export function ConstellationCanvas() {
         context.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
         context.fill();
       });
+    }
 
-      if (visible && document.visibilityState === 'visible') {
-        animationFrame = window.requestAnimationFrame(draw);
+    function cancelLoop() {
+      if (animationFrame !== null) {
+        window.cancelAnimationFrame(animationFrame);
+        animationFrame = null;
       }
     }
 
-    const observer = new IntersectionObserver(([entry]) => {
-      visible = entry.isIntersecting;
-      if (visible) {
-        animationFrame = window.requestAnimationFrame(draw);
+    function scheduleDraw() {
+      if (animationFrame !== null) return;
+      animationFrame = window.requestAnimationFrame(() => {
+        animationFrame = null;
+        draw();
+      });
+    }
+
+    function draw() {
+      paint(true);
+
+      if (isIntersecting && document.visibilityState === 'visible') {
+        scheduleDraw();
+      }
+    }
+
+    function startLoop() {
+      if (isIntersecting && document.visibilityState === 'visible') {
+        scheduleDraw();
+      }
+    }
+
+    function handleResize() {
+      resize();
+      if (reduceMotion) {
+        paint(false);
+      }
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'visible') {
+        startLoop();
       } else {
-        window.cancelAnimationFrame(animationFrame);
+        cancelLoop();
+      }
+    }
+
+    resize();
+
+    if (reduceMotion) {
+      paint(false);
+      window.addEventListener('resize', handleResize);
+
+      return () => {
+        window.removeEventListener('resize', handleResize);
+      };
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      isIntersecting = entry.isIntersecting;
+      if (isIntersecting) {
+        startLoop();
+      } else {
+        cancelLoop();
       }
     });
 
-    resize();
     observer.observe(wrapper);
-    window.addEventListener('resize', resize);
-    animationFrame = window.requestAnimationFrame(draw);
+    window.addEventListener('resize', handleResize);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    startLoop();
 
     return () => {
       observer.disconnect();
-      window.removeEventListener('resize', resize);
-      window.cancelAnimationFrame(animationFrame);
+      window.removeEventListener('resize', handleResize);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      cancelLoop();
     };
   }, [reduceMotion]);
 
