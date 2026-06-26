@@ -199,4 +199,16 @@ describe('TopBar', () => {
     expect(screen.getByRole('link', { name: /Wallet Retention/i })).toHaveAttribute('href', '/');
     expect(screen.getByRole('link', { name: /Corridors Acquisition/i })).toHaveAttribute('href', '/corridors');
   });
+
+  it('describes the current CDE snapshot without adding currency text', () => {
+    const { container } = render(
+      <AppStateProvider>
+        <TopBar />
+      </AppStateProvider>,
+    );
+
+    expect(screen.getByText('2026 Q2 snapshot')).toBeInTheDocument();
+    expect(screen.getByText('Quarterly CDE refresh')).toBeInTheDocument();
+    expect(container.textContent).not.toMatch(/HKD|MOP|\$|元|澳門幣/i);
+  });
 });

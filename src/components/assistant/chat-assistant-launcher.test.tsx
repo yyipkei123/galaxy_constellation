@@ -104,13 +104,15 @@ describe('ChatAssistantLauncher', () => {
     await waitFor(() => expect(launcher).toHaveFocus());
   });
 
-  it('uses a smaller safe-area mobile launcher and a labeled desktop affordance', () => {
+  it('uses a compact safe-area mobile launcher and a labeled desktop affordance', () => {
     renderLauncher();
 
     const launcher = screen.getByRole('button', { name: 'Open AI insight assistant' });
-    expect(launcher).toHaveClass('bottom-[calc(env(safe-area-inset-bottom)+1rem)]');
-    expect(launcher).toHaveClass('h-12');
-    expect(launcher).toHaveClass('w-12');
+    expect(launcher).toHaveAttribute('data-testid', 'ai-assistant-launcher');
+    expect(launcher).toHaveClass('bottom-[calc(env(safe-area-inset-bottom)+0.875rem)]');
+    expect(launcher).toHaveClass('right-3');
+    expect(launcher).toHaveClass('h-11');
+    expect(launcher).toHaveClass('w-11');
     expect(launcher).toHaveClass('lg:w-auto');
     expect(launcher).toHaveClass('lg:px-4');
     expect(within(launcher).getByText('Ask CDE AI')).toHaveClass('hidden');

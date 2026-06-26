@@ -65,4 +65,12 @@ describe('Nav', () => {
     expect(screen.getByText('Cotai wallet view')).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /Source Markets/i })).not.toBeInTheDocument();
   });
+
+  it('keeps compact mobile labels while preserving full accessible route names', () => {
+    render(<Nav />);
+
+    expect(screen.getByRole('link', { name: 'Overview' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Market Scan' })).toBeInTheDocument();
+    expect(screen.getByText('Market')).toHaveAttribute('aria-hidden', 'true');
+  });
 });

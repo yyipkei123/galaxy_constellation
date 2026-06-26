@@ -18,7 +18,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <div className="flex min-w-0 flex-col">
           <TopBar />
-          <main className="min-w-0 flex-1 px-4 py-5 sm:px-5 md:px-8 md:py-6">{children}</main>
+          <main className="min-w-0 flex-1 px-4 py-5 pb-24 sm:px-5 md:px-8 md:py-6 lg:pb-6">{children}</main>
           <footer className="border-t border-galaxy-border px-5 py-4 md:px-8">
             <MethodologyNote />
           </footer>
