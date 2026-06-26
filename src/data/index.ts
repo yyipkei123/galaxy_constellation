@@ -10,6 +10,12 @@ export {
   segmentsByQuarter,
 } from './generate';
 export {
+  guests,
+  getGuestById,
+  getGuestsBySegmentId,
+  topPriorityGuests,
+} from './guests';
+export {
   CORRIDOR_METRIC_LABELS,
   CORRIDOR_METRICS,
   CORRIDOR_YEARS,

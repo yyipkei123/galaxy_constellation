@@ -206,3 +206,48 @@ export interface AcquisitionDraft {
   variants: AcquisitionDraftVariant[];
   versionHistory: string[];
 }
+
+export type GalaxyTier = 'Privilege' | 'Gold' | 'Platinum' | 'Diamond';
+export type GuestCategory = CoreCategory;
+export type NbaChannel = 'online' | 'physical' | 'host';
+
+export interface NbaRec {
+  offer: string;
+  rationale: string;
+  upliftIndex: number;
+  channel: NbaChannel;
+  confidence: number;
+}
+
+export interface Guest {
+  id: string;
+  segmentId: string;
+  persona: string;
+  galaxyTier: GalaxyTier;
+  firstParty: {
+    lifetimeBand: 'mid' | 'high' | 'ultra';
+    staysL12m: number;
+    nightsBand: string;
+    properties: string[];
+    diningVisits: number;
+    entertainmentVisits: number;
+    recencyDays: number;
+    frequencyIndex: number;
+    rewardsPoints: number;
+    gamingContextIndex?: number;
+  };
+  cde: {
+    categoryCapturePct: Record<GuestCategory, number>;
+    categoryLeakagePct: Record<GuestCategory, number>;
+    categoryWalletIndex: Record<GuestCategory, number>;
+    propensities: Propensities;
+    crossPropertyCashBand: string;
+    channelOnlinePct: number;
+  };
+  leadScore: number;
+  projectedUpsideBand: string;
+  primaryOpportunity: GuestCategory;
+  scoreDrivers: string[];
+  nextBestActions: NbaRec[];
+  pitchScript: { en: string; zh: string };
+}
