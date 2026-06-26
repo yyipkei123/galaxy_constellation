@@ -300,34 +300,26 @@ function HeatmapCellButton({
   onSelectCell: (cell: SelectedWalletCell) => void;
 }) {
   const cell = { segmentId: segment.id, category: category.category };
+  const title = `Relative wallet gap priority. ${segment.name} x ${category.label}. ${relative}% relative priority within the visible CDE cut. Higher values combine leakage percentage with wallet intensity index.`;
 
   return (
-    <InsightTooltip
-      title="Relative wallet gap priority"
-      lines={[
-        `${segment.name} x ${category.label}: ${relative}% of the strongest visible wallet gap.`,
-        'CDE combines category leakage and wallet intensity into a relative action queue without raw spend values.',
-      ]}
-      block
-      triggerClassName="block"
+    <button
+      type="button"
+      aria-pressed={isSelected}
+      onClick={() => onSelectCell(cell)}
+      title={title}
+      className={clsx(
+        'block min-h-12 w-full rounded-lg border p-3 text-left text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-galaxy-gold',
+        heatmapCellClass(score, maxScore),
+        isSelected ? 'ring-2 ring-galaxy-gold ring-offset-2 ring-offset-galaxy-charcoal' : 'hover:border-galaxy-gold/70',
+      )}
+      aria-label={`${segment.name} ${category.label} relative wallet gap ${relative}%`}
     >
-      <button
-        type="button"
-        aria-pressed={isSelected}
-        onClick={() => onSelectCell(cell)}
-        className={clsx(
-          'block min-h-12 w-full rounded-lg border p-3 text-left text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-galaxy-gold',
-          heatmapCellClass(score, maxScore),
-          isSelected ? 'ring-2 ring-galaxy-gold ring-offset-2 ring-offset-galaxy-charcoal' : 'hover:border-galaxy-gold/70',
-        )}
-        aria-label={`${segment.name} ${category.label} relative wallet gap ${relative}%`}
-      >
-        <span className="flex items-center justify-between gap-2">
-          <span className="md:hidden">{category.label}</span>
-          <span>{relative}%</span>
-        </span>
-      </button>
-    </InsightTooltip>
+      <span className="flex items-center justify-between gap-2">
+        <span className="md:hidden">{category.label}</span>
+        <span>{relative}%</span>
+      </span>
+    </button>
   );
 }
 
@@ -419,16 +411,17 @@ function SegmentOpportunityHeatmap({
                       const cell = { segmentId: segment.id, category: category.category };
 
                       return (
-                        <HeatmapCellButton
-                          key={category.category}
-                          segment={segment}
-                          category={category}
-                          relative={relative}
-                          score={score}
-                          maxScore={maxScore}
-                          isSelected={selectedKey === selectedCellKey(cell)}
-                          onSelectCell={onSelectCell}
-                        />
+                        <div key={category.category} role="cell">
+                          <HeatmapCellButton
+                            segment={segment}
+                            category={category}
+                            relative={relative}
+                            score={score}
+                            maxScore={maxScore}
+                            isSelected={selectedKey === selectedCellKey(cell)}
+                            onSelectCell={onSelectCell}
+                          />
+                        </div>
                       );
                     })}
                   </div>

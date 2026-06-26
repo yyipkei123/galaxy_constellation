@@ -150,6 +150,10 @@ describe('share of wallet route', () => {
       name: /Cosmopolitan Connoisseurs F&B relative wallet gap/i,
     });
 
+    expect(privateDiningCell).toHaveAttribute('title', expect.stringContaining('Relative wallet gap priority'));
+    expect(privateDiningCell.closest('[role="cell"]')).toBeInTheDocument();
+    expect(privateDiningCell.parentElement).not.toHaveAttribute('tabindex', '0');
+
     fireEvent.click(privateDiningCell);
 
     const detail = screen.getByRole('region', { name: 'Selected wallet opportunity detail' });
