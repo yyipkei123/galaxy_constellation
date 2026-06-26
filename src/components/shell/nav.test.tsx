@@ -31,6 +31,12 @@ describe('Nav', () => {
     expect(screen.getByRole('link', { name: /Market Scan/i })).toHaveAttribute('href', '/marketscan');
   });
 
+  it('shows Guests in the wallet lens navigation', () => {
+    render(<Nav />);
+
+    expect(screen.getByRole('link', { name: /Guests/i })).toHaveAttribute('href', '/guests');
+  });
+
   it('scrolls the active route link into view in the horizontal mobile nav', () => {
     mockPathname = '/activation';
 
@@ -48,5 +54,15 @@ describe('Nav', () => {
     expect(screen.getByRole('link', { name: /Source Markets/i })).toHaveAttribute('href', '/corridors');
     expect(screen.getByRole('link', { name: /Acquisition/i })).toHaveAttribute('href', '/acquisition');
     expect(screen.queryByRole('link', { name: /^Wallet$/i })).not.toBeInTheDocument();
+  });
+
+  it('treats the guests route as part of the wallet lens', () => {
+    mockPathname = '/guests';
+
+    render(<Nav />);
+
+    expect(screen.getByRole('link', { name: /Guests/i })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByText('Cotai wallet view')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Source Markets/i })).not.toBeInTheDocument();
   });
 });

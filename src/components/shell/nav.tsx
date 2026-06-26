@@ -12,6 +12,7 @@ import {
   Radar,
   Route,
   ScanSearch,
+  UsersRound,
   WalletCards,
   type LucideIcon,
 } from 'lucide-react';
@@ -22,6 +23,7 @@ const walletNavItems: Array<{ href: string; label: string; icon: LucideIcon }> =
   { href: '/', label: 'Overview', icon: BarChart3 },
   { href: '/wallet', label: 'Wallet', icon: WalletCards },
   { href: '/segments', label: 'Segments', icon: Gem },
+  { href: '/guests', label: 'Guests', icon: UsersRound },
   { href: '/leakage', label: 'Leakage', icon: Activity },
   { href: '/propensity', label: 'Audience', icon: ScanSearch },
   { href: '/activation', label: 'Activation', icon: Megaphone },
