@@ -3,6 +3,9 @@ import type { CoreCategory, Guest, GuestPurchaseHistoryItem, GuestStayHistoryIte
 const bannedCurrencyPattern = /HKD|MOP|\$|元|澳門幣/i;
 const directContactPattern = /@|\+\d{6,}|(?:\d[\s-]?){8,}/;
 const nonFinitePattern = /NaN|Infinity/i;
+const generatedPurchaseIdPattern = /^\d{4}-purchase-\d+$/;
+const generatedStayIdPattern = /^\d{4}-stay-\d+$/;
+const maxSafeTextLength = 80;
 
 const categoryLabels: Record<CoreCategory, string> = {
   hospitality: 'Hospitality',
@@ -11,8 +14,9 @@ const categoryLabels: Record<CoreCategory, string> = {
   retailLuxury: 'Retail-Luxury',
 };
 
-function safeText(value: unknown, fallback: string) {
-  if (typeof value !== 'string' && typeof value !== 'number') return fallback;
+function normalizedText(value: unknown) {
+  if (typeof value !== 'string' && typeof value !== 'number') return null;
+  if (typeof value === 'number' && !Number.isFinite(value)) return null;
 
   const rawValue = String(value);
   if (
@@ -20,25 +24,75 @@ function safeText(value: unknown, fallback: string) {
     || directContactPattern.test(rawValue)
     || nonFinitePattern.test(rawValue)
   ) {
-    return fallback;
+    return null;
   }
 
   const cleaned = rawValue.replace(/\s+/g, ' ').trim();
-  return cleaned || fallback;
+  if (!cleaned || cleaned.length > maxSafeTextLength) return null;
+
+  return cleaned;
+}
+
+function safeText(value: unknown, fallback: string) {
+  return normalizedText(value) ?? fallback;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isCoreCategory(value: unknown): value is CoreCategory {
+  return value === 'hospitality' || value === 'fnb' || value === 'entertainment' || value === 'retailLuxury';
+}
+
+function hasGeneratedStayId(value: unknown) {
+  return typeof value === 'string' && generatedStayIdPattern.test(value);
+}
+
+function hasGeneratedPurchaseId(value: unknown) {
+  return typeof value === 'string' && generatedPurchaseIdPattern.test(value);
+}
+
+function hasUsableStayFields(stay: Record<string, unknown>) {
+  return Boolean(normalizedText(stay.periodLabel) && normalizedText(stay.property) && normalizedText(stay.roomType));
+}
+
+function hasUsablePurchaseFields(purchase: Record<string, unknown>) {
+  return Boolean(
+    normalizedText(purchase.itemLabel)
+    && normalizedText(purchase.merchantArea)
+    && normalizedText(purchase.periodLabel),
+  );
+}
+
+function isValidStay(value: unknown): value is GuestStayHistoryItem {
+  if (!isRecord(value)) return false;
+
+  return hasGeneratedStayId(value.id) || hasUsableStayFields(value);
+}
+
+function isValidPurchase(value: unknown): value is GuestPurchaseHistoryItem {
+  if (!isRecord(value) || !isCoreCategory(value.category)) return false;
+
+  return hasGeneratedPurchaseId(value.id) || hasUsablePurchaseFields(value);
 }
 
 function safeStays(value: unknown): GuestStayHistoryItem[] {
-  return Array.isArray(value) ? (value.filter(Boolean).slice(0, 3) as GuestStayHistoryItem[]) : [];
+  return Array.isArray(value) ? value.filter(isValidStay).slice(0, 3) : [];
 }
 
 function safePurchases(value: unknown): GuestPurchaseHistoryItem[] {
-  return Array.isArray(value) ? (value.filter(Boolean).slice(0, 5) as GuestPurchaseHistoryItem[]) : [];
+  return Array.isArray(value) ? value.filter(isValidPurchase).slice(0, 5) : [];
 }
 
 function categoryLabel(value: unknown) {
-  return value === 'hospitality' || value === 'fnb' || value === 'entertainment' || value === 'retailLuxury'
+  return isCoreCategory(value)
     ? categoryLabels[value]
     : 'Category signal';
+}
+
+function ticketBandLabel(value: unknown) {
+  return value === 'entry' || value === 'premium' || value === 'ultra' ? value : 'band';
 }
 
 export function PurchaseHistoryPanel({ guest }: { guest: Guest }) {
@@ -109,7 +163,7 @@ export function PurchaseHistoryPanel({ guest }: { guest: Guest }) {
                       {safeText(purchase.itemLabel, 'Purchase signal')}
                     </p>
                     <span className="rounded border border-galaxy-border px-2 py-0.5 text-xs text-galaxy-muted">
-                      {safeText(purchase.ticketBand, 'band')}
+                      {ticketBandLabel(purchase.ticketBand)}
                     </span>
                   </div>
                   <p className="mt-1 break-words text-galaxy-muted">

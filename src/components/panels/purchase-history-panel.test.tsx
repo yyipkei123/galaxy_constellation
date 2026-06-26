@@ -40,6 +40,7 @@ describe('PurchaseHistoryPanel', () => {
     const { container } = render(<PurchaseHistoryPanel guest={malformedGuest} />);
 
     expect(screen.getByText('No stay history available')).toBeInTheDocument();
+    expect(screen.getByText('No purchase history available')).toBeInTheDocument();
     expect(container.textContent).not.toMatch(/HKD|MOP|\$|元|澳門幣|NaN|Infinity/i);
   });
 
@@ -52,6 +53,98 @@ describe('PurchaseHistoryPanel', () => {
     render(<PurchaseHistoryPanel guest={malformedGuest} />);
 
     expect(screen.getByText('No purchase history available')).toBeInTheDocument();
+  });
+
+  it('drops primitive and missing-field history items before rendering history lists', () => {
+    const malformedGuest = {
+      ...guests[0],
+      stayHistory: [
+        'bad primitive',
+        {},
+        { id: 'not-generated', periodLabel: 'Last month' },
+      ],
+      purchaseHistory: [
+        'bad primitive',
+        {},
+        { category: 'fnb' },
+        { category: 'not-real', itemLabel: 'Chef-led dinner', merchantArea: 'Fine dining', periodLabel: 'Recent' },
+      ],
+    } as unknown as Guest;
+
+    render(<PurchaseHistoryPanel guest={malformedGuest} />);
+
+    expect(screen.getByText('No stay history available')).toBeInTheDocument();
+    expect(screen.getByText('No purchase history available')).toBeInTheDocument();
+    expect(screen.queryByRole('list', { name: 'Stay history' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('list', { name: 'Purchase history' })).not.toBeInTheDocument();
+  });
+
+  it('handles non-array history values as empty states', () => {
+    const malformedGuest = {
+      ...guests[0],
+      stayHistory: { id: '3421-stay-1', property: 'Galaxy Hotel' },
+      purchaseHistory: '3421-purchase-1',
+    } as unknown as Guest;
+
+    render(<PurchaseHistoryPanel guest={malformedGuest} />);
+
+    expect(screen.getByText('No stay history available')).toBeInTheDocument();
+    expect(screen.getByText('No purchase history available')).toBeInTheDocument();
+  });
+
+  it('drops history items with actual non-finite values before rendering fallback cards', () => {
+    const malformedGuest = {
+      ...guests[0],
+      stayHistory: [
+        {
+          id: 'not-generated',
+          periodLabel: Number.NaN,
+          property: Number.POSITIVE_INFINITY,
+          roomType: Number.NaN,
+          nightsBand: '2-3 nights',
+          occasion: 'Short break',
+          satisfactionSignal: 'Positive',
+        },
+      ],
+      purchaseHistory: [
+        {
+          id: 'not-generated',
+          periodLabel: Number.NaN,
+          category: 'fnb',
+          merchantArea: Number.POSITIVE_INFINITY,
+          itemLabel: Number.NaN,
+          channel: 'Host',
+          ticketBand: 'premium',
+          galaxyOwned: true,
+        },
+      ],
+    } as unknown as Guest;
+
+    const { container } = render(<PurchaseHistoryPanel guest={malformedGuest} />);
+
+    expect(screen.getByText('No stay history available')).toBeInTheDocument();
+    expect(screen.getByText('No purchase history available')).toBeInTheDocument();
+    expect(container.textContent).not.toMatch(/NaN|Infinity/i);
+  });
+
+  it('does not render malformed long ticket band tokens', () => {
+    const malformedTicketBand = `premium-${'x'.repeat(160)}`;
+    const malformedGuest = {
+      ...guests[0],
+      purchaseHistory: [
+        {
+          ...guests[0].purchaseHistory[0],
+          ticketBand: malformedTicketBand,
+        },
+      ],
+    } as unknown as Guest;
+
+    const { container } = render(<PurchaseHistoryPanel guest={malformedGuest} />);
+    const purchaseList = screen.getByRole('list', { name: 'Purchase history' });
+
+    expect(within(purchaseList).getAllByRole('listitem')).toHaveLength(1);
+    expect(within(purchaseList).getByText('band')).toBeInTheDocument();
+    expect(container.textContent).not.toContain(malformedTicketBand);
   });
 
   it('sanitizes direct contact-like values in history items', () => {
