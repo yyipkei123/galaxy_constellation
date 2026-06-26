@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react';
+import { Children, cloneElement, isValidElement, type ReactElement, type ReactNode } from 'react';
 
-const bannedCurrencyPattern = /\b(?:HKD|MOP)\b|\$|元|澳門幣/gi;
+const bannedCurrencyPattern = /HKD|MOP|\$|元|澳門幣/gi;
 
 interface DriverChipProps {
   children: ReactNode;
@@ -16,29 +16,40 @@ function sanitizeDriverNode(value: ReactNode): ReactNode {
     return sanitizeDriverText(String(value));
   }
 
-  if (Array.isArray(value)) {
-    return value.map((child) => sanitizeDriverNode(child));
+  if (isValidElement<{ children?: ReactNode }>(value)) {
+    if (!('children' in value.props)) return value;
+
+    return cloneElement(
+      value as ReactElement<{ children?: ReactNode }>,
+      undefined,
+      sanitizeDriverNode(value.props.children),
+    );
   }
 
-  return value;
+  return Children.map(value, (child) => sanitizeDriverNode(child));
+}
+
+function driverText(value: ReactNode): string {
+  if (typeof value === 'string' || typeof value === 'number') {
+    return sanitizeDriverText(String(value));
+  }
+
+  if (isValidElement<{ children?: ReactNode }>(value)) {
+    return driverText(value.props.children);
+  }
+
+  return Children.toArray(value)
+    .map((child) => driverText(child))
+    .filter(Boolean)
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function driverLabel(value: ReactNode) {
-  if (typeof value === 'string' || typeof value === 'number') {
-    return `Driver: ${sanitizeDriverText(String(value))}`;
-  }
+  const text = driverText(value);
 
-  if (Array.isArray(value)) {
-    const text = value
-      .filter((child) => typeof child === 'string' || typeof child === 'number')
-      .map((child) => sanitizeDriverText(String(child)))
-      .join(' ')
-      .trim();
-
-    if (text) return `Driver: ${text}`;
-  }
-
-  return 'Driver insight';
+  return text ? `Driver: ${text}` : 'Driver insight';
 }
 
 export function DriverChip({ children, className }: DriverChipProps) {
