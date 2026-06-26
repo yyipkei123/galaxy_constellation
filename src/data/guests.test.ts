@@ -1,3 +1,4 @@
+import { latestSegments } from './generate';
 import { CORE_CATEGORIES, guests, getGuestById, getGuestsBySegmentId, topPriorityGuests } from './guests';
 
 const bannedCurrencyPattern = /HKD|MOP|\$|元|澳門幣/i;
@@ -9,6 +10,12 @@ describe('guest lead data', () => {
     expect(guests.length).toBeLessThanOrEqual(60);
     expect(guests.every((guest) => maskedIdPattern.test(guest.id))).toBe(true);
     expect(new Set(guests.map((guest) => guest.id)).size).toBe(guests.length);
+
+    const latestSegmentIds = latestSegments.map((segment) => segment.id);
+    expect(new Set(guests.map((guest) => guest.segmentId))).toEqual(new Set(latestSegmentIds));
+    for (const segmentId of latestSegmentIds) {
+      expect(guests.filter((guest) => guest.segmentId === segmentId)).toHaveLength(8);
+    }
   });
 
   it('computes finite lead scores and returns descending top priorities', () => {
