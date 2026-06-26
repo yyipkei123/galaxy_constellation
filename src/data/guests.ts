@@ -118,6 +118,8 @@ function buildGuest(segment: Segment, index: number, globalIndex: number): Guest
     coBrandLookAlike: Number(clamp(segment.propensities.coBrandLookAlike + (random() - 0.5) * 0.18, 0, 1).toFixed(2)),
   };
   const primary = primaryOpportunity(categoryCapturePct, categoryWalletIndex);
+  const primaryPropertyIndex = (index + globalIndex) % properties.length;
+  const secondaryPropertyIndex = (primaryPropertyIndex + 1 + (index % (properties.length - 1))) % properties.length;
   const baseGuest: Omit<Guest, 'leadScore'> = {
     id: `MEM-••••${stableDigits(globalIndex)}`,
     segmentId: segment.id,
@@ -127,7 +129,7 @@ function buildGuest(segment: Segment, index: number, globalIndex: number): Guest
       lifetimeBand: lifetimeBand(segment, index),
       staysL12m: Math.max(1, Math.round(2 + segment.metrics.shareOfVisits / 18 + random() * 4)),
       nightsBand: `${2 + (index % 3)}-${5 + (index % 4)} nights`,
-      properties: [properties[(index + globalIndex) % properties.length], properties[(index + 2) % properties.length]],
+      properties: [properties[primaryPropertyIndex], properties[secondaryPropertyIndex]],
       diningVisits: Math.round(2 + segment.categories.fnb.capturedSharePct / 12 + random() * 5),
       entertainmentVisits: Math.round(1 + segment.categories.entertainment.capturedSharePct / 16 + random() * 3),
       recencyDays: Math.round(5 + random() * 42),

@@ -38,6 +38,12 @@ describe('guest lead data', () => {
     }
   });
 
+  it('keeps first-party property history unique per guest', () => {
+    for (const guest of guests) {
+      expect(new Set(guest.firstParty.properties).size).toBe(guest.firstParty.properties.length);
+    }
+  });
+
   it('keeps enriched guest fields CDE-safe', () => {
     for (const guest of guests) {
       expect(JSON.stringify(guest.cde)).not.toMatch(bannedCurrencyPattern);
