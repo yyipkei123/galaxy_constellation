@@ -43,6 +43,17 @@ describe('PurchaseHistoryPanel', () => {
     expect(container.textContent).not.toMatch(/HKD|MOP|\$|元|澳門幣|NaN|Infinity/i);
   });
 
+  it('renders purchase empty state for an empty purchase history array', () => {
+    const malformedGuest = {
+      ...guests[0],
+      purchaseHistory: [],
+    } as unknown as Guest;
+
+    render(<PurchaseHistoryPanel guest={malformedGuest} />);
+
+    expect(screen.getByText('No purchase history available')).toBeInTheDocument();
+  });
+
   it('sanitizes direct contact-like values in history items', () => {
     const malformedGuest = {
       ...guests[0],
