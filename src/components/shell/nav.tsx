@@ -26,7 +26,7 @@ const walletNavItems: Array<{ href: string; label: string; shortLabel: string; i
   { href: '/guests', label: 'Guests', shortLabel: 'Guests', icon: UsersRound },
   { href: '/leakage', label: 'Leakage', shortLabel: 'Leakage', icon: Activity },
   { href: '/propensity', label: 'Audience', shortLabel: 'Audience', icon: ScanSearch },
-  { href: '/activation', label: 'Activation', shortLabel: 'Act', icon: Megaphone },
+  { href: '/activation', label: 'Activation', shortLabel: 'Activate', icon: Megaphone },
   { href: '/marketscan', label: 'Market Scan', shortLabel: 'Market', icon: Radar },
 ];
 

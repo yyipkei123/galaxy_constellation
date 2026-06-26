@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, vi } from 'vitest';
 import { AppStateProvider, useAppState } from '@/store/app-store';
+import { AppShell } from './app-shell';
 import { TopBar } from './top-bar';
 
 let mockPathname = '/wallet';
@@ -207,8 +208,36 @@ describe('TopBar', () => {
       </AppStateProvider>,
     );
 
-    expect(screen.getByText('2026 Q2 snapshot')).toBeInTheDocument();
-    expect(screen.getByText('Quarterly CDE refresh')).toBeInTheDocument();
+    const snapshotChip = screen.getByText('2026 Q2 snapshot');
+    const refreshChip = screen.getByText('Quarterly CDE refresh');
+
+    expect(snapshotChip).toHaveClass('hidden');
+    expect(snapshotChip).toHaveClass('md:inline-flex');
+    expect(refreshChip).toHaveClass('hidden');
+    expect(refreshChip).toHaveClass('md:inline-flex');
+    expect(container.textContent).not.toMatch(/HKD|MOP|\$|元|澳門幣/i);
+  });
+
+  it('keeps fixed assistant bottom clearance after the footer instead of inside main', () => {
+    const { container } = render(
+      <AppStateProvider>
+        <AppShell>
+          <section>Route content</section>
+        </AppShell>
+      </AppStateProvider>,
+    );
+
+    const main = screen.getByText('Route content').closest('main');
+    const contentColumn = main?.parentElement;
+
+    expect(contentColumn).toHaveClass('pb-24');
+    expect(contentColumn).toHaveClass('lg:pb-0');
+    expect(main).toHaveClass('min-w-0');
+    expect(main).toHaveClass('flex-1');
+    expect(main).toHaveClass('px-4');
+    expect(main).toHaveClass('py-5');
+    expect(main).not.toHaveClass('pb-24');
+    expect(main).not.toHaveClass('lg:pb-6');
     expect(container.textContent).not.toMatch(/HKD|MOP|\$|元|澳門幣/i);
   });
 });

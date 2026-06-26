@@ -19,10 +19,10 @@ export function TopBar() {
           <span className="text-sm font-medium text-galaxy-cream">
             Coverage {methodology.matchedCoveragePct}%
           </span>
-          <span className="rounded-full border border-galaxy-border bg-galaxy-charcoal/70 px-2.5 py-1 text-xs font-semibold text-galaxy-muted">
+          <span className="hidden rounded-full border border-galaxy-border bg-galaxy-charcoal/70 px-2.5 py-1 text-xs font-semibold text-galaxy-muted md:inline-flex">
             {quarters.find((quarter) => quarter.id === selectedQuarterId)?.label ?? 'Current quarter'} snapshot
           </span>
-          <span className="rounded-full border border-galaxy-border bg-galaxy-charcoal/70 px-2.5 py-1 text-xs font-semibold text-galaxy-muted">
+          <span className="hidden rounded-full border border-galaxy-border bg-galaxy-charcoal/70 px-2.5 py-1 text-xs font-semibold text-galaxy-muted md:inline-flex">
             Quarterly CDE refresh
           </span>
         </div>

@@ -70,7 +70,9 @@ describe('Nav', () => {
     render(<Nav />);
 
     expect(screen.getByRole('link', { name: 'Overview' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Activation' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Market Scan' })).toBeInTheDocument();
+    expect(screen.getByText('Activate')).toHaveAttribute('aria-hidden', 'true');
     expect(screen.getByText('Market')).toHaveAttribute('aria-hidden', 'true');
   });
 });
