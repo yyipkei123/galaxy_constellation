@@ -339,4 +339,37 @@ test.describe('Galaxy Constellation rendered compliance', () => {
       }
     });
   }
+
+  for (const viewport of [
+    { label: 'iPhone', width: 390, height: 844 },
+    { label: 'iPad', width: 820, height: 1180 },
+    { label: 'desktop', width: 1440, height: 900 },
+  ]) {
+    test(`dashboard refinements stay usable on ${viewport.label}`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+
+      await gotoStableRoute(page, '/wallet');
+      await expect(page.getByRole('navigation', { name: 'Wallet dashboard sections' })).toBeVisible();
+      await expect(page.getByRole('region', { name: 'Selected wallet opportunity detail' })).toBeVisible();
+      await page.getByRole('button', { name: /Cosmopolitan Connoisseurs F&B relative wallet gap/i }).click();
+      await expect(page.getByRole('region', { name: 'Selected wallet opportunity detail' })).toContainText('Cosmopolitan Connoisseurs');
+      await expect(page.getByRole('region', { name: 'Selected wallet opportunity detail' })).toContainText('F&B');
+      await expect(page.locator('body')).not.toContainText(/HKD|MOP|\$|元|澳門幣/);
+      expect(await documentScrollWidth(page)).toBeLessThanOrEqual(viewport.width);
+
+      await gotoStableRoute(page, '/segments');
+      await expect(page.getByRole('navigation', { name: 'Segmentation sections' })).toBeVisible();
+      await expect(page.getByRole('link', { name: 'Kit' })).toBeVisible();
+      await expect(page.locator('body')).not.toContainText(/HKD|MOP|\$|元|澳門幣/);
+      expect(await documentScrollWidth(page)).toBeLessThanOrEqual(viewport.width);
+
+      await gotoStableRoute(page, '/guests/MEM-••••3421');
+      await expect(page.getByRole('navigation', { name: 'Customer 360 sections' })).toBeVisible();
+      await expect(page.getByRole('region', { name: 'Host briefing summary' })).toBeVisible();
+      await expect(page.getByText(/Reason to contact now/i)).toBeVisible();
+      await expect(page.getByTestId('ai-assistant-launcher')).toBeVisible();
+      await expect(page.locator('body')).not.toContainText(/HKD|MOP|\$|元|澳門幣/);
+      expect(await documentScrollWidth(page)).toBeLessThanOrEqual(viewport.width);
+    });
+  }
 });
