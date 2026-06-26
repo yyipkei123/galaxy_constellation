@@ -18,7 +18,7 @@ describe('guests route', () => {
   it('shows an action toast from lead-board actions', () => {
     render(<GuestsPage />);
 
-    fireEvent.click(screen.getAllByRole('button', { name: /Add to audience/i })[0]);
+    fireEvent.click(screen.getAllByRole('button', { name: /Add .* to audience/i })[0]);
 
     expect(screen.getByRole('status')).toHaveTextContent(/added to audience/i);
   });

@@ -35,6 +35,7 @@ interface LeadBoardProps {
 const tierOptions: GalaxyTier[] = ['Diamond', 'Platinum', 'Gold', 'Privilege'];
 const bannedCurrencyPattern = /HKD|MOP|\$|元|澳門幣/gi;
 const nonFinitePattern = /NaN|Infinity/gi;
+const maskedGuestIdPattern = /^MEM-••••\d{4}$/;
 const modelledBandPattern = /^\d+(?:\.\d+)?-\d+(?:\.\d+)?k equiv\.\/mo$/i;
 
 const categoryLabels: Record<CoreCategory, string> = {
@@ -135,7 +136,7 @@ function normalizeLead(value: unknown): NormalizedLead | null {
   if (!isRecord(value)) return null;
 
   const id = typeof value.id === 'string' ? value.id.trim() : '';
-  if (!id.startsWith('MEM-')) return null;
+  if (!maskedGuestIdPattern.test(id)) return null;
 
   const cde = isRecord(value.cde) ? value.cde : {};
   const primaryOpportunity = safeCategory(value.primaryOpportunity, cde);
@@ -346,12 +347,14 @@ export function LeadBoard({ guests, onAction }: LeadBoardProps) {
               <div className="mt-5 flex flex-wrap gap-3">
                 <Link
                   href={`/guests/${encodeURIComponent(guest.id)}`}
+                  aria-label={`Open 360 for ${guest.id}`}
                   className="inline-flex min-h-10 items-center rounded-md bg-galaxy-gold px-4 py-2 text-sm font-semibold text-galaxy-ink"
                 >
                   Open 360
                 </Link>
                 <button
                   type="button"
+                  aria-label={`Assign ${guest.id} to host`}
                   onClick={() => onAction(`${guest.id} assigned to host`)}
                   className="inline-flex min-h-10 items-center rounded-md border border-galaxy-border px-4 py-2 text-sm font-semibold text-galaxy-cream transition hover:border-galaxy-gold/50"
                 >
@@ -359,6 +362,7 @@ export function LeadBoard({ guests, onAction }: LeadBoardProps) {
                 </button>
                 <button
                   type="button"
+                  aria-label={`Add ${guest.id} to audience`}
                   onClick={() => onAction(`${guest.id} added to audience`)}
                   className="inline-flex min-h-10 items-center rounded-md border border-galaxy-border px-4 py-2 text-sm font-semibold text-galaxy-cream transition hover:border-galaxy-gold/50"
                 >

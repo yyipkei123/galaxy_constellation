@@ -16,7 +16,7 @@ describe('LeadBoard', () => {
     expect(screen.getAllByLabelText(/Driver:/i).length).toBeGreaterThan(0);
 
     const topGuest = [...guests].sort((first, second) => second.leadScore - first.leadScore)[0];
-    const firstGuestLink = screen.getAllByRole('link', { name: /Open 360/i })[0];
+    const firstGuestLink = screen.getAllByRole('link', { name: /Open 360 for/i })[0];
     expect(firstGuestLink).toHaveAttribute('href', `/guests/${encodeURIComponent(topGuest.id)}`);
   });
 
@@ -31,7 +31,13 @@ describe('LeadBoard', () => {
       expect(within(lead).getByText('Diamond')).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getAllByRole('button', { name: /Assign to host/i })[0]);
+    const firstLead = screen.getAllByRole('article', { name: /priority lead/i })[0];
+
+    expect(within(firstLead).getByRole('link', { name: /^Open 360 for MEM-••••\d{4}$/ })).toBeInTheDocument();
+    expect(within(firstLead).getByRole('button', { name: /^Assign MEM-••••\d{4} to host$/ })).toBeInTheDocument();
+    expect(within(firstLead).getByRole('button', { name: /^Add MEM-••••\d{4} to audience$/ })).toBeInTheDocument();
+
+    fireEvent.click(screen.getAllByRole('button', { name: /Assign .* to host/i })[0]);
     expect(onAction).toHaveBeenCalledWith(expect.stringMatching(/assigned to host/i));
 
     fireEvent.change(screen.getByLabelText('Minimum lead score'), { target: { value: '95' } });
@@ -84,5 +90,20 @@ describe('LeadBoard', () => {
     expect(screen.getAllByRole('article', { name: /priority lead/i })).toHaveLength(1);
     expect(screen.queryByText(/NaN|Infinity/)).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Priority Lead Board/i }).closest('section')).not.toHaveTextContent(bannedCurrencyPattern);
+  });
+
+  it('does not render unmasked MEM-style guest ids', () => {
+    const malformedGuests = [
+      {
+        ...guests[0],
+        id: 'MEM-12345678',
+      },
+      guests[1],
+    ] as unknown as Guest[];
+
+    render(<LeadBoard guests={malformedGuests} onAction={() => undefined} />);
+
+    expect(screen.queryByText('MEM-12345678')).not.toBeInTheDocument();
+    expect(screen.getAllByRole('article', { name: /priority lead/i })).toHaveLength(1);
   });
 });
