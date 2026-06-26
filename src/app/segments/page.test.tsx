@@ -128,6 +128,20 @@ describe('segments route', () => {
     );
   });
 
+  it('provides mobile section navigation for long segmentation analysis', () => {
+    renderSegments();
+
+    const nav = screen.getByRole('navigation', { name: 'Segmentation sections' });
+
+    expect(within(nav).getByRole('link', { name: 'Brief' })).toHaveAttribute('href', '#segment-brief');
+    expect(within(nav).getByRole('link', { name: 'Personas' })).toHaveAttribute('href', '#segment-personas');
+    expect(within(nav).getByRole('link', { name: 'Kit' })).toHaveAttribute('href', '#segment-persona-kit');
+    expect(within(nav).getByRole('link', { name: 'Actions' })).toHaveAttribute('href', '#segment-actions');
+    expect(screen.getByRole('group', { name: 'CDE snapshot status' })).toHaveTextContent(
+      'Segment and persona model',
+    );
+  });
+
   it('renders six segment buttons and selected segment details', () => {
     renderSegments();
 

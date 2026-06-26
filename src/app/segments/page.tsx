@@ -19,7 +19,9 @@ import { PersonaUniverse } from '@/components/panels/persona-universe';
 import { SegmentCard } from '@/components/panels/segment-card';
 import { PageHeader } from '@/components/ui/page-header';
 import { Panel } from '@/components/ui/panel';
+import { SectionJumpNav } from '@/components/ui/section-jump-nav';
 import { SectionHeader } from '@/components/ui/section-header';
+import { SnapshotStatusStrip } from '@/components/ui/snapshot-status-strip';
 import { crmRows, type PersonaPriority, type PersonaWealthTier, type Segment } from '@/data';
 import { buildSegmentInsightNarrative } from '@/lib/insights';
 import {
@@ -99,6 +101,8 @@ function normalizeSegmentForView(segment: Segment): Segment {
 
 export default function SegmentsPage() {
   const {
+    methodology,
+    selectedQuarter,
     segments,
     selectedSegment,
     selectedPersonaId,
@@ -212,9 +216,26 @@ export default function SegmentsPage() {
         </div>
       </Panel>
 
+      <SectionJumpNav
+        label="Segmentation sections"
+        currentId="segment-brief"
+        items={[
+          { id: 'segment-brief', label: 'Brief' },
+          { id: 'segment-personas', label: 'Personas' },
+          { id: 'segment-persona-kit', label: 'Kit' },
+          { id: 'segment-actions', label: 'Actions' },
+        ]}
+      />
+
+      <SnapshotStatusStrip
+        quarterLabel={selectedQuarter.label}
+        methodology={methodology}
+        context="Segment and persona model"
+      />
+
       {activeSegment ? (
         <>
-          <div className="grid gap-6 xl:grid-cols-[22rem_minmax(0,1fr)]">
+          <div id="segment-brief" className="grid scroll-mt-24 gap-6 xl:grid-cols-[22rem_minmax(0,1fr)]">
             <div role="group" className="space-y-3" aria-label="Segment rail">
               {safeSegments.map((segment) => (
                 <SegmentCard
@@ -245,45 +266,51 @@ export default function SegmentsPage() {
             </div>
           </div>
 
-          <PersonaUniverse summary={personaSummary} />
+          <section id="segment-personas" className="scroll-mt-24 space-y-6" aria-label="Segment persona analysis">
+            <PersonaUniverse summary={personaSummary} />
 
-          <Panel>
-            <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
-              <SectionHeader
-                eyebrow="Persona drill-down"
-                title="Persona explorer"
-                description="Second-level personas translate the selected Galaxy segment into audience-sized actions, CDE evidence, and activation recommendations."
-              />
-            </div>
-
-            <PersonaFilterBar
-              query={personaQuery}
-              wealthTier={personaWealthTier}
-              priority={personaPriority}
-              sort={personaSort}
-              onQueryChange={setPersonaQuery}
-              onWealthTierChange={setPersonaWealthTier}
-              onPriorityChange={setPersonaPriority}
-              onSortChange={setPersonaSort}
-            />
-
-            <div className="mt-5 grid gap-4 lg:grid-cols-3">
-              {filteredPersonas.length > 0 && selectedPersona ? filteredPersonas.map((persona) => (
-                <PersonaCard
-                  key={persona.id}
-                  persona={persona}
-                  isSelected={persona.id === selectedPersona.id}
-                  onSelect={selectPersona}
+            <Panel>
+              <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+                <SectionHeader
+                  eyebrow="Persona drill-down"
+                  title="Persona explorer"
+                  description="Second-level personas translate the selected Galaxy segment into audience-sized actions, CDE evidence, and activation recommendations."
                 />
-              )) : (
-                <p className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4 text-sm leading-6 text-galaxy-muted lg:col-span-3">
-                  No personas match the current filters for this segment.
-                </p>
-              )}
-            </div>
-          </Panel>
+              </div>
 
-          {selectedPersona ? <PersonaDetailKit persona={selectedPersona} /> : null}
+              <PersonaFilterBar
+                query={personaQuery}
+                wealthTier={personaWealthTier}
+                priority={personaPriority}
+                sort={personaSort}
+                onQueryChange={setPersonaQuery}
+                onWealthTierChange={setPersonaWealthTier}
+                onPriorityChange={setPersonaPriority}
+                onSortChange={setPersonaSort}
+              />
+
+              <div className="mt-5 grid gap-4 lg:grid-cols-3">
+                {filteredPersonas.length > 0 && selectedPersona ? filteredPersonas.map((persona) => (
+                  <PersonaCard
+                    key={persona.id}
+                    persona={persona}
+                    isSelected={persona.id === selectedPersona.id}
+                    onSelect={selectPersona}
+                  />
+                )) : (
+                  <p className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4 text-sm leading-6 text-galaxy-muted lg:col-span-3">
+                    No personas match the current filters for this segment.
+                  </p>
+                )}
+              </div>
+            </Panel>
+          </section>
+
+          {selectedPersona ? (
+            <section id="segment-persona-kit" className="scroll-mt-24">
+              <PersonaDetailKit persona={selectedPersona} />
+            </section>
+          ) : null}
 
           <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
             <Panel>
@@ -313,7 +340,7 @@ export default function SegmentsPage() {
 
           <CdeMetricPanel metrics={activeSegment.metrics} />
 
-          <Panel>
+          <Panel id="segment-actions" className="scroll-mt-24">
             <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
               <SectionHeader
                 eyebrow="Why this matters"
