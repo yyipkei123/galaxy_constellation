@@ -36,6 +36,11 @@ describe('ConstellationCanvas', () => {
   });
 
   it('renders an aria-hidden canvas and a text fallback for tests and reduced-motion contexts', () => {
+    const context = createMockContext();
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(
+      () => context as unknown as CanvasRenderingContext2D,
+    );
+
     render(<ConstellationCanvas />);
 
     expect(screen.getByTestId('constellation-canvas')).toHaveAttribute('aria-hidden', 'true');
@@ -59,6 +64,32 @@ describe('ConstellationCanvas', () => {
       y: 0,
       toJSON: () => ({}),
     });
+    const requestAnimationFrameSpy = vi.spyOn(window, 'requestAnimationFrame');
+
+    render(<ConstellationCanvas />);
+
+    expect(context.fillRect).toHaveBeenCalled();
+    expect(context.arc).toHaveBeenCalled();
+    expect(requestAnimationFrameSpy).not.toHaveBeenCalled();
+  });
+
+  it('draws a static fallback when IntersectionObserver is unavailable', () => {
+    const context = createMockContext();
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(
+      () => context as unknown as CanvasRenderingContext2D,
+    );
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue({
+      bottom: 200,
+      height: 200,
+      left: 0,
+      right: 300,
+      top: 0,
+      width: 300,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    });
+    vi.stubGlobal('IntersectionObserver', undefined);
     const requestAnimationFrameSpy = vi.spyOn(window, 'requestAnimationFrame');
 
     render(<ConstellationCanvas />);

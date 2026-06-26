@@ -22,7 +22,7 @@ export function Panel({ children, className, variant = 'default' }: PanelProps) 
     <section
       className={clsx(
         variantClasses[variant],
-        'relative overflow-hidden before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/20',
+        'relative before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/20',
         hasPaddingOverride ? null : 'p-6',
         className,
       )}

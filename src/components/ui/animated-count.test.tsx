@@ -1,8 +1,13 @@
 import { render, screen } from '@testing-library/react';
 import { renderToString } from 'react-dom/server';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AnimatedCount } from './animated-count';
 
 describe('AnimatedCount', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('renders the final value immediately for accessible text', () => {
     render(<AnimatedCount value={64} suffix="%" ariaLabel="Wallet headroom" />);
 
@@ -24,4 +29,19 @@ describe('AnimatedCount', () => {
     expect(markup).toContain('Index 0');
     expect(markup).not.toMatch(/NaN|Infinity/);
   });
+
+  it.each([0, -100, Number.NaN, Number.POSITIVE_INFINITY])(
+    'renders the final value without scheduling animation for invalid duration %s',
+    (durationMs) => {
+      const requestAnimationFrameSpy = vi.spyOn(window, 'requestAnimationFrame');
+
+      render(
+        <AnimatedCount value={42} durationMs={durationMs} ariaLabel="Opportunity score" />,
+      );
+
+      expect(screen.getByLabelText('Opportunity score')).toHaveTextContent('42');
+      expect(screen.getByLabelText('Opportunity score')).not.toHaveTextContent(/NaN|Infinity/);
+      expect(requestAnimationFrameSpy).not.toHaveBeenCalled();
+    },
+  );
 });

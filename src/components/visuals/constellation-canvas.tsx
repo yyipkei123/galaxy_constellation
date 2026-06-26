@@ -42,7 +42,7 @@ export function ConstellationCanvas() {
     const canvas = canvasRef.current;
     const wrapper = wrapperRef.current;
     if (!canvas || !wrapper) return;
-    if (!reduceMotion && typeof IntersectionObserver === 'undefined') return;
+    const supportsIntersectionObserver = typeof IntersectionObserver !== 'undefined';
 
     const context = canvas.getContext('2d');
     if (!context) return;
@@ -147,7 +147,7 @@ export function ConstellationCanvas() {
 
     resize();
 
-    if (reduceMotion) {
+    if (reduceMotion || !supportsIntersectionObserver) {
       paint(false);
       window.addEventListener('resize', handleResize);
 

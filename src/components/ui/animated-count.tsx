@@ -30,11 +30,12 @@ export function AnimatedCount({
 }: AnimatedCountProps) {
   const shouldReduceMotion = useReducedMotion();
   const safeValue = Number.isFinite(value) ? value : 0;
+  const safeDurationMs = Number.isFinite(durationMs) && durationMs > 0 ? durationMs : 0;
   const [displayValue, setDisplayValue] = useState(safeValue);
   const frameRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (shouldReduceMotion || typeof window === 'undefined') {
+    if (shouldReduceMotion || safeDurationMs === 0 || typeof window === 'undefined') {
       setDisplayValue(safeValue);
       return;
     }
@@ -43,7 +44,7 @@ export function AnimatedCount({
     setDisplayValue(0);
 
     function tick(now: number) {
-      const progress = Math.min(1, (now - start) / durationMs);
+      const progress = Math.min(1, (now - start) / safeDurationMs);
       setDisplayValue(safeValue * easeOutCubic(progress));
 
       if (progress < 1) {
@@ -58,7 +59,7 @@ export function AnimatedCount({
         window.cancelAnimationFrame(frameRef.current);
       }
     };
-  }, [durationMs, safeValue, shouldReduceMotion]);
+  }, [safeDurationMs, safeValue, shouldReduceMotion]);
 
   const accessibleText = useMemo(
     () => formatCount(safeValue, prefix, suffix),

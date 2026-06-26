@@ -8,6 +8,30 @@ describe('Panel', () => {
     expect(screen.getByText('Wallet panel')).toBeInTheDocument();
   });
 
+  it('keeps default padding when no padding override is provided', () => {
+    render(<Panel>Default panel</Panel>);
+
+    expect(screen.getByText('Default panel').closest('section')).toHaveClass('p-6');
+  });
+
+  it('allows responsive padding overrides without also emitting the default padding class', () => {
+    render(<Panel className="p-4 sm:p-6">Compact panel</Panel>);
+
+    const panel = screen.getByText('Compact panel').closest('section');
+
+    expect(panel).toHaveClass('p-4');
+    expect(panel).toHaveClass('sm:p-6');
+    expect(panel).not.toHaveClass('p-6');
+  });
+
+  it('does not clip default panel content', () => {
+    render(<Panel>Tooltip-safe panel</Panel>);
+
+    expect(screen.getByText('Tooltip-safe panel').closest('section')).not.toHaveClass(
+      'overflow-hidden',
+    );
+  });
+
   it('supports glass depth without removing caller classes', () => {
     render(
       <Panel variant="glass" className="border-galaxy-gold/40">
