@@ -1,13 +1,16 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import { CategoryStackedBar } from '@/components/charts/category-stacked-bar';
+import { WalletConstellation } from '@/components/charts/wallet-constellation';
 import {
   ChartCallout,
   EvidenceStrip,
   ExecutiveSummaryPanel,
   HeadlineFindings,
 } from '@/components/panels/insight-storytelling';
+import { AnimatedCount } from '@/components/ui/animated-count';
 import { CdeChip } from '@/components/ui/cde-chip';
 import { IndexValue, PercentValue } from '@/components/ui/formatted-values';
 import { KpiCard } from '@/components/ui/kpi-card';
@@ -17,6 +20,11 @@ import { CORE_CATEGORIES, type Methodology, type Quarter, type Segment } from '@
 import { formatPropensity } from '@/lib/format';
 import { buildPortfolioInsightNarrative } from '@/lib/insights';
 import { useAppState } from '@/store/app-store';
+
+const ConstellationCanvas = dynamic(
+  () => import('@/components/visuals/constellation-canvas').then((mod) => mod.ConstellationCanvas),
+  { ssr: false },
+);
 
 function finiteNumber(value: number | undefined): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : 0;
@@ -88,34 +96,54 @@ function OverviewRoute({ selectedQuarter, segments, methodology }: OverviewRoute
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, ease: 'easeOut' }}
-        className="overflow-hidden rounded-lg border border-galaxy-border bg-[radial-gradient(circle_at_top_left,rgba(205,164,92,0.24),transparent_38%),linear-gradient(135deg,rgba(31,27,24,0.96),rgba(8,18,30,0.92))] px-6 py-8 shadow-2xl shadow-black/25 md:px-8"
+        data-testid="overview-constellation-hero"
+        className="relative overflow-hidden rounded-2xl border border-galaxy-gold/25 bg-galaxy-ink px-6 py-8 shadow-[0_0_60px_rgba(201,164,92,0.16)] md:px-8"
       >
-        <Overline>客戶錢包洞察 · Guest Wallet Intelligence</Overline>
-        <div className="mt-5 grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end">
-          <div>
-            <h1 className="font-serif text-5xl text-galaxy-cream md:text-6xl">Galaxy Constellation</h1>
-            <p className="mt-5 max-w-3xl text-base leading-8 text-galaxy-muted md:text-lg">
-              Guest Wallet Intelligence enriched by Mastercard CDE surfaces Galaxy&apos;s captured wallet and
-              modelled off-property wallet headroom, turning share, visit, channel, and rewards propensity
-              signals into quarterly growth priorities.
-            </p>
-          </div>
-          <div className="rounded-lg border border-galaxy-gold/30 bg-galaxy-ink/45 p-5">
-            <div className="flex items-center gap-2 text-sm font-semibold text-galaxy-gold">
-              {selectedQuarter.label}
-              <CdeChip />
+        <ConstellationCanvas />
+        <div className="relative z-10">
+          <Overline>客戶錢包洞察 · Guest Wallet Intelligence</Overline>
+          <div className="mt-5 grid gap-8 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-end">
+            <div>
+              <motion.h1
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.55, ease: 'easeOut' }}
+                className="font-serif text-5xl text-galaxy-cream md:text-7xl"
+              >
+                Galaxy Constellation
+              </motion.h1>
+              <p className="mt-5 max-w-3xl text-base leading-8 text-galaxy-muted md:text-lg">
+                Galaxy already knows stay, dining and rewards behavior. Mastercard CDE adds modelled off-property
+                wallet, leakage and propensity so each quarter starts with a clear pitch priority.
+              </p>
             </div>
-            <p className="mt-3 text-sm leading-6 text-galaxy-muted">
-              Mastercard CDE refresh, {methodology.basis}, matched coverage{' '}
-              <span className="text-galaxy-cream">{methodology.matchedCoveragePct}%</span>.
-            </p>
+            <div className="rounded-2xl border border-galaxy-gold/30 bg-galaxy-charcoal/55 p-5 backdrop-blur">
+              <div className="flex items-center gap-2 text-sm font-semibold text-galaxy-gold">
+                {selectedQuarter.label}
+                <CdeChip />
+              </div>
+              <p className="mt-3 text-sm leading-6 text-galaxy-muted">
+                Mastercard CDE refresh, {methodology.basis}, matched coverage{' '}
+                <span className="text-galaxy-cream">{methodology.matchedCoveragePct}%</span>.
+              </p>
+            </div>
           </div>
         </div>
       </motion.section>
 
       <ExecutiveSummaryPanel narrative={insightNarrative} />
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid auto-rows-[minmax(11rem,auto)] gap-4 lg:grid-cols-4">
+        <Panel variant="hero" className="lg:col-span-2 lg:row-span-2">
+          <Overline>Wallet headroom</Overline>
+          <div className="mt-5 font-serif text-6xl text-galaxy-gold md:text-7xl">
+            <AnimatedCount value={walletHeadroomPct} suffix="%" ariaLabel="Estimated wallet headroom" />
+          </div>
+          <p className="mt-5 max-w-xl text-sm leading-6 text-galaxy-muted">
+            Average modelled leakage still addressable across hospitality, dining, entertainment and retail-luxury
+            categories.
+          </p>
+        </Panel>
         <KpiCard
           label="Matched guest base"
           value={<EnrichedTextValue>{`~${matchedGuestLowK}-${matchedGuestHighK}k`}</EnrichedTextValue>}
@@ -126,21 +154,28 @@ function OverviewRoute({ selectedQuarter, segments, methodology }: OverviewRoute
           value={<PercentValue value={walletCapturePct} />}
           detail="Average hospitality share across current-quarter segments."
         />
-        <KpiCard
-          label="Estimated wallet headroom"
-          value={<PercentValue value={walletHeadroomPct} />}
-          detail={(
-            <span className="inline-flex flex-wrap items-center gap-2">
-              Highest opportunity benchmark <IndexValue value={topOpportunityIndex} />
-            </span>
-          )}
-        />
+        <Panel variant="glass" className="lg:col-span-2">
+          <Overline>Top ranked finding</Overline>
+          <p className="mt-3 text-lg font-semibold leading-7 text-galaxy-cream">
+            {topFindings[0]?.title ?? 'No active CDE segment insights available for this quarter.'}
+          </p>
+          <p className="mt-3 text-sm leading-6 text-galaxy-muted">
+            {topFindings[0]?.finding ?? 'Refresh the segment feed to generate ranked findings.'}
+          </p>
+        </Panel>
         <KpiCard
           label="Top-tier rewards propensity"
           value={<EnrichedTextValue>{formatPropensity(topTierRewardsPropensity)}</EnrichedTextValue>}
           detail="Mean likelihood signal for premium rewards activation."
         />
+        <KpiCard
+          label="Opportunity benchmark"
+          value={<IndexValue value={topOpportunityIndex} />}
+          detail="Highest current-quarter segment opportunity index."
+        />
       </section>
+
+      <WalletConstellation segments={safeSegments} />
 
       <EvidenceStrip steps={insightNarrative.fusionSteps} />
 

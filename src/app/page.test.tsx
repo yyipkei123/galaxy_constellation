@@ -51,19 +51,26 @@ describe('overview route', () => {
     renderHome();
 
     expect(screen.getByRole('heading', { name: /Galaxy Constellation/i })).toBeInTheDocument();
+    expect(screen.getByTestId('overview-constellation-hero')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Wallet headroom constellation/i })).toBeInTheDocument();
+    expect(screen.getByRole('figure', { name: /Wallet constellation/i })).toBeInTheDocument();
+    expect(screen.getByText(/Pitch-now cluster/i)).toBeInTheDocument();
+    expect(screen.getByText(/Galaxy already knows stay, dining and rewards behavior/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Guest Wallet Intelligence/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText(/Mastercard CDE/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText(/off-property wallet headroom/i)).toBeInTheDocument();
+    expect(screen.getByText(/modelled off-property wallet/i)).toBeInTheDocument();
 
     expect(screen.getByText('Matched guest base')).toBeInTheDocument();
     expect(screen.getByText('Galaxy wallet capture')).toBeInTheDocument();
-    expect(screen.getByText('Estimated wallet headroom')).toBeInTheDocument();
+    expect(screen.getByText('Wallet headroom')).toBeInTheDocument();
+    expect(screen.getByText('Top ranked finding')).toBeInTheDocument();
     expect(screen.getByText('Top-tier rewards propensity')).toBeInTheDocument();
+    expect(screen.getByText('Opportunity benchmark')).toBeInTheDocument();
     [
       'Matched guest base',
       'Galaxy wallet capture',
-      'Estimated wallet headroom',
       'Top-tier rewards propensity',
+      'Opportunity benchmark',
     ].forEach((label) => {
       const card = screen.getByText(label).closest('article');
       expect(card).not.toBeNull();
@@ -99,12 +106,13 @@ describe('overview route', () => {
     render(<Home />);
 
     expect(screen.getByText('~0-0k')).toBeInTheDocument();
-    expect(screen.getAllByText('0%')).toHaveLength(2);
+    expect(screen.getAllByText('0%').length).toBeGreaterThanOrEqual(2);
     expect(screen.getByText('0.00')).toBeInTheDocument();
-    expect(screen.getByText('Index 0')).toBeInTheDocument();
+    expect(screen.getAllByText('Index 0').length).toBeGreaterThanOrEqual(1);
     expect(screen.queryByText(/NaN|Infinity/i)).not.toBeInTheDocument();
     expect(screen.getByText('No category wallet segments available for this quarter.')).toBeInTheDocument();
-    expect(screen.getByText('No active CDE segment insights available for this quarter.')).toBeInTheDocument();
+    expect(screen.getAllByText('No active CDE segment insights available for this quarter.').length)
+      .toBeGreaterThanOrEqual(1);
   });
 
   it('does not surface non-finite aggregate values from unexpected segment data', () => {
