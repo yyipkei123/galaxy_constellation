@@ -218,7 +218,6 @@ export default function SegmentsPage() {
 
       <SectionJumpNav
         label="Segmentation sections"
-        currentId="segment-brief"
         items={[
           { id: 'segment-brief', label: 'Brief' },
           { id: 'segment-personas', label: 'Personas' },
@@ -306,11 +305,19 @@ export default function SegmentsPage() {
             </Panel>
           </section>
 
-          {selectedPersona ? (
-            <section id="segment-persona-kit" className="scroll-mt-24">
+          <section id="segment-persona-kit" className="scroll-mt-24">
+            {selectedPersona ? (
               <PersonaDetailKit persona={selectedPersona} />
-            </section>
-          ) : null}
+            ) : (
+              <Panel>
+                <SectionHeader
+                  eyebrow="Persona recommendation kit"
+                  title="No persona kit available"
+                  description="Adjust the persona filters to select an audience before building a recommendation kit."
+                />
+              </Panel>
+            )}
+          </section>
 
           <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
             <Panel>
@@ -340,33 +347,35 @@ export default function SegmentsPage() {
 
           <CdeMetricPanel metrics={activeSegment.metrics} />
 
-          <Panel id="segment-actions" className="scroll-mt-24">
-            <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
-              <SectionHeader
-                eyebrow="Why this matters"
-                title="Recommended plays"
-                description="Use the selected segment profile to move directly into audience building and activation planning."
-              />
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              {activeSegment.recommendedPlays.length > 0 ? activeSegment.recommendedPlays.map((play) => (
-                <Link
-                  key={play.title}
-                  href="/activation"
-                  className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4 transition hover:border-galaxy-gold/70 focus:outline-none focus:ring-2 focus:ring-galaxy-gold"
-                >
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-galaxy-gold">{play.channel}</p>
-                  <h3 className="mt-3 text-lg font-semibold text-galaxy-cream">{play.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-galaxy-muted">{play.rationale}</p>
-                  <p className="mt-3 text-sm font-semibold text-galaxy-gold">{play.lever}</p>
-                </Link>
-              )) : (
-                <p className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4 text-sm leading-6 text-galaxy-muted">
-                  No recommended plays available for this segment.
-                </p>
-              )}
-            </div>
-          </Panel>
+          <div id="segment-actions" className="scroll-mt-24">
+            <Panel>
+              <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+                <SectionHeader
+                  eyebrow="Why this matters"
+                  title="Recommended plays"
+                  description="Use the selected segment profile to move directly into audience building and activation planning."
+                />
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                {activeSegment.recommendedPlays.length > 0 ? activeSegment.recommendedPlays.map((play) => (
+                  <Link
+                    key={play.title}
+                    href="/activation"
+                    className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4 transition hover:border-galaxy-gold/70 focus:outline-none focus:ring-2 focus:ring-galaxy-gold"
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-galaxy-gold">{play.channel}</p>
+                    <h3 className="mt-3 text-lg font-semibold text-galaxy-cream">{play.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-galaxy-muted">{play.rationale}</p>
+                    <p className="mt-3 text-sm font-semibold text-galaxy-gold">{play.lever}</p>
+                  </Link>
+                )) : (
+                  <p className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4 text-sm leading-6 text-galaxy-muted">
+                    No recommended plays available for this segment.
+                  </p>
+                )}
+              </div>
+            </Panel>
+          </div>
 
           <Panel>
             <div className="mb-5">

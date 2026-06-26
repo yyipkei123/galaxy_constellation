@@ -129,14 +129,22 @@ describe('segments route', () => {
   });
 
   it('provides mobile section navigation for long segmentation analysis', () => {
-    renderSegments();
+    const { container } = renderSegments();
 
     const nav = screen.getByRole('navigation', { name: 'Segmentation sections' });
+    const targetIds = ['segment-brief', 'segment-personas', 'segment-persona-kit', 'segment-actions'];
 
     expect(within(nav).getByRole('link', { name: 'Brief' })).toHaveAttribute('href', '#segment-brief');
     expect(within(nav).getByRole('link', { name: 'Personas' })).toHaveAttribute('href', '#segment-personas');
     expect(within(nav).getByRole('link', { name: 'Kit' })).toHaveAttribute('href', '#segment-persona-kit');
     expect(within(nav).getByRole('link', { name: 'Actions' })).toHaveAttribute('href', '#segment-actions');
+    expect(within(nav).getByRole('link', { name: 'Brief' })).not.toHaveAttribute('aria-current');
+    expect(within(nav).getByRole('link', { name: 'Personas' })).not.toHaveAttribute('aria-current');
+    expect(within(nav).getByRole('link', { name: 'Kit' })).not.toHaveAttribute('aria-current');
+    expect(within(nav).getByRole('link', { name: 'Actions' })).not.toHaveAttribute('aria-current');
+    targetIds.forEach((targetId) => {
+      expect(container.querySelectorAll(`#${targetId}`)).toHaveLength(1);
+    });
     expect(screen.getByRole('group', { name: 'CDE snapshot status' })).toHaveTextContent(
       'Segment and persona model',
     );
@@ -247,7 +255,7 @@ describe('segments route', () => {
   });
 
   it('keeps the recommendation kit aligned with the filtered persona results', () => {
-    renderSegments();
+    const { container } = renderSegments();
 
     fireEvent.click(screen.getByRole('button', { name: 'persona: Private Dining Hosts' }));
 
@@ -273,6 +281,9 @@ describe('segments route', () => {
     });
 
     expect(screen.getByText(/No personas match the current filters/i)).toBeInTheDocument();
+    expect(container.querySelectorAll('#segment-persona-kit')).toHaveLength(1);
+    expect(screen.getByRole('heading', { name: 'No persona kit available' })).toBeInTheDocument();
+    expect(screen.getByText(/Adjust the persona filters to select an audience/i)).toBeInTheDocument();
     expect(screen.queryByLabelText('Persona recommendation kit')).not.toBeInTheDocument();
   });
 
