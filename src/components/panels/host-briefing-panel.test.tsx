@@ -1,5 +1,5 @@
 import { render, screen, within } from '@testing-library/react';
-import { guests } from '@/data';
+import { guests, type Guest } from '@/data';
 import { HostBriefingPanel } from './host-briefing-panel';
 
 const categoryLabels = {
@@ -34,6 +34,22 @@ describe('HostBriefingPanel', () => {
 
     expect(within(briefing).getByText('No next action available')).toBeInTheDocument();
     expect(within(briefing).queryByText(/Confidence 0%/i)).not.toBeInTheDocument();
+    expect(container.textContent).not.toMatch(/HKD|MOP|\$|元|澳門幣/i);
+  });
+
+  it('sanitizes malformed CDE cash bands before rendering host rationale', () => {
+    const unsafeGuest = {
+      ...guests[0],
+      cde: {
+        ...guests[0].cde,
+        crossPropertyCashBand: 'HKD 9000',
+      },
+    } as Guest;
+    const { container } = render(<HostBriefingPanel guest={unsafeGuest} />);
+
+    const briefing = screen.getByRole('region', { name: 'Host briefing summary' });
+
+    expect(within(briefing).getByText(/0-0k equiv\.\/mo/i)).toBeInTheDocument();
     expect(container.textContent).not.toMatch(/HKD|MOP|\$|元|澳門幣/i);
   });
 });

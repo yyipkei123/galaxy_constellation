@@ -1,7 +1,7 @@
 import { ArrowRight, CalendarClock, Sparkles } from 'lucide-react';
 import type { Guest } from '@/data';
 import { CdeChip } from '@/components/ui/cde-chip';
-import { PercentValue } from '@/components/ui/formatted-values';
+import { BandValue, PercentValue } from '@/components/ui/formatted-values';
 import { Overline } from '@/components/ui/overline';
 import { Panel } from '@/components/ui/panel';
 
@@ -11,6 +11,28 @@ const categoryLabels: Record<Guest['primaryOpportunity'], string> = {
   entertainment: 'Entertainment',
   retailLuxury: 'Retail-Luxury',
 };
+
+const bannedCurrencyPattern = /HKD|MOP|\$|元|澳門幣/gi;
+const nonFinitePattern = /NaN|Infinity/gi;
+const modelledBandPattern = /^\d+(?:\.\d+)?-\d+(?:\.\d+)?k equiv\.\/mo$/i;
+
+function cleanText(value: unknown, fallback: string) {
+  if (typeof value !== 'string' && typeof value !== 'number') return fallback;
+
+  const cleaned = String(value)
+    .replace(bannedCurrencyPattern, '')
+    .replace(nonFinitePattern, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return cleaned || fallback;
+}
+
+function safeBand(value: unknown) {
+  const cleaned = cleanText(value, '0-0k equiv./mo');
+
+  return modelledBandPattern.test(cleaned) ? cleaned : '0-0k equiv./mo';
+}
 
 export function HostBriefingPanel({ guest }: { guest: Guest }) {
   const primaryLabel = categoryLabels[guest.primaryOpportunity];
@@ -55,7 +77,7 @@ export function HostBriefingPanel({ guest }: { guest: Guest }) {
                 <p className="text-xs font-semibold uppercase tracking-[0.16em]">Reason to contact now</p>
               </div>
               <p className="mt-3 text-sm leading-6 text-galaxy-muted">
-                Last signal is {guest.firstParty.recencyDays} days old, with {guest.profile.contactability.toLowerCase()} contactability and {guest.cde.crossPropertyCashBand} cross-property headroom.
+                Last signal is {guest.firstParty.recencyDays} days old, with {guest.profile.contactability.toLowerCase()} contactability and <BandValue value={safeBand(guest.cde.crossPropertyCashBand)} /> cross-property headroom.
               </p>
             </article>
 
