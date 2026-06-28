@@ -17,7 +17,7 @@ import {
   type ChatVisualItem,
 } from './chat-assistant';
 
-const bannedCurrencyPattern = /MOP|HKD|\$|元|澳門幣/i;
+const bannedCurrencyPattern = /\b(?:MOP|HKD)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣/i;
 const unsafeCurrencyFragmentPattern = /(?:MOP500|HKD500|HKD 5000|5000 leakage)/i;
 
 const sprint3Context = {
@@ -316,6 +316,11 @@ describe('buildChatAssistantResponse', () => {
       expect(sanitized).not.toMatch(bannedCurrencyPattern);
       expect(sanitized).not.toMatch(unsafePattern);
     });
+  });
+
+  it('preserves safe words that contain currency-token letters', () => {
+    expect(sanitizeChatAssistantText('Cosmopolitan Connoisseurs')).toBe('Cosmopolitan Connoisseurs');
+    expect(sanitizeChatAssistantText('HKD500 Cosmopolitan')).toBe('CDE-safe value Cosmopolitan');
   });
 
   it('sanitizes amount-first currency fragments from malformed segment and persona data', () => {

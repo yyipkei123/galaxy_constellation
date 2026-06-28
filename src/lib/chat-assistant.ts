@@ -94,8 +94,8 @@ const GOVERNANCE_BADGE = 'Grounded · Auditable' as const;
 const FALLBACK_BAND = 'Indexed band equiv./mo';
 const CDE_SAFE_REDACTION = 'CDE-safe value';
 const NON_FINITE_REDACTION = 'finite CDE value';
-const bannedCurrencyPattern = /MOP|HKD|\$|元|澳門幣/i;
-const currencyTokenSource = '(?:MOP|HKD|\\$|元|澳門幣)';
+const bannedCurrencyPattern = /\b(?:MOP|HKD)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣/i;
+const currencyTokenSource = '(?:\\b(?:MOP|HKD)(?=\\b|[\\s\\d$.,:;/-])|\\$|元|澳門幣)';
 const amountSource = '\\d+(?:[.,]\\d+)*(?:\\s*[km])?';
 const periodSource = '(?:\\s*(?:monthly|per\\s+month|\\/mo))?';
 const englishAmountWord = '(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|billion)';
@@ -110,9 +110,9 @@ const wordAmountBeforeTokenPattern = new RegExp(`${amountWordSource}\\s*${curren
 const numericFragmentPattern = /\b\d+(?:[.,]\d+)*(?:\s*[km])?\b/gi;
 const englishAmountWordFragmentPattern = new RegExp(`\\b${englishAmountWord}\\b`, 'gi');
 const chineseAmountWordFragmentPattern = new RegExp(chineseAmountWordSource, 'gi');
-const currencyTokenPattern = /MOP|HKD|\$|元|澳門幣/gi;
+const currencyTokenPattern = /\b(?:MOP|HKD)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣/gi;
 const nonFiniteTextPattern = /NaN|Infinity/gi;
-const sensitiveAmountPromptPattern = /\b(?:leak|leaking|leakage|gap|outside|recapture|wallet|spend|spending|cash|value|amount|raw|currency|money)\b|MOP|HKD|\$|元|澳門幣/i;
+const sensitiveAmountPromptPattern = /\b(?:leak|leaking|leakage|gap|outside|recapture|wallet|spend|spending|cash|value|amount|raw|currency|money)\b|\b(?:MOP|HKD)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣/i;
 const exactSensitivePromptPattern = /\b(?:exact|raw|actual)\b.*\b(?:spend|spending|amount|value|wallet|money|revenue|leakage)\b/i;
 const governedCurrencyPromptPattern = /\b(?:hkd|mop)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣/i;
 

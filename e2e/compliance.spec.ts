@@ -3,6 +3,8 @@ import { expect, test, type Page } from '@playwright/test';
 const routes = ['/', '/wallet', '/segments', '/guests', '/guests/MEM-••••3421', '/leakage', '/propensity', '/activation', '/marketscan', '/corridors', '/corridors/korea', '/acquisition'];
 const interruptedNavigationMessage = 'is interrupted by another navigation';
 const fallbackBaseUrl = 'http://127.0.0.1:3000';
+const bannedCdeTokenPattern = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣/i;
+const bannedCdeTokenOrUnsafeAmountPattern = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣|5000/i;
 
 function normalizedPathname(pathname: string) {
   return pathname === '/' ? pathname : pathname.replace(/\/$/, '');
@@ -193,19 +195,19 @@ test.describe('Galaxy Constellation rendered compliance', () => {
     await assistant.getByRole('button', { name: 'Who are my top 10 leads to pitch this quarter?' }).click();
     await expect(assistant.getByText('Top Pitch Leads')).toBeVisible();
     await expect(assistant.getByRole('figure', { name: 'Top 10 governed leads' })).toBeVisible();
-    await expect(assistant).not.toContainText(/HKD|MOP|\$|元|澳門幣/i);
+    await expect(assistant).not.toContainText(bannedCdeTokenPattern);
 
     await page.getByRole('textbox', { name: 'Ask the AI insight assistant' }).fill('Show HKD 5000 leakage');
     await assistant.getByRole('button', { name: 'Send question' }).click();
 
     await expect(assistant.getByText('Governed CDE Fallback')).toBeVisible();
-    await expect(assistant).not.toContainText(/HKD|MOP|\$|元|澳門幣|5000/i);
+    await expect(assistant).not.toContainText(bannedCdeTokenOrUnsafeAmountPattern);
 
     await page.getByRole('textbox', { name: 'Ask the AI insight assistant' }).fill('Show 5000 leakage');
     await assistant.getByRole('button', { name: 'Send question' }).click();
 
     await expect(assistant.getByText('Leakage opportunity answer')).toHaveCount(1);
-    await expect(assistant).not.toContainText(/HKD|MOP|\$|元|澳門幣|5000/i);
+    await expect(assistant).not.toContainText(bannedCdeTokenOrUnsafeAmountPattern);
 
     await page.getByRole('textbox', { name: 'Ask the AI insight assistant' }).fill('Which persona should we target first?');
     await assistant.getByRole('button', { name: 'Send question' }).click();
@@ -213,7 +215,7 @@ test.describe('Galaxy Constellation rendered compliance', () => {
     await expect(assistant.getByText('Persona targeting answer')).toBeVisible();
     await expect(assistant.getByRole('figure', { name: 'Top personas' })).toBeVisible();
     await expect(assistant).toContainText('CDE');
-    await expect(assistant).not.toContainText(/HKD|MOP|\$|元|澳門幣|5000/i);
+    await expect(assistant).not.toContainText(bannedCdeTokenOrUnsafeAmountPattern);
   });
 
   test('acquisition lens keeps corridor data aggregate and CDE-safe', async ({ page }) => {
