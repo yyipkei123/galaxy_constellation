@@ -10,13 +10,18 @@ import {
   type SetStateAction,
 } from 'react';
 import {
+  createLaunchedCampaign,
   latestQuarter,
   latestSegments,
   methodology,
   quarters,
   segmentsByQuarter,
+  type CoreCategory,
+  type MeasurementCampaign,
   type Methodology,
   type Quarter,
+  type SavedScenario,
+  type ScenarioLever,
   type Segment,
 } from '@/data';
 
@@ -36,6 +41,23 @@ export interface SavedAudience {
 export interface CampaignToast {
   title: string;
   description: string;
+}
+
+export interface LaunchCampaignInput {
+  source: 'activation' | 'acquisition';
+  audienceName: string;
+  segmentIds: string[];
+  lever: string;
+  corridorId?: MeasurementCampaign['corridorId'];
+}
+
+export interface SaveScenarioInput {
+  name: string;
+  segmentIds: string[];
+  category: CoreCategory;
+  recapturePct: number;
+  onlineShiftPct: number;
+  lever: ScenarioLever;
 }
 
 interface AppStateValue {
@@ -58,6 +80,11 @@ interface AppStateValue {
   campaignToast: CampaignToast | null;
   pushCampaign: (toast: CampaignToast) => void;
   clearCampaignToast: () => void;
+  launchedCampaigns: MeasurementCampaign[];
+  launchCampaign: (input: LaunchCampaignInput) => MeasurementCampaign;
+  savedScenarios: SavedScenario[];
+  saveScenario: (input: SaveScenarioInput) => SavedScenario;
+  removeSavedScenario: (scenarioId: string) => void;
 }
 
 const defaultAudienceFilters: AudienceFilters = {
@@ -75,6 +102,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [filters, setFiltersState] = useState<AudienceFilters>(defaultAudienceFilters);
   const [savedAudiences, setSavedAudiences] = useState<SavedAudience[]>([]);
   const [campaignToast, setCampaignToast] = useState<CampaignToast | null>(null);
+  const [launchedCampaigns, setLaunchedCampaigns] = useState<MeasurementCampaign[]>([]);
+  const [savedScenarios, setSavedScenarios] = useState<SavedScenario[]>([]);
 
   const selectedQuarter = quarters.find((quarter) => quarter.id === selectedQuarterId) ?? latestQuarter;
   const segments = segmentsByQuarter[selectedQuarter.id] ?? latestSegments;
@@ -129,6 +158,39 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setSavedAudiences((current) => current.filter((audience) => audience.id !== audienceId));
   }, []);
 
+  const launchCampaign = useCallback((input: LaunchCampaignInput) => {
+    const campaign = createLaunchedCampaign(input);
+
+    setLaunchedCampaigns((current) => [campaign, ...current.filter((item) => item.id !== campaign.id)]);
+    setCampaignToast({
+      title: 'Campaign launched into measurement',
+      description: `${campaign.name} is ready for Test & Learn readout.`,
+    });
+
+    return campaign;
+  }, []);
+
+  const saveScenario = useCallback((input: SaveScenarioInput) => {
+    const slug = input.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'scenario';
+    const scenario: SavedScenario = {
+      id: `${Date.now()}-${slug}`,
+      name: input.name,
+      segmentIds: [...input.segmentIds],
+      category: input.category,
+      recapturePct: input.recapturePct,
+      onlineShiftPct: input.onlineShiftPct,
+      lever: input.lever,
+      createdAt: new Date().toISOString(),
+    };
+
+    setSavedScenarios((current) => [scenario, ...current]);
+    return scenario;
+  }, []);
+
+  const removeSavedScenario = useCallback((scenarioId: string) => {
+    setSavedScenarios((current) => current.filter((scenario) => scenario.id !== scenarioId));
+  }, []);
+
   const value = useMemo<AppStateValue>(() => ({
     quarters,
     selectedQuarter,
@@ -149,11 +211,21 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     campaignToast,
     pushCampaign: setCampaignToast,
     clearCampaignToast: () => setCampaignToast(null),
+    launchedCampaigns,
+    launchCampaign,
+    savedScenarios,
+    saveScenario,
+    removeSavedScenario,
   }), [
     campaignToast,
     filters,
+    launchCampaign,
+    launchedCampaigns,
     removeSavedAudience,
+    removeSavedScenario,
     saveAudience,
+    savedScenarios,
+    saveScenario,
     savedAudiences,
     segments,
     selectedQuarter,

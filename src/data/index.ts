@@ -24,4 +24,5 @@ export {
   koreaRefreshTag,
   priorityCorridor,
 } from './corridors';
+export { campaigns, createLaunchedCampaign, getCampaignById } from './campaigns';
 export { personaById, personaClusters, personaRecords } from './personas';

@@ -140,7 +140,7 @@ export type CorridorId =
 
 export type CorridorYear = '2020' | '2024';
 export type CorridorMetric = 'arrivals' | 'spend' | 'txnFrequency' | 'gamingSplit';
-export type CorridorHaul = 'short' | 'long';
+export type CorridorHaul = 'short' | 'medium' | 'long';
 export type DraftLanguage =
   | 'EN'
   | '繁中'
@@ -205,6 +205,86 @@ export interface AcquisitionDraft {
   languages: DraftLanguage[];
   variants: AcquisitionDraftVariant[];
   versionHistory: string[];
+}
+
+export interface CampaignWeeklyPoint {
+  week: string;
+  testIndex: number;
+  controlIndex: number;
+}
+
+export interface CampaignTestDesign {
+  holdoutPct: number;
+  durationWeeks: number;
+  expectedLiftThresholdPct: number;
+}
+
+export interface MeasurementCampaign {
+  id: string;
+  name: string;
+  source: 'seed' | 'activation' | 'acquisition';
+  audienceName: string;
+  segmentIds: string[];
+  corridorId?: CorridorId;
+  lever: string;
+  category: CoreCategory | 'corridor';
+  indexedRevenueBand: string;
+  confidence: 'directional' | 'credible' | 'strong';
+  testDesign: CampaignTestDesign;
+  weeklySeries: CampaignWeeklyPoint[];
+}
+
+export type CampaignCreativeLanguage = 'EN' | '繁中' | '한국어';
+
+export interface CampaignCreativeVariant {
+  id: 'A' | 'B';
+  language: CampaignCreativeLanguage;
+  subject: string;
+  body: string;
+  guardrail: string;
+}
+
+export interface CampaignCreativeDraft {
+  id: string;
+  campaignId: string;
+  corridorId?: CorridorId;
+  languages: CampaignCreativeLanguage[];
+  variants: CampaignCreativeVariant[];
+  versionHistory: string[];
+}
+
+export type ScenarioLever = 'recapture' | 'channelShift' | 'hostLift' | 'contentPersonalisation';
+
+export interface SavedScenario {
+  id: string;
+  name: string;
+  segmentIds: string[];
+  category: CoreCategory;
+  recapturePct: number;
+  onlineShiftPct: number;
+  lever: ScenarioLever;
+  createdAt: string;
+}
+
+export interface ScenarioImpact {
+  walletUpliftIndex: number;
+  opportunityIndexDelta: number;
+  pitchNowGuestsK: number;
+  projectedBand: string;
+  constellationShift: Array<{
+    segmentId: string;
+    label: string;
+    beforeIndex: number;
+    afterIndex: number;
+  }>;
+}
+
+export interface SemanticFact {
+  id: string;
+  label: string;
+  value: string | number;
+  source: string;
+  route: string;
 }
 
 export type GalaxyTier = 'Privilege' | 'Gold' | 'Platinum' | 'Diamond';
