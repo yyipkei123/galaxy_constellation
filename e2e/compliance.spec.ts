@@ -76,6 +76,10 @@ test.describe('Galaxy Constellation rendered compliance', () => {
       await expect(page.getByText(/Enriched figures are modelled estimates/i)).toBeVisible();
       await expect(banner.getByText('7 CDE metrics', { exact: true })).toBeVisible();
       await expect(banner.locator('[aria-label="7 active CDE metrics"]')).toBeVisible();
+      const partnershipBadge = banner.getByLabel('Galaxy Macau and Mastercard data partnership');
+      await expect(partnershipBadge).toBeVisible();
+      await expect(partnershipBadge.getByRole('img', { name: 'Galaxy Macau' })).toBeVisible();
+      await expect(partnershipBadge.getByRole('img', { name: 'Mastercard' })).toBeVisible();
       await expect(body).not.toContainText('HKD');
       await expect(body).not.toContainText('$');
 
@@ -226,6 +230,7 @@ test.describe('Galaxy Constellation rendered compliance', () => {
 
     await expect(page.getByRole('link', { name: /Overview/i })).toBeVisible();
     await expect(page.getByLabel(/Quarter selector/i)).toBeVisible();
+    await expect(page.getByRole('banner').getByLabel('Galaxy Macau and Mastercard data partnership')).toBeVisible();
     await expect(page.getByRole('heading', { name: /Galaxy Constellation/i })).toBeVisible();
   });
 
@@ -322,6 +327,7 @@ test.describe('Galaxy Constellation rendered compliance', () => {
       for (const route of ['/wallet', '/segments', '/activation']) {
         await gotoStableRoute(page, route);
         await expect(page.getByRole('banner')).toContainText(/CDE metrics/i);
+        await expect(page.getByRole('banner').getByLabel('Galaxy Macau and Mastercard data partnership')).toBeVisible();
         await expect(page.getByRole('button', { name: /Open AI insight assistant/i })).toBeVisible();
 
         const primaryNav = page.getByRole('navigation', { name: /Primary navigation/i });

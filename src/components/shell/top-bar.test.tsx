@@ -97,6 +97,11 @@ describe('TopBar', () => {
 
     expect(screen.getByText('7 CDE metrics')).toBeInTheDocument();
     expect(screen.getByText('Coverage 63%')).toBeInTheDocument();
+    expect(screen.getByLabelText('Galaxy Macau and Mastercard data partnership')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Galaxy Macau' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Mastercard' })).toBeInTheDocument();
+    expect(screen.getByText('Data partnership')).toHaveClass('hidden');
+    expect(screen.getByText('Data partnership')).toHaveClass('sm:inline');
     expect(screen.getByRole('combobox', { name: /quarter selector/i })).toHaveValue('2026-q2');
     expect(screen.getByRole('option', { name: '2026 Q2' })).toBeInTheDocument();
   });
