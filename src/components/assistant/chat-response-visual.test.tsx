@@ -133,6 +133,32 @@ describe('ChatResponseVisual', () => {
     expect(screen.getByText('No governed facts are available for this answer.')).toBeInTheDocument();
   });
 
+  it('renders populated fact-table visuals with headers, values, and source text', () => {
+    const visual: ChatAssistantVisual = {
+      kind: 'fact-table',
+      title: 'Governed CDE facts',
+      items: [
+        {
+          id: 'matched-coverage',
+          label: 'Matched CDE coverage',
+          value: 63,
+          formattedValue: '63%',
+          description: 'methodology.matchedCoveragePct',
+        },
+      ],
+    };
+
+    render(<ChatResponseVisual visual={visual} />);
+
+    expect(screen.getByRole('figure', { name: /Governed CDE facts/i })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Fact' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Value' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Source' })).toBeInTheDocument();
+    expect(screen.getByText('Matched CDE coverage')).toBeInTheDocument();
+    expect(screen.getByText('63%')).toBeInTheDocument();
+    expect(screen.getByText('methodology.matchedCoveragePct')).toBeInTheDocument();
+  });
+
   it('renders an empty state for visuals without items', () => {
     const visual: ChatAssistantVisual = {
       kind: 'metric-strip',
