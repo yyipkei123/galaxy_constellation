@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { PresenterTour } from './presenter-tour';
 
 describe('PresenterTour', () => {
@@ -31,5 +31,56 @@ describe('PresenterTour', () => {
     expect(screen.queryByRole('dialog', { name: 'Presenter tour' })).not.toBeInTheDocument();
     expect(launcher).toHaveAccessibleName('Open presenter tour');
     expect(launcher).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('moves focus inside the dialog when opened', () => {
+    render(<PresenterTour />);
+
+    const launcher = screen.getByRole('button', { name: 'Open presenter tour' });
+    launcher.focus();
+    expect(launcher).toHaveFocus();
+
+    fireEvent.click(launcher);
+
+    const dialog = screen.getByRole('dialog', { name: 'Presenter tour' });
+    const closeButton = within(dialog).getByRole('button', { name: 'Close presenter tour' });
+
+    expect(dialog).toContainElement(document.activeElement);
+    expect(closeButton).toHaveFocus();
+  });
+
+  it('closes with Escape and restores focus to the launcher', async () => {
+    render(<PresenterTour />);
+
+    const launcher = screen.getByRole('button', { name: 'Open presenter tour' });
+    launcher.focus();
+
+    fireEvent.click(launcher);
+
+    const dialog = screen.getByRole('dialog', { name: 'Presenter tour' });
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+
+    expect(screen.queryByRole('dialog', { name: 'Presenter tour' })).not.toBeInTheDocument();
+    expect(launcher).toHaveAttribute('aria-expanded', 'false');
+    await waitFor(() => expect(launcher).toHaveFocus());
+  });
+
+  it('cycles Tab and Shift+Tab within dialog controls', () => {
+    render(<PresenterTour />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open presenter tour' }));
+
+    const dialog = screen.getByRole('dialog', { name: 'Presenter tour' });
+    const iconCloseButton = within(dialog).getByRole('button', { name: 'Close presenter tour' });
+    const nextButton = within(dialog).getByRole('button', { name: 'Next stop' });
+
+    iconCloseButton.focus();
+    const shiftTabEvent = fireEvent.keyDown(dialog, { key: 'Tab', shiftKey: true });
+    expect(shiftTabEvent).toBe(false);
+    expect(nextButton).toHaveFocus();
+
+    const tabEvent = fireEvent.keyDown(dialog, { key: 'Tab' });
+    expect(tabEvent).toBe(false);
+    expect(iconCloseButton).toHaveFocus();
   });
 });

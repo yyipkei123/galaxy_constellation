@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { ChevronRight, Presentation, X } from 'lucide-react';
 
 const presenterStops = [
@@ -32,12 +32,25 @@ const presenterStops = [
 ] as const;
 
 const stopCount = presenterStops.length;
+const focusableControlSelector =
+  'button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])';
+
+function getFocusableControls(container: HTMLElement) {
+  return Array.from(container.querySelectorAll<HTMLElement>(focusableControlSelector));
+}
 
 export function PresenterTour() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const launcherRef = useRef<HTMLButtonElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const activeStop = presenterStops[activeIndex];
+
+  useEffect(() => {
+    if (isOpen) {
+      closeButtonRef.current?.focus();
+    }
+  }, [isOpen]);
 
   function openTour() {
     setActiveIndex(0);
@@ -53,6 +66,37 @@ export function PresenterTour() {
     setActiveIndex((current) => Math.min(current + 1, stopCount - 1));
   }
 
+  function handleDialogKeyDown(event: KeyboardEvent<HTMLElement>) {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeTour();
+      return;
+    }
+
+    if (event.key !== 'Tab') {
+      return;
+    }
+
+    const focusableControls = getFocusableControls(event.currentTarget);
+
+    if (focusableControls.length === 0) {
+      event.preventDefault();
+      return;
+    }
+
+    const currentIndex = focusableControls.indexOf(document.activeElement as HTMLElement);
+    let nextIndex = currentIndex;
+
+    if (event.shiftKey) {
+      nextIndex = currentIndex <= 0 ? focusableControls.length - 1 : currentIndex - 1;
+    } else {
+      nextIndex = currentIndex === -1 || currentIndex === focusableControls.length - 1 ? 0 : currentIndex + 1;
+    }
+
+    event.preventDefault();
+    focusableControls[nextIndex]?.focus();
+  }
+
   return (
     <>
       {isOpen ? (
@@ -61,6 +105,7 @@ export function PresenterTour() {
             role="dialog"
             aria-modal="true"
             aria-label="Presenter tour"
+            onKeyDown={handleDialogKeyDown}
             className="w-full max-w-lg rounded-lg border border-galaxy-gold/35 bg-galaxy-ink p-5 text-galaxy-cream shadow-2xl shadow-black/50"
           >
             <div className="flex items-start justify-between gap-4">
@@ -71,6 +116,7 @@ export function PresenterTour() {
                 <h2 className="mt-2 font-serif text-3xl leading-tight text-galaxy-cream">{activeStop.title}</h2>
               </div>
               <button
+                ref={closeButtonRef}
                 type="button"
                 aria-label="Close presenter tour"
                 onClick={closeTour}
