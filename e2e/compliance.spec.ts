@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const routes = ['/', '/wallet', '/segments', '/guests', '/guests/MEM-••••3421', '/leakage', '/propensity', '/activation', '/measurement', '/simulate', '/marketscan', '/corridors', '/corridors/korea', '/acquisition'];
+const routes = ['/', '/journey', '/wallet', '/segments', '/guests', '/guests/MEM-••••3421', '/leakage', '/propensity', '/activation', '/measurement', '/simulate', '/marketscan', '/corridors', '/corridors/korea', '/acquisition'];
 const interruptedNavigationMessage = 'is interrupted by another navigation';
 const fallbackBaseUrl = 'http://127.0.0.1:3000';
 const bannedCdeTokenPattern = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣/i;
@@ -96,6 +96,12 @@ test.describe('Galaxy Constellation rendered compliance', () => {
         await expect(page.getByRole('heading', { name: /Ranked category leakage/i })).toBeVisible();
         await expect(page.getByRole('heading', { name: /Segment opportunity heatmap/i })).toBeVisible();
         await expect(page.getByRole('heading', { name: /Largest wallet gaps now/i })).toBeVisible();
+      }
+
+      if (route === '/journey') {
+        await expect(page.getByRole('heading', { name: /Acquire, Convert, Grow/i })).toBeVisible();
+        await expect(page.getByText(/one connected loop/i)).toBeVisible();
+        await expect(page.getByRole('link', { name: /Acquire/i })).toHaveAttribute('href', '/corridors/korea');
       }
 
       if (route === '/segments') {

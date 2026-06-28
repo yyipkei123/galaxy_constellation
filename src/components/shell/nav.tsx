@@ -16,6 +16,7 @@ import {
   SlidersHorizontal,
   UsersRound,
   WalletCards,
+  Workflow,
   type LucideIcon,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -23,6 +24,7 @@ import { usePathname } from 'next/navigation';
 
 const walletNavItems: Array<{ href: string; label: string; shortLabel: string; icon: LucideIcon }> = [
   { href: '/', label: 'Overview', shortLabel: 'Overview', icon: BarChart3 },
+  { href: '/journey', label: 'Journey', shortLabel: 'Journey', icon: Workflow },
   { href: '/wallet', label: 'Wallet', shortLabel: 'Wallet', icon: WalletCards },
   { href: '/segments', label: 'Segments', shortLabel: 'Segments', icon: Gem },
   { href: '/guests', label: 'Guests', shortLabel: 'Guests', icon: UsersRound },
