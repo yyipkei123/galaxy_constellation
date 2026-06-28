@@ -333,6 +333,24 @@ test.describe('Galaxy Constellation rendered compliance', () => {
     { label: 'iPad', width: 820, height: 1180 },
     { label: 'desktop', width: 1440, height: 900 },
   ]) {
+    test(`Sprint 3 routes remain CDE-safe and responsive on ${viewport.label}`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+
+      for (const route of ['/measurement', '/simulate', '/journey', '/governance']) {
+        await gotoStableRoute(page, route);
+        await expect(page.getByText(/Enriched figures are modelled estimates/i)).toBeVisible();
+        await expect(page.locator('body')).not.toContainText(bannedCdeTokenPattern);
+        await expect(page.locator('body')).not.toContainText(/NaN|Infinity/);
+        expect(await documentScrollWidth(page)).toBeLessThanOrEqual(viewport.width);
+      }
+    });
+  }
+
+  for (const viewport of [
+    { label: 'iPhone', width: 390, height: 844 },
+    { label: 'iPad', width: 820, height: 1180 },
+    { label: 'desktop', width: 1440, height: 900 },
+  ]) {
     test(`Customer 360 routes remain CDE-safe and responsive on ${viewport.label}`, async ({ page }) => {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
 
