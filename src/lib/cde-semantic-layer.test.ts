@@ -139,6 +139,48 @@ describe('governed CDE semantic layer', () => {
     expectGovernedResult(measurement);
   });
 
+  it('prefers launched campaigns over seeded campaigns for measurement readouts', () => {
+    const seedCampaign = campaigns[0];
+    const launchedCampaign = {
+      ...campaigns[1],
+      id: 'launched-activation-top-leakage',
+      name: 'Top leakage segments measurement launch',
+      source: 'activation',
+    } satisfies MeasurementCampaign;
+    const layer = buildCdeSemanticLayer({
+      methodology,
+      segments: latestSegments,
+      personas: personaRecords,
+      guests,
+      corridors,
+      campaigns: [seedCampaign, launchedCampaign],
+    });
+    const result = queryCdeSemanticLayer('Did the measurement campaign work?', layer);
+
+    expect(result.intent).toBe('measurement');
+    expect(result.answer).toContain(launchedCampaign.name);
+    expect(result.answer).not.toContain(seedCampaign.name);
+    expect(result.title).toContain(launchedCampaign.name);
+    expect(result.title).not.toContain(seedCampaign.name);
+    expect(result.auditFacts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          source: expect.stringContaining(`campaigns.${launchedCampaign.id}.`),
+        }),
+      ]),
+    );
+    expect(result.auditFacts).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          source: expect.stringContaining(`campaigns.${seedCampaign.id}.`),
+        }),
+      ]),
+    );
+    expect(result.visual.items[0]?.id).toContain(launchedCampaign.id);
+    expect(result.visual.items[0]?.id).not.toContain(seedCampaign.id);
+    expectGovernedResult(result);
+  });
+
   it('uses a governed fallback for unsupported and exact spend requests', () => {
     const layer = buildLayer();
     const unsupported = queryCdeSemanticLayer('Tell me something random about the weather', layer);

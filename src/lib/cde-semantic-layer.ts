@@ -821,7 +821,7 @@ function guestPitch(question: string, layer: CdeSemanticLayer): SemanticQueryRes
 }
 
 function measurement(layer: CdeSemanticLayer): SemanticQueryResult {
-  const campaign = layer.campaigns[0];
+  const campaign = layer.campaigns.find((item) => item.source !== 'seed') ?? layer.campaigns[0];
 
   if (!campaign) return governedFallback(layer);
 
@@ -830,7 +830,7 @@ function measurement(layer: CdeSemanticLayer): SemanticQueryResult {
 
   return sanitizeResult({
     intent: 'measurement',
-    title: 'Measurement Readout',
+    title: `${campaign.name} Measurement Readout`,
     answer: `${campaign.name} is measured with a ${pct(campaign.testDesign.holdoutPct)} holdout across ${campaign.testDesign.durationWeeks} weeks. The latest test read is ${index(latest?.testIndex)} versus control ${index(latest?.controlIndex)}, giving ${pct(latestLiftPct)} lift against a ${pct(campaign.testDesign.expectedLiftThresholdPct)} threshold.`,
     auditFacts: auditFacts(layer, [
       `campaigns.${campaign.id}.testDesign.holdoutPct`,
