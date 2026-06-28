@@ -3,6 +3,7 @@ import { ChatAssistantLauncher } from '@/components/assistant/chat-assistant-lau
 import { MethodologyNote } from '@/components/ui/methodology-note';
 import { CoBrandLockup } from './co-brand-lockup';
 import { Nav } from './nav';
+import { PresenterTour } from './presenter-tour';
 import { TopBar } from './top-bar';
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -24,6 +25,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </footer>
         </div>
       </div>
+      <PresenterTour />
       <ChatAssistantLauncher />
     </div>
   );

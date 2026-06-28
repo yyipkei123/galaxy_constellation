@@ -13,6 +13,7 @@ import {
   Radar,
   Route,
   ScanSearch,
+  ShieldCheck,
   SlidersHorizontal,
   UsersRound,
   WalletCards,
@@ -34,6 +35,7 @@ const walletNavItems: Array<{ href: string; label: string; shortLabel: string; i
   { href: '/measurement', label: 'Measurement', shortLabel: 'Measure', icon: LineChart },
   { href: '/simulate', label: 'Simulator', shortLabel: 'Simulate', icon: SlidersHorizontal },
   { href: '/marketscan', label: 'Market Scan', shortLabel: 'Market', icon: Radar },
+  { href: '/governance', label: 'Governance', shortLabel: 'Gov', icon: ShieldCheck },
 ];
 
 const acquisitionNavItems: Array<{ href: string; label: string; shortLabel: string; icon: LucideIcon }> = [

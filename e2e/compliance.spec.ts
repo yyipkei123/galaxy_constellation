@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const routes = ['/', '/journey', '/wallet', '/segments', '/guests', '/guests/MEM-••••3421', '/leakage', '/propensity', '/activation', '/measurement', '/simulate', '/marketscan', '/corridors', '/corridors/korea', '/acquisition'];
+const routes = ['/', '/journey', '/wallet', '/segments', '/guests', '/guests/MEM-••••3421', '/leakage', '/propensity', '/activation', '/measurement', '/simulate', '/marketscan', '/governance', '/corridors', '/corridors/korea', '/acquisition'];
 const interruptedNavigationMessage = 'is interrupted by another navigation';
 const fallbackBaseUrl = 'http://127.0.0.1:3000';
 const bannedCdeTokenPattern = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣/i;
@@ -170,6 +170,12 @@ test.describe('Galaxy Constellation rendered compliance', () => {
         await expect(page.locator('body')).not.toContainText(/NaN|Infinity/);
       }
 
+      if (route === '/governance') {
+        await expect(page.getByRole('heading', { name: 'Data Governance', level: 1 })).toBeVisible();
+        await expect(page.getByText('PIPL')).toBeVisible();
+        await expect(page.getByText(/no PII/i)).toBeVisible();
+      }
+
       if (route === '/leakage') {
         await expect(page.getByText('Generated opportunity narrative')).toBeVisible();
         await expect(page.getByRole('heading', { name: /Opportunity ladder/i })).toBeVisible();
@@ -306,6 +312,19 @@ test.describe('Galaxy Constellation rendered compliance', () => {
     await expect(page.getByRole('heading', { name: /Korea Corridor Detail/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /Generate campaign content/i })).toBeVisible();
     await expect(page.locator('body')).not.toContainText(/HKD|MOP|\$|元|澳門幣/);
+    expect(await documentScrollWidth(page)).toBeLessThanOrEqual(390);
+  });
+
+  test('mobile presenter tour opens without horizontal overflow', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+
+    await page.getByRole('button', { name: 'Open presenter tour' }).click();
+
+    const dialog = page.getByRole('dialog', { name: 'Presenter tour' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText('1 of 5')).toBeVisible();
+    await expect(dialog.getByRole('heading', { name: 'Overview' })).toBeVisible();
     expect(await documentScrollWidth(page)).toBeLessThanOrEqual(390);
   });
 

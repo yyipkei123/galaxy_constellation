@@ -70,6 +70,22 @@ describe('corridor acquisition data', () => {
     expect(thailand.seasonality[11]).toBeGreaterThanOrEqual(120);
   });
 
+  it('uses the approved Macau corridor haul labels without long-haul entries', () => {
+    expect(Object.fromEntries(corridors.map((corridor) => [corridor.name, corridor.haul]))).toEqual({
+      Korea: 'medium',
+      Singapore: 'short',
+      Japan: 'medium',
+      Taiwan: 'medium',
+      'GBA Mainland': 'short',
+      Malaysia: 'short',
+      Thailand: 'short',
+      Indonesia: 'short',
+      Philippines: 'short',
+      'Hong Kong': 'short',
+    });
+    expect(corridors.map((corridor) => corridor.haul)).not.toContain('long');
+  });
+
   it('extends methodology with Lens B aggregate-panel disclosure', () => {
     expect(methodology.panelSharePct).toBe('10–20%');
     expect(methodology.dataYears).toEqual(['2020', '2024']);
