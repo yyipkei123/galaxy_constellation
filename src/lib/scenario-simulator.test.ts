@@ -74,6 +74,87 @@ describe('buildScenarioImpact', () => {
     });
   });
 
+  it('treats non-array segment ids as empty safe input', () => {
+    let impact: ReturnType<typeof buildScenarioImpact> | undefined;
+
+    expect(() => {
+      impact = buildScenarioImpact({
+        segments: latestSegments,
+        segmentIds: 'bad' as never,
+        category: 'hospitality',
+        recapturePct: 20,
+        onlineShiftPct: 10,
+        lever: 'recapture',
+      });
+    }).not.toThrow();
+
+    expect(impact).toEqual({
+      walletUpliftIndex: 0,
+      opportunityIndexDelta: 0,
+      pitchNowGuestsK: 0,
+      projectedBand: '0-0k equiv./mo',
+      constellationShift: [],
+    });
+
+    expect(buildScenarioImpact({
+      segments: 'bad' as never,
+      segmentIds: ['diamond-high-rollers'],
+      category: 'hospitality',
+      recapturePct: 20,
+      onlineShiftPct: 10,
+      lever: 'recapture',
+    })).toEqual(impact);
+  });
+
+  it('redacts currency amount fragments from scenario labels', () => {
+    const unsafeSegment = {
+      ...latestSegments[0],
+      id: 'unsafe',
+      name: 'HKD 5000 leakage segment',
+    };
+    const impact = buildScenarioImpact({
+      segments: [unsafeSegment],
+      segmentIds: ['unsafe'],
+      category: 'hospitality',
+      recapturePct: 24,
+      onlineShiftPct: 8,
+      lever: 'hostLift',
+    });
+    const renderedPayload = JSON.stringify(impact);
+
+    expectFiniteImpact(impact);
+    expect(renderedPayload).not.toMatch(/\bHKD\b/i);
+    expect(renderedPayload).not.toMatch(/\b5000\b/);
+    expect(renderedPayload).not.toMatch(bannedCdeTokenPattern);
+    expect(renderedPayload).not.toMatch(/NaN|Infinity/);
+  });
+
+  it('keeps safe words readable when sanitizing scenario labels', () => {
+    const moparSegment = {
+      ...latestSegments[0],
+      id: 'mopar-loyalty',
+      name: 'MOPAR loyalty',
+    };
+    const cosmopolitanSegment = {
+      ...latestSegments[1],
+      id: 'cosmopolitan-safe',
+      name: 'Cosmopolitan Connoisseurs',
+    };
+    const impact = buildScenarioImpact({
+      segments: [moparSegment, cosmopolitanSegment],
+      segmentIds: ['mopar-loyalty', 'cosmopolitan-safe'],
+      category: 'retailLuxury',
+      recapturePct: 18,
+      onlineShiftPct: 10,
+      lever: 'recapture',
+    });
+
+    expect(impact.constellationShift.map((shift) => shift.label)).toEqual([
+      'MOPAR loyalty',
+      'Cosmopolitan Connoisseurs',
+    ]);
+  });
+
   it('clamps slider inputs and keeps lever multipliers deterministic', () => {
     const baseInput = {
       segments: latestSegments,

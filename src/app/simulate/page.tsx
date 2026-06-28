@@ -8,7 +8,7 @@ import { Overline } from '@/components/ui/overline';
 import { PageHeader } from '@/components/ui/page-header';
 import { Panel } from '@/components/ui/panel';
 import { CORE_CATEGORIES, type CoreCategory, type ScenarioLever, type Segment } from '@/data';
-import { buildScenarioImpact } from '@/lib/scenario-simulator';
+import { buildScenarioImpact, sanitizeScenarioLabel } from '@/lib/scenario-simulator';
 import { useAppState } from '@/store/app-store';
 
 const categoryLabels: Record<CoreCategory, string> = {
@@ -50,6 +50,7 @@ export default function SimulatePage() {
   const [onlineShiftPct, setOnlineShiftPct] = useState(8);
   const [status, setStatus] = useState('');
   const activeSegmentIds = useMemo(() => (activeSegment ? [activeSegment.id] : []), [activeSegment]);
+  const activeSegmentName = sanitizeScenarioLabel(activeSegment?.name, 'No active segment');
   const impact = useMemo(() => buildScenarioImpact({
     segments: safeSegments,
     segmentIds: activeSegmentIds,
@@ -60,8 +61,9 @@ export default function SimulatePage() {
   }), [activeSegmentIds, category, lever, onlineShiftPct, recapturePct, safeSegments]);
 
   function saveCurrentScenario() {
+    const scenarioName = `${activeSegmentName} ${leverLabels[lever]} scenario`;
     const scenario = saveScenario({
-      name: `${activeSegment?.name ?? 'Fallback segment'} ${leverLabels[lever]} scenario`,
+      name: scenarioName,
       segmentIds: activeSegmentIds,
       category,
       recapturePct,
@@ -69,7 +71,7 @@ export default function SimulatePage() {
       lever,
     });
 
-    setStatus(`Scenario saved: ${scenario.id}`);
+    setStatus(`Scenario saved: ${sanitizeScenarioLabel(scenario.name, scenarioName)}`);
   }
 
   return (
@@ -87,7 +89,7 @@ export default function SimulatePage() {
         aside={(
           <>
             <p className="font-semibold text-galaxy-gold">Active segment</p>
-            <p className="mt-2">Scenario target: {activeSegment?.name ?? 'No active segment'}</p>
+            <p className="mt-2">Scenario target: {activeSegmentName}</p>
           </>
         )}
       />
@@ -177,7 +179,7 @@ export default function SimulatePage() {
             <MetricTile
               label="Wallet uplift"
               value={<IndexValue value={impact.walletUpliftIndex} />}
-              detail={`${activeSegment?.name ?? 'No segment'} / ${categoryLabels[category]}`}
+              detail={`${activeSegmentName} / ${categoryLabels[category]}`}
             />
             <MetricTile
               label="Opportunity delta"

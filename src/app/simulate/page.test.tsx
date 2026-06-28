@@ -159,7 +159,35 @@ describe('simulate route', () => {
       lever: 'hostLift',
     }));
     expect(screen.getByRole('status')).toHaveTextContent(/Scenario saved/i);
-    expect(screen.getByRole('status')).toHaveTextContent('saved-scenario-1');
+    expect(screen.getByRole('status')).toHaveTextContent(`${latestSegments[0].name} Host lift scenario`);
+    expect(screen.getByRole('status')).not.toHaveTextContent('saved-scenario-1');
+  });
+
+  it('sanitizes unsafe active segment names before rendering and saving scenarios', () => {
+    const unsafeSegment = {
+      ...latestSegments[0],
+      id: 'unsafe-segment',
+      name: 'HKD 5000 leakage segment',
+    };
+    const { container, saveScenario } = renderSimulate({
+      segments: [unsafeSegment],
+      selectedSegment: unsafeSegment,
+      selectedSegmentId: unsafeSegment.id,
+    });
+
+    expect(container.textContent).not.toMatch(/\bHKD\b|5000|\$|元|澳門幣/i);
+
+    fireEvent.change(screen.getByRole('combobox', { name: 'Lever' }), {
+      target: { value: 'hostLift' satisfies ScenarioLever },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Save scenario' }));
+
+    expect(saveScenario).toHaveBeenCalledWith(expect.objectContaining({
+      name: 'leakage segment Host lift scenario',
+    }));
+    expect(screen.getByRole('status')).toHaveTextContent('Scenario saved: leakage segment Host lift scenario');
+    expect(screen.getByRole('status')).not.toHaveTextContent('saved-scenario-1');
+    expect(container.textContent).not.toMatch(/\bHKD\b|5000|\$|元|澳門幣/i);
   });
 
   it('uses the first segment as a safe fallback when selectedSegment is missing', () => {

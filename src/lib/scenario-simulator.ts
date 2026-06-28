@@ -18,7 +18,24 @@ const leverMultipliers: Record<ScenarioLever, number> = {
 
 const validCategories = new Set<CoreCategory>(['hospitality', 'fnb', 'entertainment', 'retailLuxury']);
 const validLevers = new Set<ScenarioLever>(['recapture', 'channelShift', 'hostLift', 'contentPersonalisation']);
-const bannedCdeTokenPattern = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣/gi;
+const currencyTokenSource = '(?:\\b(?:HKD|MOP)(?=\\b|[\\s\\d$.,:;/-])|\\$|元|澳門幣)';
+const amountSource = '\\d+(?:[.,]\\d+)*(?:\\s*[km])?';
+const periodSource = '(?:\\s*(?:monthly|per\\s+month|\\/mo))?';
+const englishAmountWord = '(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|billion)';
+const englishAmountConnectorSource = '(?:[\\s-]+(?:and[\\s-]+)?)';
+const englishAmountWordSource = `${englishAmountWord}(?:${englishAmountConnectorSource}${englishAmountWord})*`;
+const chineseAmountWordSource = '[零一二三四五六七八九十百千万萬億亿兩两]+';
+const amountWordSource = `(?:${englishAmountWordSource}|${chineseAmountWordSource})`;
+const tokenBeforeAmountPattern = new RegExp(`${currencyTokenSource}\\s*\\$?\\s*${amountSource}${periodSource}`, 'gi');
+const amountBeforeTokenPattern = new RegExp(`${amountSource}\\s*${currencyTokenSource}${periodSource}`, 'gi');
+const tokenBeforeWordAmountPattern = new RegExp(`${currencyTokenSource}\\s*${amountWordSource}${periodSource}`, 'gi');
+const wordAmountBeforeTokenPattern = new RegExp(`${amountWordSource}\\s*${currencyTokenSource}${periodSource}`, 'gi');
+const currencyTokenPattern = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣/gi;
+const currencyTokenTestPattern = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣/i;
+const numericFragmentPattern = /\b\d+(?:[.,]\d+)*(?:\s*[km])?\b/gi;
+const englishAmountWordFragmentPattern = new RegExp(`\\b${englishAmountWord}\\b`, 'gi');
+const chineseAmountWordFragmentPattern = new RegExp(chineseAmountWordSource, 'gi');
+const nonFiniteTextPattern = /NaN|Infinity/gi;
 
 const zeroImpact: ScenarioImpact = {
   walletUpliftIndex: 0,
@@ -56,20 +73,37 @@ function safeLever(lever: ScenarioSimulatorInput['lever']): ScenarioLever {
   return typeof lever === 'string' && validLevers.has(lever) ? lever : 'recapture';
 }
 
-function safeLabel(value: unknown, fallback: string) {
+export function sanitizeScenarioLabel(value: unknown, fallback: string) {
   const label = typeof value === 'string' ? value.trim() : '';
-  return (label || fallback).replace(bannedCdeTokenPattern, '').replace(/\s+/g, ' ').trim() || fallback;
+  const text = label || fallback;
+  const includesCurrency = currencyTokenTestPattern.test(text);
+  const sanitized = text
+    .replace(tokenBeforeAmountPattern, '')
+    .replace(amountBeforeTokenPattern, '')
+    .replace(tokenBeforeWordAmountPattern, '')
+    .replace(wordAmountBeforeTokenPattern, '')
+    .replace(currencyTokenPattern, '')
+    .replace(nonFiniteTextPattern, '');
+  const redacted = includesCurrency
+    ? sanitized
+      .replace(numericFragmentPattern, '')
+      .replace(englishAmountWordFragmentPattern, '')
+      .replace(chineseAmountWordFragmentPattern, '')
+    : sanitized;
+
+  return redacted.replace(/\s+/g, ' ').trim() || fallback;
 }
 
 function safeSegmentId(value: unknown, fallback: string) {
-  return safeLabel(value, fallback)
+  return sanitizeScenarioLabel(value, fallback)
     .replace(/[^a-zA-Z0-9_-]+/g, '-')
     .replace(/^-+|-+$/g, '')
     || fallback;
 }
 
 function selectedSegments(segments: ScenarioSimulatorInput['segments'], segmentIds: ScenarioSimulatorInput['segmentIds']) {
-  const idSet = new Set((segmentIds ?? []).filter((id): id is string => typeof id === 'string' && id.trim() !== ''));
+  const safeSegmentIds = Array.isArray(segmentIds) ? segmentIds : [];
+  const idSet = new Set(safeSegmentIds.filter((id): id is string => typeof id === 'string' && id.trim() !== ''));
 
   if (!Array.isArray(segments) || idSet.size === 0) return [];
 
@@ -139,7 +173,7 @@ export function buildScenarioImpact(input: ScenarioSimulatorInput): ScenarioImpa
 
       return {
         segmentId: safeSegmentId(segment.id, `segment-${index + 1}`),
-        label: safeLabel(segment.name, `Segment ${index + 1}`),
+        label: sanitizeScenarioLabel(segment.name, `Segment ${index + 1}`),
         beforeIndex: rounded(signals.opportunityIndex),
         afterIndex: rounded(signals.opportunityIndex + opportunityDelta),
         walletUplift,
