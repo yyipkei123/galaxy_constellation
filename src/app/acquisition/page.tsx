@@ -10,6 +10,7 @@ import { Panel } from '@/components/ui/panel';
 import { SectionHeader } from '@/components/ui/section-header';
 import { getCorridorById, koreaRefreshTag, priorityCorridor } from '@/data';
 import { buildAcquisitionDraft } from '@/lib/acquisition-content';
+import { useAppState } from '@/store/app-store';
 
 export default function AcquisitionPage() {
   return (
@@ -21,10 +22,21 @@ export default function AcquisitionPage() {
 
 function AcquisitionPageContent() {
   const searchParams = useSearchParams();
+  const { launchCampaign } = useAppState();
   const corridor = getCorridorById(searchParams.get('corridor') ?? priorityCorridor.id);
   const persona = searchParams.get('persona') ?? corridor.personas[0].persona;
   const draft = buildAcquisitionDraft(corridor, persona);
   const tag = koreaRefreshTag(corridor);
+
+  function launchAcquisitionCampaign() {
+    launchCampaign({
+      source: 'acquisition',
+      audienceName: `${corridor.name} ${draft.persona}`,
+      segmentIds: ['cosmopolitan-connoisseurs'],
+      corridorId: corridor.id,
+      lever: draft.variants[0]?.subject ?? 'Corridor acquisition content',
+    });
+  }
 
   return (
     <div className="space-y-6 text-galaxy-cream">
@@ -49,7 +61,7 @@ function AcquisitionPageContent() {
         </div>
       </Panel>
 
-      <ContentDraftCard draft={draft} />
+      <ContentDraftCard draft={draft} onLaunch={launchAcquisitionCampaign} />
     </div>
   );
 }

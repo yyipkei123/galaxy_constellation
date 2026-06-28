@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
-import { latestQuarter, latestSegments, methodology, quarters, type Segment } from '@/data';
-import { useAppState, type CampaignToast, type SavedAudience } from '@/store/app-store';
+import { latestQuarter, latestSegments, methodology, quarters, type MeasurementCampaign, type Segment } from '@/data';
+import { useAppState, type CampaignToast, type LaunchCampaignInput, type SavedAudience } from '@/store/app-store';
 import ActivationPage from './page';
 
 vi.mock('@/store/app-store', async (importOriginal) => {
@@ -29,6 +29,38 @@ function mockAppState({
       pushCampaign,
     });
   });
+  const launchCampaign = vi.fn((input: LaunchCampaignInput) => {
+    const campaign: MeasurementCampaign = {
+      id: 'mock-measurement-campaign',
+      name: `${input.audienceName} measurement launch`,
+      source: input.source,
+      audienceName: input.audienceName,
+      segmentIds: [...input.segmentIds],
+      corridorId: input.corridorId,
+      lever: input.lever,
+      category: 'corridor',
+      indexedRevenueBand: 'Index 100',
+      confidence: 'directional',
+      testDesign: {
+        holdoutPct: 10,
+        durationWeeks: 6,
+        expectedLiftThresholdPct: 5,
+      },
+      weeklySeries: [],
+    };
+
+    vi.mocked(useAppState).mockReturnValue({
+      ...state,
+      campaignToast: {
+        title: 'Campaign launched into measurement',
+        description: `${campaign.name} is ready for Test & Learn readout.`,
+      },
+      launchedCampaigns: [campaign],
+      launchCampaign,
+    });
+
+    return campaign;
+  });
 
   const state = {
     quarters,
@@ -54,11 +86,16 @@ function mockAppState({
     campaignToast,
     pushCampaign,
     clearCampaignToast: vi.fn(),
+    launchedCampaigns: [],
+    launchCampaign,
+    savedScenarios: [],
+    saveScenario: vi.fn(),
+    removeSavedScenario: vi.fn(),
   };
 
   vi.mocked(useAppState).mockReturnValue(state);
 
-  return { pushCampaign };
+  return { launchCampaign, pushCampaign };
 }
 
 function renderActivation(options?: Parameters<typeof mockAppState>[0]) {
@@ -75,6 +112,10 @@ describe('activation route', () => {
 
   it('keeps top leakage fallback behavior when no audiences are saved', () => {
     const view = renderActivation();
+    const expectedSegmentIds = [...latestSegments]
+      .sort((first, second) => second.opportunityIndex - first.opportunityIndex)
+      .slice(0, 2)
+      .map((segment) => segment.id);
 
     expect(screen.getByText('Activation planning')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Next-Best-Action', level: 1 })).toHaveClass('font-sans');
@@ -89,7 +130,15 @@ describe('activation route', () => {
     fireEvent.click(screen.getAllByRole('button', { name: 'Push to campaign' })[0]);
     view.rerender(<ActivationPage />);
 
-    expect(screen.getByText('Audience exported to Galaxy Rewards CRM / activation platform')).toBeInTheDocument();
+    expect(view.launchCampaign).toHaveBeenCalledTimes(1);
+    expect(view.launchCampaign).toHaveBeenCalledWith({
+      source: 'activation',
+      audienceName: 'Top leakage segments',
+      segmentIds: expectedSegmentIds,
+      lever: expect.any(String),
+    });
+    expect(screen.getByText('Campaign launched into measurement')).toBeInTheDocument();
+    expect(screen.getByText(/Top leakage segments measurement launch is ready for Test & Learn readout\./)).toBeInTheDocument();
     expect(screen.queryByText(/NaN|Infinity/)).not.toBeInTheDocument();
     expect(screen.queryByRole('main')).not.toBeInTheDocument();
   });

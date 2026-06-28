@@ -9,7 +9,6 @@ import type { RecommendedPlay, Segment } from '@/data';
 import { useAppState, type SavedAudience } from '@/store/app-store';
 
 const GALAXY_REWARDS_TERM = 'MOP 200 rebate on MOP 500 spend';
-const EXPORT_TOAST = 'Audience exported to Galaxy Rewards CRM / activation platform';
 
 interface ActivationAudience {
   id: string;
@@ -97,7 +96,7 @@ function playableCards(segments: Segment[]): Array<{ key: string; play: Partial<
 }
 
 export default function ActivationPage() {
-  const { segments, savedAudiences, campaignToast, pushCampaign } = useAppState();
+  const { segments, savedAudiences, campaignToast, launchCampaign } = useAppState();
   const safeSegments = useMemo(
     () => (segments ?? []).filter((segment): segment is Segment => Boolean(segment)),
     [segments],
@@ -126,9 +125,11 @@ export default function ActivationPage() {
   const activeRecaptureIndex = averageIndex(cardSegments);
 
   function pushAudienceCampaign() {
-    pushCampaign({
-      title: 'Galaxy Rewards export ready',
-      description: EXPORT_TOAST,
+    launchCampaign({
+      source: 'activation',
+      audienceName: activeAudience.name,
+      segmentIds: activeAudience.segmentIds,
+      lever: cards[0]?.play.lever ?? 'Galaxy Rewards activation',
     });
   }
 
