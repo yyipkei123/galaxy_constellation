@@ -3,7 +3,7 @@ import { formatEnriched, formatOfferMoney } from './format';
 describe('formatEnriched', () => {
   it('formats legal CDE percentages, indices, and bands', () => {
     expect(formatEnriched(63, 'pct')).toBe('63%');
-    expect(formatEnriched(176, 'index')).toBe('Index 176');
+    expect(formatEnriched(176, 'index')).toBe('CDE index signal 176');
     expect(formatEnriched('8-12k equiv./mo', 'band')).toBe('8-12k equiv./mo');
   });
 

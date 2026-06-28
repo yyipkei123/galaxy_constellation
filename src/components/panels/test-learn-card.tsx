@@ -44,7 +44,7 @@ export function TestLearnCard({ campaign }: TestLearnCardProps) {
             className="bg-galaxy-ink/35"
           />
           <MetricTile
-            label="iROI Index"
+            label="CDE iROI signal"
             value={readout.iroiIndex}
             detail={readout.controlLine}
             className="bg-galaxy-ink/35"

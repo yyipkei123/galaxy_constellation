@@ -180,6 +180,12 @@ describe('segments route', () => {
     expect(screen.getByRole('heading', { name: /Persona universe/i })).toBeInTheDocument();
     expect(screen.getByText(/18 personas/i)).toBeInTheDocument();
     expect(screen.getByText(/second-level persona opportunity/i)).toBeInTheDocument();
+    const personaUniverse = screen.getByRole('heading', { name: /Persona universe/i }).closest('section');
+    expect(personaUniverse).not.toBeNull();
+    expect(within(personaUniverse as HTMLElement).getByText(/100 = matched-cohort baseline/i)).toBeInTheDocument();
+    expect(within(personaUniverse as HTMLElement).getByText('CDE opportunity signal 142')).toBeInTheDocument();
+    expect(within(personaUniverse as HTMLElement).getAllByText('High recapture priority').length).toBeGreaterThanOrEqual(1);
+    expect(within(personaUniverse as HTMLElement).queryByText('Index 142')).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Persona explorer/i })).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/Search persona, need, wallet gap, or tag/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'persona: Suite-First Patrons' })).toBeInTheDocument();

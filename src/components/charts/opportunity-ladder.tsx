@@ -1,4 +1,5 @@
 import { CdeChip } from '@/components/ui/cde-chip';
+import { IndexValue } from '@/components/ui/formatted-values';
 import type { Segment } from '@/data';
 import { buildLeakageDrivers } from '@/lib/insights';
 
@@ -34,7 +35,9 @@ export function OpportunityLadder({ segment }: { segment: Segment }) {
               aria-label={`${driver.label} opportunity score ${Math.round(driver.score)}`}
             />
           </div>
-          <p className="mt-2 text-xs text-galaxy-muted">Wallet intensity Index {Math.round(driver.walletIndex)}</p>
+          <p className="mt-2 text-xs text-galaxy-muted">
+            Wallet intensity <IndexValue value={driver.walletIndex} label="CDE wallet intensity" />
+          </p>
         </div>
       ))}
     </div>

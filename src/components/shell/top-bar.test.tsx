@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, vi } from 'vitest';
 import { AppStateProvider, useAppState } from '@/store/app-store';
 import { AppShell } from './app-shell';
@@ -102,8 +102,88 @@ describe('TopBar', () => {
     expect(screen.getByRole('img', { name: 'Mastercard' })).toBeInTheDocument();
     expect(screen.getByText('Data partnership')).toHaveClass('hidden');
     expect(screen.getByText('Data partnership')).toHaveClass('sm:inline');
+    expect(screen.getByRole('button', { name: /Open CDE signal guide/i })).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: /quarter selector/i })).toHaveValue('2026-q2');
     expect(screen.getByRole('option', { name: '2026 Q2' })).toBeInTheDocument();
+  });
+
+  it('opens a global CDE signal guide from the top bar', () => {
+    render(
+      <AppStateProvider>
+        <TopBar />
+      </AppStateProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /Open CDE signal guide/i }));
+
+    const guide = screen.getByRole('dialog', { name: 'CDE signal guide' });
+    expect(guide).toBeInTheDocument();
+    expect(guide).toHaveTextContent('100 = matched Galaxy x Mastercard cohort baseline');
+    expect(guide).toHaveTextContent('Above 100 = stronger demand or opportunity');
+    expect(guide).toHaveTextContent('Below 100 = weaker than baseline');
+    expect(guide).toHaveTextContent('Not customer count, spend amount, match rate, or exact wallet value');
+    expect(guide).toHaveTextContent('Low signal');
+    expect(guide).toHaveTextContent('High recapture priority');
+
+    fireEvent.click(screen.getByRole('button', { name: /Close CDE signal guide/i }));
+    expect(screen.queryByRole('dialog', { name: 'CDE signal guide' })).not.toBeInTheDocument();
+  });
+
+  it('mounts the CDE signal guide outside the header layout', () => {
+    render(
+      <AppStateProvider>
+        <TopBar />
+      </AppStateProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /Open CDE signal guide/i }));
+
+    const guide = screen.getByRole('dialog', { name: 'CDE signal guide' });
+    expect(guide.closest('header')).toBeNull();
+  });
+
+  it('moves focus into the CDE signal guide and restores it when closed', async () => {
+    render(
+      <AppStateProvider>
+        <TopBar />
+      </AppStateProvider>,
+    );
+
+    const launcher = screen.getByRole('button', { name: /Open CDE signal guide/i });
+    launcher.focus();
+    expect(launcher).toHaveFocus();
+
+    fireEvent.click(launcher);
+
+    const guide = screen.getByRole('dialog', { name: 'CDE signal guide' });
+    const closeButton = within(guide).getByRole('button', { name: /Close CDE signal guide/i });
+    expect(closeButton).toHaveFocus();
+
+    fireEvent.keyDown(guide, { key: 'Escape' });
+    expect(screen.queryByRole('dialog', { name: 'CDE signal guide' })).not.toBeInTheDocument();
+    await waitFor(() => expect(launcher).toHaveFocus());
+  });
+
+  it('keeps tab focus inside the CDE signal guide while open', () => {
+    render(
+      <AppStateProvider>
+        <TopBar />
+      </AppStateProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /Open CDE signal guide/i }));
+
+    const guide = screen.getByRole('dialog', { name: 'CDE signal guide' });
+    const closeButton = within(guide).getByRole('button', { name: /Close CDE signal guide/i });
+
+    closeButton.focus();
+    const tabEvent = fireEvent.keyDown(guide, { key: 'Tab' });
+    expect(tabEvent).toBe(false);
+    expect(closeButton).toHaveFocus();
+
+    const shiftTabEvent = fireEvent.keyDown(guide, { key: 'Tab', shiftKey: true });
+    expect(shiftTabEvent).toBe(false);
+    expect(closeButton).toHaveFocus();
   });
 
   it('renders compact mobile metadata without losing the full accessible metric text', () => {

@@ -108,7 +108,7 @@ describe('simulate route', () => {
     expect(screen.getByText('Pitch-now movement')).toBeInTheDocument();
     expect(screen.getByText('Projected band')).toBeInTheDocument();
     expect(screen.getByRole('figure', { name: /Scenario constellation shift/i })).toBeInTheDocument();
-    expect(container.textContent).toMatch(/Index \d+/);
+    expect(container.textContent).toMatch(/CDE .*signal \d+|CDE opportunity movement \d+/);
     expect(container.textContent).toMatch(/\d+-\d+k equiv\.\/mo/);
     expect(container.textContent).not.toMatch(bannedCdeTokenPattern);
     expect(container.textContent).not.toMatch(/NaN|Infinity/);

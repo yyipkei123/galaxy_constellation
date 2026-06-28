@@ -39,7 +39,7 @@ function mockAppState({
       corridorId: input.corridorId,
       lever: input.lever,
       category: 'corridor',
-      indexedRevenueBand: 'Index 100',
+      indexedRevenueBand: 'CDE index signal 100',
       confidence: 'directional',
       testDesign: {
         holdoutPct: 10,

@@ -83,7 +83,7 @@ describe('governed CDE semantic layer', () => {
     expect(result.visual).toMatchObject({ kind: 'bar-list' });
     expect(result.auditFacts.length).toBeGreaterThanOrEqual(3);
     expect(result.visual.items.length).toBeGreaterThan(1);
-    expect(result.visual.items[0]?.formattedValue).toMatch(/%|Index/);
+    expect(result.visual.items[0]?.formattedValue).toMatch(/%|CDE .*signal/);
     expect(result.links).toEqual(expect.arrayContaining([expect.objectContaining({ href: '/leakage' })]));
     expectGovernedResult(result);
   });
@@ -120,7 +120,7 @@ describe('governed CDE semantic layer', () => {
     expect(fnb.intent).toBe('fnbHeadroom');
     expect(fnb.answer).toMatch(/F&B|headroom|leakage/i);
     expect(fnb.links).toEqual(expect.arrayContaining([expect.objectContaining({ href: '/measurement' })]));
-    expect(fnb.visual.items.some((item) => /%|Index|equiv\./.test(item.formattedValue))).toBe(true);
+    expect(fnb.visual.items.some((item) => /%|CDE .*signal|equiv\./.test(item.formattedValue))).toBe(true);
     expectGovernedResult(fnb);
 
     expect(corridor.intent).toBe('corridorPriority');
@@ -135,7 +135,7 @@ describe('governed CDE semantic layer', () => {
     expect(measurement.links).toEqual(expect.arrayContaining([expect.objectContaining({ href: '/measurement' })]));
     expect(measurement.visual.items.length).toBeGreaterThan(0);
     expect(measurement.visual.items[0]?.formattedValue).toMatch(/%/);
-    expect(measurement.visual.items[0]?.formattedValue).not.toMatch(/Index/);
+    expect(measurement.visual.items[0]?.formattedValue).not.toMatch(/^Index \d+$/);
     expectGovernedResult(measurement);
   });
 

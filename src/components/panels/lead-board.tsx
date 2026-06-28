@@ -327,7 +327,7 @@ export function LeadBoard({ guests, onAction }: LeadBoardProps) {
                 <div className="rounded-lg border border-galaxy-border bg-galaxy-ink/45 p-3">
                   <p className="text-galaxy-muted">Wallet intensity</p>
                   <p className="mt-1 font-semibold text-galaxy-cream">
-                    <IndexValue value={guest.walletIndex} />
+                    <IndexValue value={guest.walletIndex} label="CDE wallet intensity" />
                   </p>
                 </div>
                 <div className="rounded-lg border border-galaxy-border bg-galaxy-ink/45 p-3">

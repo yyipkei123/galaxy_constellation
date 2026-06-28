@@ -32,7 +32,7 @@ export function ScenarioImpactConstellation({ impact }: ScenarioImpactConstellat
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Scenario constellation</p>
         <h2 className="mt-2 font-serif text-2xl text-galaxy-cream">Segment index movement</h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-galaxy-muted">
-          Before and after positions use modelled opportunity indices only.
+          Before and after positions use modelled CDE opportunity signals only.
         </p>
       </figcaption>
 
@@ -47,10 +47,10 @@ export function ScenarioImpactConstellation({ impact }: ScenarioImpactConstellat
                   <h3 className="font-semibold text-galaxy-cream">{shift.label}</h3>
                   <div className="flex flex-wrap gap-4 text-sm">
                     <span className="text-galaxy-muted">
-                      Before <span className="font-semibold text-galaxy-cream"><IndexValue value={shift.beforeIndex} /></span>
+                      Before <span className="font-semibold text-galaxy-cream"><IndexValue value={shift.beforeIndex} label="CDE before signal" /></span>
                     </span>
                     <span className="text-galaxy-muted">
-                      After <span className="font-semibold text-galaxy-cream"><IndexValue value={shift.afterIndex} /></span>
+                      After <span className="font-semibold text-galaxy-cream"><IndexValue value={shift.afterIndex} label="CDE after signal" /></span>
                     </span>
                   </div>
                 </div>
@@ -58,7 +58,7 @@ export function ScenarioImpactConstellation({ impact }: ScenarioImpactConstellat
                   <div
                     className="h-full rounded-full bg-galaxy-gold"
                     style={{ width: `${width}%` }}
-                    aria-label={`${shift.label} after index ${shift.afterIndex}`}
+                    aria-label={`${shift.label} after CDE opportunity signal ${shift.afterIndex}`}
                   />
                 </div>
               </article>
@@ -69,10 +69,10 @@ export function ScenarioImpactConstellation({ impact }: ScenarioImpactConstellat
         <div className="mt-5 rounded-lg border border-galaxy-border bg-galaxy-ink/42 p-4">
           <p className="font-semibold text-galaxy-cream">No scenario shift available yet.</p>
           <p className="mt-2 text-sm leading-6 text-galaxy-muted">
-            Choose a segment and adjust the levers to generate a finite index-only movement.
+            Choose a segment and adjust the levers to generate a finite CDE signal movement.
           </p>
           <p className="mt-4 text-sm font-semibold text-galaxy-muted">
-            Baseline <span className="text-galaxy-cream"><IndexValue value={0} /></span>
+            Baseline <span className="text-galaxy-cream"><IndexValue value={0} label="CDE baseline signal" /></span>
           </p>
         </div>
       )}

@@ -178,12 +178,12 @@ export default function SimulatePage() {
           <div className="grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <MetricTile
               label="Wallet uplift"
-              value={<IndexValue value={impact.walletUpliftIndex} />}
+              value={<IndexValue value={impact.walletUpliftIndex} label="CDE wallet uplift signal" />}
               detail={`${activeSegmentName} / ${categoryLabels[category]}`}
             />
             <MetricTile
               label="Opportunity delta"
-              value={<IndexValue value={impact.opportunityIndexDelta} />}
+              value={<IndexValue value={impact.opportunityIndexDelta} label="CDE opportunity movement" />}
               detail={leverLabels[lever]}
             />
             <MetricTile

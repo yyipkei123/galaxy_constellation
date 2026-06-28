@@ -33,6 +33,14 @@ describe('PresenterTour', () => {
     expect(launcher).toHaveAttribute('aria-expanded', 'false');
   });
 
+  it('uses valid safe-area calc syntax for the fixed launcher position', () => {
+    render(<PresenterTour />);
+
+    const launcher = screen.getByRole('button', { name: 'Open presenter tour' });
+    expect(launcher).toHaveClass('bottom-[calc(env(safe-area-inset-bottom)_+_0.875rem)]');
+    expect(launcher).toHaveClass('lg:bottom-[calc(env(safe-area-inset-bottom)_+_1rem)]');
+  });
+
   it('moves focus inside the dialog when opened', () => {
     render(<PresenterTour />);
 

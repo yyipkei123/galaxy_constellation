@@ -39,7 +39,7 @@ describe('FusionPanel', () => {
     const { container } = render(<FusionPanel guest={malformedGuest} />);
 
     expect(screen.getByText('Fused opportunity')).toBeInTheDocument();
-    expect(screen.getAllByText(/Index 0|0%|0-0k equiv\.\/mo/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/CDE .*signal 0|0%|0-0k equiv\.\/mo/).length).toBeGreaterThan(0);
     expect(container.textContent).not.toMatch(/NaN|Infinity/);
     expect(container.textContent).not.toMatch(bannedCurrencyPattern);
   });

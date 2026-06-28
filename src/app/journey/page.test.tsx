@@ -13,7 +13,9 @@ describe('journey route', () => {
     expect(screen.getByRole('link', { name: /Convert/i })).toHaveAttribute('href', '/segments');
     expect(screen.getByRole('link', { name: /Capture/i })).toHaveAttribute('href', '/leakage');
     expect(screen.getByRole('link', { name: /Grow/i })).toHaveAttribute('href', '/activation');
-    expect(container.textContent).toMatch(/Index \d+/);
+    expect(container.textContent).toMatch(/CDE index signal \d+/);
+    expect(screen.getByText(/signals stay connected through CDE readouts/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Read every CDE index signal against 100/i)).not.toBeInTheDocument();
     expect(container.textContent).toMatch(/\d+%/);
     expect(container.textContent).toMatch(/\d+-\d+k equiv\.\/mo/);
   });

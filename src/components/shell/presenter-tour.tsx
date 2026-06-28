@@ -159,7 +159,7 @@ export function PresenterTour() {
         aria-label="Open presenter tour"
         aria-expanded={isOpen}
         onClick={openTour}
-        className="fixed bottom-[calc(env(safe-area-inset-bottom)+0.875rem)] right-[4.25rem] z-50 inline-flex h-11 w-11 items-center justify-center rounded-full border border-galaxy-border bg-galaxy-charcoal text-galaxy-gold shadow-xl shadow-black/40 transition hover:border-galaxy-gold hover:bg-galaxy-slate focus-visible:ring-2 focus-visible:ring-galaxy-gold focus-visible:ring-offset-2 focus-visible:ring-offset-galaxy-ink sm:right-20 lg:bottom-[calc(env(safe-area-inset-bottom)+1rem)] lg:right-[10.25rem] lg:w-auto lg:gap-2 lg:px-4"
+        className="fixed bottom-[calc(env(safe-area-inset-bottom)_+_0.875rem)] right-[4.25rem] z-50 inline-flex h-11 w-11 items-center justify-center rounded-full border border-galaxy-border bg-galaxy-charcoal text-galaxy-gold shadow-xl shadow-black/40 transition hover:border-galaxy-gold hover:bg-galaxy-slate focus-visible:ring-2 focus-visible:ring-galaxy-gold focus-visible:ring-offset-2 focus-visible:ring-offset-galaxy-ink sm:right-20 lg:bottom-[calc(env(safe-area-inset-bottom)_+_1rem)] lg:right-[10.25rem] lg:w-auto lg:gap-2 lg:px-4"
       >
         <Presentation aria-hidden="true" className="h-5 w-5" />
         <span className="hidden text-sm font-semibold lg:inline">Tour</span>

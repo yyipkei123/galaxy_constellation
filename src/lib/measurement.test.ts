@@ -26,11 +26,11 @@ describe('measurement readouts', () => {
     expect(readout.latestLiftPct).toBe(6);
     expect(readout.latestLiftLabel).toBe('6%');
     expect(readout.incrementalRevenueBand).toBe('18-28k equiv./mo');
-    expect(readout.iroiIndex).toBe('Index 160');
+    expect(readout.iroiIndex).toBe('CDE index signal 160');
     expect(readout.confidenceLabel).toBe('Strong confidence');
     expect(readout.testDesignLabel).toBe('12% holdout / 8-week test / 5% lift threshold');
-    expect(readout.testLine).toBe('Test group: Index 132');
-    expect(readout.controlLine).toBe('Control holdout: Index 124');
+    expect(readout.testLine).toBe('Test group: CDE index signal 132');
+    expect(readout.controlLine).toBe('Control holdout: CDE index signal 124');
     expect(readout.chartData.at(-1)).toMatchObject({
       week: 'Week 8',
       testGroup: 132,
@@ -68,8 +68,8 @@ describe('measurement readouts', () => {
 
     expect(readout.latestLiftPct).toBe(0);
     expect(readout.latestLiftLabel).toBe('0%');
-    expect(readout.testLine).toBe('Test group: Index 0');
-    expect(readout.controlLine).toBe('Control holdout: Index 0');
+    expect(readout.testLine).toBe('Test group: CDE index signal 0');
+    expect(readout.controlLine).toBe('Control holdout: CDE index signal 0');
     expect(readout.chartData).toEqual([]);
     expectCdeSafe(readout);
   });

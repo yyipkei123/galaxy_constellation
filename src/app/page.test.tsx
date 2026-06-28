@@ -97,7 +97,7 @@ describe('overview route', () => {
     expectedSegments.forEach((segment, index) => {
       expect(links[index]).toHaveAttribute('href', '/leakage');
       expect(within(links[index]).getByText(segment.name)).toBeInTheDocument();
-      expect(within(links[index]).getByText(`Index ${Math.round(segment.opportunityIndex)}`)).toBeInTheDocument();
+      expect(within(links[index]).getByText(`CDE index signal ${Math.round(segment.opportunityIndex)}`)).toBeInTheDocument();
     });
   });
 
@@ -108,7 +108,7 @@ describe('overview route', () => {
     expect(screen.getByText('~0-0k')).toBeInTheDocument();
     expect(screen.getAllByText('0%').length).toBeGreaterThanOrEqual(2);
     expect(screen.getByText('0.00')).toBeInTheDocument();
-    expect(screen.getAllByText('Index 0').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/CDE .*signal 0|CDE opportunity benchmark 0/).length).toBeGreaterThanOrEqual(1);
     expect(screen.queryByText(/NaN|Infinity/i)).not.toBeInTheDocument();
     expect(screen.getByText('No category wallet segments available for this quarter.')).toBeInTheDocument();
     expect(screen.getAllByText('No active CDE segment insights available for this quarter.').length)

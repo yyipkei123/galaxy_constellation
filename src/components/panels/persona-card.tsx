@@ -1,7 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
-import { CdeChip } from '@/components/ui/cde-chip';
+import { IndexValue } from '@/components/ui/formatted-values';
 import type { SegmentPersona } from '@/data';
 
 interface PersonaCardProps {
@@ -56,10 +56,7 @@ export function PersonaCard({ persona, isSelected, onSelect }: PersonaCardProps)
       </div>
 
       <div className="mt-5 flex flex-wrap items-center gap-2 text-sm font-semibold text-galaxy-gold">
-        <span className="inline-flex items-center gap-1">
-          Index {persona.opportunityIndex}
-          <CdeChip />
-        </span>
+        <IndexValue value={persona.opportunityIndex} label="CDE opportunity signal" showSignal />
         <span className="rounded border border-galaxy-border bg-galaxy-charcoal/70 px-2 py-1 text-xs text-galaxy-muted">
           {persona.wealthTier}
         </span>

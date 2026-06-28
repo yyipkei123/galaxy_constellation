@@ -218,7 +218,7 @@ function RankedCategoryLeakage({ analytics, hasSegments }: { analytics: WalletAn
             <h2 className="mt-3 font-serif text-3xl text-galaxy-cream">Ranked category leakage</h2>
           </div>
           <p className="max-w-md text-sm leading-6 text-galaxy-muted">
-            Categories are ordered by leakage percentage multiplied by wallet intensity index, then shown without raw spend values.
+            Categories are ordered by leakage percentage multiplied by CDE wallet intensity, then shown without raw spend values.
           </p>
         </div>
         {hasSegments ? (
@@ -240,7 +240,7 @@ function RankedCategoryLeakage({ analytics, hasSegments }: { analytics: WalletAn
                   <div
                     className="h-full rounded-full bg-galaxy-leak"
                     style={{ width: `${scoreWidth(category.opportunityScore, maxScore)}%` }}
-                    aria-label={`${category.label} leakage ${category.leakagePct}%, wallet intensity index ${category.walletIndex}, relative priority ${relativeScorePct(category.opportunityScore, maxScore)}%`}
+                    aria-label={`${category.label} leakage ${category.leakagePct}%, CDE wallet intensity ${category.walletIndex}, relative priority ${relativeScorePct(category.opportunityScore, maxScore)}%`}
                   />
                 </div>
                 <div className="mt-4 grid gap-3 text-sm text-galaxy-muted sm:grid-cols-3">
@@ -248,7 +248,7 @@ function RankedCategoryLeakage({ analytics, hasSegments }: { analytics: WalletAn
                     Captured <span className="font-semibold text-galaxy-cream"><PercentValue value={category.capturePct} /></span>
                   </p>
                   <p>
-                    Wallet intensity <span className="font-semibold text-galaxy-cream"><IndexValue value={category.walletIndex} /></span>
+                    Wallet intensity <span className="font-semibold text-galaxy-cream"><IndexValue value={category.walletIndex} label="CDE wallet intensity" /></span>
                   </p>
                   <p>
                     Lead segment <span className="font-semibold text-galaxy-cream">{category.leadingSegmentName}</span>
@@ -300,7 +300,7 @@ function HeatmapCellButton({
   onSelectCell: (cell: SelectedWalletCell) => void;
 }) {
   const cell = { segmentId: segment.id, category: category.category };
-  const title = `Relative wallet gap priority. ${segment.name} x ${category.label}. ${relative}% relative priority within the visible CDE cut. Higher values combine leakage percentage with wallet intensity index.`;
+  const title = `Relative wallet gap priority. ${segment.name} x ${category.label}. ${relative}% relative priority within the visible CDE cut. Higher values combine leakage percentage with CDE wallet intensity.`;
 
   return (
     <button
@@ -523,13 +523,13 @@ function SelectedWalletOpportunityDetail({
                   label="Wallet intensity"
                   value={(
                     <InsightTooltip
-                      title="Wallet intensity index"
+                      title="CDE wallet intensity"
                       lines={[
-                        `${opportunity.category.label} wallet intensity is ${opportunity.category.walletIndex} index.`,
-                        'Index values compare category demand against the modelled CDE baseline without raw spend values.',
+                        `${opportunity.category.label} wallet intensity is ${opportunity.category.walletIndex} versus the matched-cohort baseline of 100.`,
+                        'Higher CDE wallet intensity means stronger category demand without exposing raw spend values.',
                       ]}
                     >
-                      <IndexValue value={opportunity.category.walletIndex} />
+                      <IndexValue value={opportunity.category.walletIndex} label="CDE wallet intensity" />
                     </InsightTooltip>
                   )}
                   detail="Category-level CDE demand signal."
@@ -646,13 +646,13 @@ function CategoryDrill({ selectedCategory, segments }: { selectedCategory: Categ
         <div className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">
           <p className="text-sm font-semibold text-galaxy-cream">bars/clubs</p>
           <div className="mt-3 text-xl font-semibold text-galaxy-gold">
-            <IndexValue value={barsClubsIndex} />
+            <IndexValue value={barsClubsIndex} label="CDE bars/clubs intensity" />
           </div>
         </div>
         <div className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">
           <p className="text-sm font-semibold text-galaxy-cream">full-service restaurants</p>
           <div className="mt-3 text-xl font-semibold text-galaxy-gold">
-            <IndexValue value={fullServiceIndex} />
+            <IndexValue value={fullServiceIndex} label="CDE restaurant intensity" />
           </div>
         </div>
       </div>
@@ -670,9 +670,9 @@ function CategoryDrill({ selectedCategory, segments }: { selectedCategory: Categ
       >
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-galaxy-gold">Luxury sub-category</p>
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm font-semibold text-galaxy-cream">jewellery/watches index</p>
+          <p className="text-sm font-semibold text-galaxy-cream">jewellery/watches intensity</p>
           <div className="text-xl font-semibold text-galaxy-gold">
-            <IndexValue value={jewelleryWatchesIndex} />
+            <IndexValue value={jewelleryWatchesIndex} label="CDE jewellery/watch intensity" />
           </div>
         </div>
       </div>

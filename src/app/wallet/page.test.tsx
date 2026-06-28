@@ -167,8 +167,20 @@ describe('share of wallet route', () => {
     renderWallet();
     const detail = screen.getByRole('region', { name: 'Selected wallet opportunity detail' });
 
-    expect(within(detail).getByLabelText(/Wallet intensity index/i)).toBeInTheDocument();
+    expect(within(detail).getAllByLabelText(/CDE wallet intensity/i).length).toBeGreaterThanOrEqual(1);
     expect(within(detail).getByLabelText(/Relative wallet gap priority/i)).toBeInTheDocument();
+  });
+
+  it('labels wallet index values with readable CDE wording instead of bare index text', () => {
+    renderWallet();
+
+    const ranking = screen.getByRole('region', { name: 'Ranked category leakage analytics' });
+    expect(within(ranking).getAllByText(/CDE wallet intensity/i).length).toBeGreaterThanOrEqual(1);
+    expect(within(ranking).queryAllByText(/^Index \d+$/)).toHaveLength(0);
+
+    const detail = screen.getByRole('region', { name: 'Selected wallet opportunity detail' });
+    expect(within(detail).getAllByText(/CDE wallet intensity/i).length).toBeGreaterThanOrEqual(1);
+    expect(within(detail).queryAllByText(/^Index \d+$/)).toHaveLength(0);
   });
 
   it('updates ranked category leakage when a category filter is selected', () => {
@@ -200,7 +212,7 @@ describe('share of wallet route', () => {
 
     const drill = screen.getByRole('region', { name: 'Retail-Luxury category drill' });
     expect(within(drill).getByText('Luxury sub-category')).toBeInTheDocument();
-    expect(within(drill).getByText('jewellery/watches index')).toBeInTheDocument();
+    expect(within(drill).getByText('jewellery/watches intensity')).toBeInTheDocument();
   });
 
   it('renders finite defaults when segments are empty', () => {

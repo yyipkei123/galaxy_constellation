@@ -10,6 +10,7 @@ import {
   YAxis,
 } from 'recharts';
 import type { MeasurementReadout } from '@/lib/measurement';
+import { formatEnriched } from '@/lib/format';
 import { galaxyPalette } from '@/lib/palette';
 
 interface LiftOverTimeChartProps {
@@ -17,7 +18,9 @@ interface LiftOverTimeChartProps {
 }
 
 function formatIndex(value: unknown) {
-  return typeof value === 'number' && Number.isFinite(value) ? `Index ${Math.round(value)}` : 'Index 0';
+  return typeof value === 'number' && Number.isFinite(value)
+    ? formatEnriched(value, 'index')
+    : formatEnriched(0, 'index');
 }
 
 export function LiftOverTimeChart({ readout }: LiftOverTimeChartProps) {

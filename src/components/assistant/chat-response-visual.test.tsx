@@ -13,14 +13,14 @@ describe('ChatResponseVisual', () => {
           label: 'Competitor hospitality',
           value: 64,
           formattedValue: '64%',
-          description: 'Index 176 wallet intensity',
+          description: 'CDE wallet intensity 176',
         },
         {
           id: 'retail',
           label: 'Luxury retail',
           value: 32,
           formattedValue: '32%',
-          description: 'Index 124 wallet intensity',
+          description: 'CDE wallet intensity 124',
         },
       ],
     };
@@ -62,7 +62,7 @@ describe('ChatResponseVisual', () => {
           id: 'priority',
           label: 'Activation priority',
           value: 184,
-          formattedValue: 'Index 184',
+          formattedValue: 'CDE activation signal 184',
           description: 'Persona evidence',
         },
       ],
@@ -72,11 +72,11 @@ describe('ChatResponseVisual', () => {
 
     expect(screen.getByRole('figure', { name: /Activation signals/i })).toBeInTheDocument();
     expect(screen.getByText('Activation priority')).toBeInTheDocument();
-    expect(screen.getByText('Index 184')).toBeInTheDocument();
+    expect(screen.getByText('CDE activation signal 184')).toBeInTheDocument();
     expect(screen.getByText('Persona evidence')).toBeInTheDocument();
   });
 
-  it('renders a lead-list visual with masked MEM ids and index values', () => {
+  it('renders a lead-list visual with masked MEM ids and CDE signal values', () => {
     const visual: ChatAssistantVisual = {
       kind: 'lead-list',
       title: 'Top 10 governed leads',
@@ -85,7 +85,7 @@ describe('ChatResponseVisual', () => {
           id: 'MEM-••••3421',
           label: 'MEM-••••3421',
           value: 96,
-          formattedValue: 'Index 96',
+          formattedValue: 'CDE lead priority signal 96',
           description: 'Cosmopolitan Connoisseurs | luxury retail | 18-28k equiv./mo',
         },
       ],
@@ -95,7 +95,7 @@ describe('ChatResponseVisual', () => {
 
     expect(screen.getByRole('figure', { name: /Top 10 governed leads/i })).toBeInTheDocument();
     expect(screen.getByText('MEM-••••3421')).toBeInTheDocument();
-    expect(screen.getByText('Index 96')).toBeInTheDocument();
+    expect(screen.getByText('CDE lead priority signal 96')).toBeInTheDocument();
   });
 
   it('renders a line-series visual with week labels and percent lift without currency', () => {

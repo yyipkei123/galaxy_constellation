@@ -17,7 +17,7 @@ export default function JourneyPage() {
           <>
             <p className="font-semibold text-galaxy-gold">Decision loop</p>
             <p className="mt-2">
-              Corridor, segment, leakage, activation, and measurement signals stay connected through indexed CDE readouts.
+              Corridor, segment, leakage, activation, and measurement signals stay connected through CDE readouts.
             </p>
           </>
         )}

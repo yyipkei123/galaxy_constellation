@@ -75,9 +75,9 @@ export function NbaCard({ play, audienceName, audienceSizeBand, recaptureIndex, 
             </dd>
           </div>
           <div className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-3">
-            <dt className="text-xs font-semibold uppercase tracking-[0.18em] text-galaxy-gold">CDE recapture index</dt>
+            <dt className="text-xs font-semibold uppercase tracking-[0.18em] text-galaxy-gold">CDE recapture signal</dt>
             <dd className="mt-2 text-sm font-semibold text-galaxy-cream">
-              <IndexValue value={finiteValue(recaptureIndex)} />
+              <IndexValue value={finiteValue(recaptureIndex)} label="CDE recapture signal" />
             </dd>
           </div>
           <div className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-3">

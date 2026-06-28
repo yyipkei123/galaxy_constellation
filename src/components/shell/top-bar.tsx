@@ -2,6 +2,7 @@
 
 import { useAppState } from '@/store/app-store';
 import { BrandPartnershipBadge } from './brand-partnership-badge';
+import { CdeSignalGuide } from './cde-signal-guide';
 import { LensSwitch } from './lens-switch';
 
 export function TopBar() {
@@ -21,6 +22,7 @@ export function TopBar() {
             Coverage {methodology.matchedCoveragePct}%
           </span>
           <BrandPartnershipBadge />
+          <CdeSignalGuide />
           <span className="hidden rounded-full border border-galaxy-border bg-galaxy-charcoal/70 px-2.5 py-1 text-xs font-semibold text-galaxy-muted md:inline-flex">
             {quarters.find((quarter) => quarter.id === selectedQuarterId)?.label ?? 'Current quarter'} snapshot
           </span>

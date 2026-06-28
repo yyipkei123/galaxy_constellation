@@ -13,7 +13,7 @@ export function formatEnriched(value: number | string, kind: EnrichedFormatKind)
   if (kind === 'index') {
     if (typeof value !== 'number') throw new Error('CDE index values must be numeric');
     if (!Number.isFinite(value)) throw new Error('CDE index values must be finite');
-    return `Index ${Math.round(value)}`;
+    return `CDE index signal ${Math.round(value)}`;
   }
 
   if (kind !== 'band') throw new Error(`Unsupported CDE format kind: ${kind}`);

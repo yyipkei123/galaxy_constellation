@@ -135,9 +135,9 @@ export function FusionPanel({ guest }: { guest: Guest }) {
             </dd>
           </div>
           <div>
-            <dt className="text-galaxy-muted">Wallet index</dt>
+            <dt className="text-galaxy-muted">CDE wallet intensity</dt>
             <dd className="text-galaxy-cream">
-              <IndexValue value={walletIndex} />
+              <IndexValue value={walletIndex} label="CDE wallet intensity" />
             </dd>
           </div>
           <div>

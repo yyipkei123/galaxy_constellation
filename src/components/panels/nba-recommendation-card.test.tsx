@@ -11,7 +11,7 @@ describe('NbaRecommendationCard', () => {
 
     expect(screen.getByRole('heading', { name: rec.offer })).toBeInTheDocument();
     expect(screen.getByText(rec.rationale)).toBeInTheDocument();
-    expect(screen.getByText(/Index \d+/)).toBeInTheDocument();
+    expect(screen.getByText(/CDE uplift signal \d+/)).toBeInTheDocument();
     expect(screen.getByText(rec.channel)).toBeInTheDocument();
     expect(screen.getByText(`${Math.round(rec.confidence * 100)}%`)).toBeInTheDocument();
     expect(container.textContent).not.toMatch(bannedCurrencyPattern);
@@ -30,7 +30,7 @@ describe('NbaRecommendationCard', () => {
 
     expect(screen.getByRole('heading', { name: 'Host-curated invitation' })).toBeInTheDocument();
     expect(screen.getByText(/Galaxy and CDE signals indicate a pitch-ready opportunity/i)).toBeInTheDocument();
-    expect(screen.getByText('Index 0')).toBeInTheDocument();
+    expect(screen.getByText('CDE uplift signal 0')).toBeInTheDocument();
     expect(screen.getByText('0%')).toBeInTheDocument();
     expect(container.textContent).not.toMatch(/NaN|Infinity/);
     expect(container.textContent).not.toMatch(bannedCurrencyPattern);

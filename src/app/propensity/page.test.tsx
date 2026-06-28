@@ -38,7 +38,7 @@ describe('propensity route', () => {
     )).toBeInTheDocument();
     expect(screen.getByLabelText(/Luxury-hotel spender/i)).toBeInTheDocument();
     expect(screen.getByText('Live audience size')).toBeInTheDocument();
-    expect(screen.getByText('Estimated recapturable wallet')).toBeInTheDocument();
+    expect(screen.getByText('Estimated recapturable wallet signal')).toBeInTheDocument();
     expect(screen.getByRole('group', { name: /Segment membership/i })).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: /Channel preference/i })).toHaveValue('all');
     expect(screen.getByText('Estimated wallet band')).toBeInTheDocument();

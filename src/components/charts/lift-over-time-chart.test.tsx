@@ -75,8 +75,8 @@ describe('LiftOverTimeChart', () => {
       ...buildMeasurementReadout(campaigns[0]),
       latestLiftPct: 0,
       latestLiftLabel: '0%',
-      testLine: 'Test group: Index 0',
-      controlLine: 'Control holdout: Index 0',
+      testLine: 'Test group: CDE index signal 0',
+      controlLine: 'Control holdout: CDE index signal 0',
       chartData: [],
     };
 

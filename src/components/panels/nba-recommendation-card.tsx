@@ -45,7 +45,7 @@ export function NbaRecommendationCard({ rec }: { rec: NbaRec }) {
         <div>
           <p className="text-galaxy-muted">Uplift</p>
           <p className="font-semibold text-galaxy-cream">
-            <IndexValue value={upliftIndex} />
+            <IndexValue value={upliftIndex} label="CDE uplift signal" />
           </p>
         </div>
         <div>

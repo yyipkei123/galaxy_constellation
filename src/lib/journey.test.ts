@@ -31,15 +31,15 @@ describe('cross-lens journey', () => {
     ]);
     expect(journey.stages[0]).toMatchObject({
       title: 'Acquire',
-      metricValue: `Index ${topCorridor.priorityIndex}`,
+      metricValue: `CDE index signal ${topCorridor.priorityIndex}`,
     });
     expect(journey.stages[1]).toMatchObject({
       title: 'Convert',
-      metricValue: `Index ${topSegment.opportunityIndex}`,
+      metricValue: `CDE index signal ${topSegment.opportunityIndex}`,
     });
     expect(journey.stages.map((stage) => stage.metricValue)).toEqual(
       expect.arrayContaining([
-        expect.stringMatching(/^Index \d+$/),
+        expect.stringMatching(/^CDE index signal \d+$/),
         expect.stringMatching(/^\d+%$/),
         expect.stringMatching(/^\d+-\d+k equiv\.\/mo$/),
       ]),
@@ -83,8 +83,8 @@ describe('cross-lens journey', () => {
 
     expect(malformedJourney.stages).toHaveLength(4);
     expect(malformedJourney.stages.map((stage) => stage.metricValue)).toEqual([
-      'Index 0',
-      'Index 0',
+      'CDE index signal 0',
+      'CDE index signal 0',
       '0%',
       '0-0k equiv./mo',
     ]);

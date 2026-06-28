@@ -1,4 +1,5 @@
 import { CdeChip } from '@/components/ui/cde-chip';
+import { IndexValue } from '@/components/ui/formatted-values';
 import { Overline } from '@/components/ui/overline';
 import { Panel } from '@/components/ui/panel';
 import type { PersonaUniverseSummary } from '@/lib/personas';
@@ -17,6 +18,10 @@ export function PersonaUniverse({ summary }: PersonaUniverseProps) {
           <p className="mt-2 text-sm font-semibold text-galaxy-gold">
             {summary.totalPersonas} personas · ~{summary.totalAudienceK}k matched guests
           </p>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-galaxy-muted">
+            CDE opportunity signal uses a relative Mastercard index: 100 = matched-cohort baseline; higher means
+            stronger recapture priority, not more customers.
+          </p>
         </div>
         <CdeChip />
       </div>
@@ -33,10 +38,11 @@ export function PersonaUniverse({ summary }: PersonaUniverseProps) {
             </div>
             <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-semibold text-galaxy-muted">
               <span>{cluster.personaCount} personas</span>
-              <span className="inline-flex items-center gap-1 text-galaxy-gold">
-                Index {Math.round(cluster.highestOpportunityIndex)}
-                <CdeChip />
-              </span>
+              <IndexValue
+                value={cluster.highestOpportunityIndex}
+                label="CDE opportunity signal"
+                showSignal
+              />
             </div>
             <p className="mt-4 text-sm leading-6 text-galaxy-muted">
               Largest persona: <span className="text-galaxy-cream">{cluster.largestPersonaName}</span>

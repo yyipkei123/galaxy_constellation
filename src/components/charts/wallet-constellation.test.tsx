@@ -15,7 +15,7 @@ describe('WalletConstellation', () => {
   it('keeps CDE values in index and percentage form', () => {
     render(<WalletConstellation segments={latestSegments} />);
 
-    expect(screen.getByRole('figure', { name: /Wallet constellation/i })).toHaveTextContent(/Index|%/);
+    expect(screen.getByRole('figure', { name: /Wallet constellation/i })).toHaveTextContent(/CDE .*signal|%/);
     expect(screen.getByRole('figure', { name: /Wallet constellation/i }))
       .not.toHaveTextContent(/\b(?:HKD|MOP)\b|\$|元|澳門幣/i);
   });

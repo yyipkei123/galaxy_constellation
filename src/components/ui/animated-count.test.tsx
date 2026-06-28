@@ -15,18 +15,18 @@ describe('AnimatedCount', () => {
   });
 
   it('formats index values without currency text', () => {
-    render(<AnimatedCount value={128} prefix="Index " ariaLabel="Opportunity index" />);
+    render(<AnimatedCount value={128} prefix="CDE signal " ariaLabel="Opportunity signal" />);
 
-    expect(screen.getByLabelText('Opportunity index')).toHaveTextContent('Index 128');
-    expect(screen.getByLabelText('Opportunity index')).not.toHaveTextContent(/HKD|MOP|\$|元|澳門幣/i);
+    expect(screen.getByLabelText('Opportunity signal')).toHaveTextContent('CDE signal 128');
+    expect(screen.getByLabelText('Opportunity signal')).not.toHaveTextContent(/HKD|MOP|\$|元|澳門幣/i);
   });
 
   it('never renders non-finite values in initial markup', () => {
     const markup = renderToString(
-      <AnimatedCount value={Number.NaN} prefix="Index " ariaLabel="Opportunity index" />,
+      <AnimatedCount value={Number.NaN} prefix="CDE signal " ariaLabel="Opportunity signal" />,
     );
 
-    expect(markup).toContain('Index 0');
+    expect(markup).toContain('CDE signal 0');
     expect(markup).not.toMatch(/NaN|Infinity/);
   });
 

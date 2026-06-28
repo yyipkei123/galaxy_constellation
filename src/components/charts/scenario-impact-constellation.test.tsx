@@ -35,8 +35,8 @@ describe('ScenarioImpactConstellation', () => {
     expect(within(figure).getByText('Cosmopolitan Connoisseurs')).toBeInTheDocument();
     expect(within(figure).getAllByText('Before')).toHaveLength(2);
     expect(within(figure).getAllByText('After')).toHaveLength(2);
-    expect(within(figure).getByText('Index 118')).toBeInTheDocument();
-    expect(within(figure).getByText('Index 151')).toBeInTheDocument();
+    expect(within(figure).getByText('CDE before signal 118')).toBeInTheDocument();
+    expect(within(figure).getByText('CDE after signal 151')).toBeInTheDocument();
     expect(figure.textContent).not.toMatch(bannedCdeTokenPattern);
     expect(figure.textContent).not.toMatch(/NaN|Infinity/);
   });
@@ -55,7 +55,7 @@ describe('ScenarioImpactConstellation', () => {
     const figure = screen.getByRole('figure', { name: /Scenario constellation shift/i });
     expect(within(figure).getByText('No scenario shift available yet.')).toBeInTheDocument();
     expect(within(figure).getByText(/Choose a segment and adjust the levers/i)).toBeInTheDocument();
-    expect(within(figure).getByText('Index 0')).toBeInTheDocument();
+    expect(within(figure).getByText('CDE baseline signal 0')).toBeInTheDocument();
     expect(figure.textContent).not.toMatch(bannedCdeTokenPattern);
     expect(figure.textContent).not.toMatch(/NaN|Infinity/);
   });

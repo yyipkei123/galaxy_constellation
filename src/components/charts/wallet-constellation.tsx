@@ -115,9 +115,9 @@ export function WalletConstellation({ segments }: { segments: Segment[] }) {
           <p className="mt-1 font-semibold text-galaxy-cream">{topSegment?.name ?? 'No segment'}</p>
         </div>
         <div className="rounded-lg border border-galaxy-border bg-galaxy-charcoal/60 p-3">
-          <p className="text-galaxy-muted">Index score</p>
+          <p className="text-galaxy-muted">CDE opportunity signal</p>
           <p className="mt-1 font-semibold text-galaxy-cream">
-            <IndexValue value={topSegment?.opportunityIndex ?? 0} />
+            <IndexValue value={topSegment?.opportunityIndex ?? 0} label="CDE opportunity signal" />
           </p>
         </div>
         <div className="rounded-lg border border-galaxy-border bg-galaxy-charcoal/60 p-3">

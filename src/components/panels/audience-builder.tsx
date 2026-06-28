@@ -366,9 +366,9 @@ export function AudienceBuilder({ segments, filters, setFilters, saveAudience }:
             </div>
           </div>
           <div className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">
-            <p className="text-sm font-semibold text-galaxy-gold">Estimated recapturable wallet</p>
+            <p className="text-sm font-semibold text-galaxy-gold">Estimated recapturable wallet signal</p>
             <div className="mt-3 text-2xl font-semibold text-galaxy-cream">
-              <IndexValue value={recapturableWalletIndex} />
+              <IndexValue value={recapturableWalletIndex} label="CDE recapturable wallet signal" />
             </div>
           </div>
           <div className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">

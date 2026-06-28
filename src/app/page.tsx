@@ -170,8 +170,8 @@ function OverviewRoute({ selectedQuarter, segments, methodology }: OverviewRoute
         />
         <KpiCard
           label="Opportunity benchmark"
-          value={<IndexValue value={topOpportunityIndex} />}
-          detail="Highest current-quarter segment opportunity index."
+          value={<IndexValue value={topOpportunityIndex} label="CDE opportunity benchmark" />}
+          detail="Highest current-quarter segment opportunity signal."
         />
       </section>
 

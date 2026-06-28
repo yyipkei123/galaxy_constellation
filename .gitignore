@@ -1,10 +1,13 @@
 .DS_Store
+Galaxy-Macau-logo.png
+mastercard_logo.png
 .next/
 node_modules/
 coverage/
 test-results/
 playwright-report/
 *.log
+*.tsbuildinfo
 .env
 .env.*
 !.env.example

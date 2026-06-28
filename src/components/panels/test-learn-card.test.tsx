@@ -67,8 +67,8 @@ describe('TestLearnCard', () => {
     expect(screen.getByText('6%')).toBeVisible();
     expect(screen.getByText('Indexed revenue band')).toBeVisible();
     expect(screen.getByText('18-28k equiv./mo')).toBeVisible();
-    expect(screen.getByText('iROI Index')).toBeVisible();
-    expect(screen.getByText('Index 160')).toBeVisible();
+    expect(screen.getByText('CDE iROI signal')).toBeVisible();
+    expect(screen.getByText('CDE index signal 160')).toBeVisible();
     expect(screen.getByRole('figure', { name: /Lift over time/i })).toBeVisible();
     expect(screen.getByText(/models Mastercard Test & Learn methodology/i)).toBeVisible();
     expect(screen.getByText(/causal lift, not attribution/i)).toBeVisible();

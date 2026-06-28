@@ -97,7 +97,14 @@ describe('cross-property leakage route', () => {
 
     const headline = screen.getByRole('region', { name: 'Headline opportunity index' });
     expect(within(headline).getByText('Headline opportunity index')).toBeInTheDocument();
-    expect(within(headline).getByText(`Index ${Math.round(latestSegments[0].opportunityIndex)}`)).toBeInTheDocument();
+    expect(within(headline).getByText(`CDE opportunity signal ${Math.round(latestSegments[0].opportunityIndex)}`)).toBeInTheDocument();
+    expect(within(headline).getByText('High recapture priority')).toBeInTheDocument();
+    expect(within(headline).getByText('CDE index legend')).toBeInTheDocument();
+    expect(within(headline).getByText(/100 = matched-cohort baseline/i)).toBeInTheDocument();
+    expect(within(headline).getByText('<90')).toBeInTheDocument();
+    expect(within(headline).getByText('90-109')).toBeInTheDocument();
+    expect(within(headline).getByText('110-129')).toBeInTheDocument();
+    expect(within(headline).getByText('130+')).toBeInTheDocument();
     expect(within(headline).getByText(latestSegments[0].crossPropertyCashBand)).toBeInTheDocument();
     expect(within(headline).getByText(/equiv\.\/mo/)).toBeInTheDocument();
   });
@@ -113,7 +120,7 @@ describe('cross-property leakage route', () => {
 
     const callout = screen.getByRole('region', { name: /cross-site cash spend/i });
     expect(within(callout).getByText(/cross-site cash spend/i)).toBeInTheDocument();
-    expect(within(callout).getByText(`Index ${Math.round(latestSegments[0].crossPropertyCashIndex)}`)).toBeInTheDocument();
+    expect(within(callout).getByText(`CDE cash behavior signal ${Math.round(latestSegments[0].crossPropertyCashIndex)}`)).toBeInTheDocument();
     expect(within(callout).getByText(/modelled, not itemised/i)).toBeInTheDocument();
     expect(container).not.toHaveTextContent(/\b(?:MOP|HKD)\b|\$/i);
     expect(screen.queryByRole('main')).not.toBeInTheDocument();
@@ -126,7 +133,7 @@ describe('cross-property leakage route', () => {
     const table = screen.getByRole('table', { name: 'Win-back target segments' });
     expect(within(table).getAllByRole('columnheader').map((header) => header.textContent)).toEqual([
       'Segment',
-      'Leakage index',
+      'CDE leakage priority',
       'Dominant leakage',
       'Action',
     ]);
@@ -135,7 +142,7 @@ describe('cross-property leakage route', () => {
     expect(rows).toHaveLength(latestSegments.length);
     rankedSegments.forEach((segment, index) => {
       expect(within(rows[index]).getByText(segment.name)).toBeInTheDocument();
-      expect(within(rows[index]).getByText(`Index ${Math.round(segment.opportunityIndex)}`)).toBeInTheDocument();
+      expect(within(rows[index]).getByText(`CDE opportunity signal ${Math.round(segment.opportunityIndex)}`)).toBeInTheDocument();
       expect(within(rows[index]).getByRole('link', { name: `Build audience for ${segment.name}` })).toHaveAttribute(
         'href',
         '/propensity',
@@ -151,7 +158,8 @@ describe('cross-property leakage route', () => {
 
     expect(screen.getByRole('heading', { name: 'Cross-Property Leakage' })).toBeInTheDocument();
     expect(screen.getByText('No leakage segments available for this quarter.')).toBeInTheDocument();
-    expect(screen.getAllByText('Index 0').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText('CDE opportunity signal 0')).toBeInTheDocument();
+    expect(screen.getByText('CDE cash behavior signal 0')).toBeInTheDocument();
     expect(screen.getByText('0-0k equiv./mo')).toBeInTheDocument();
     expect(screen.queryByText(/NaN|Infinity/)).not.toBeInTheDocument();
   });
@@ -177,7 +185,8 @@ describe('cross-property leakage route', () => {
     expect(screen.getByRole('heading', { name: 'Cross-Property Leakage' })).toBeInTheDocument();
     expect(screen.getAllByText('Partial Segment').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('0-0k equiv./mo')).toBeInTheDocument();
-    expect(screen.getAllByText('Index 0').length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText('CDE opportunity signal 0').length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText('CDE cash behavior signal 0')).toBeInTheDocument();
     expect(screen.queryByText(/NaN|Infinity/)).not.toBeInTheDocument();
     expect(container).not.toHaveTextContent(/\b(?:MOP|HKD)\b|\$/i);
   });

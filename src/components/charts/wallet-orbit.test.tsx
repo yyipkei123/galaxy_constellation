@@ -18,7 +18,7 @@ describe('WalletOrbit', () => {
     const figure = screen.getByRole('figure', { name: /Wallet orbit/i });
     expect(figure).toBeInTheDocument();
     expect(screen.getByText(/hospitality/i)).toBeInTheDocument();
-    expect(figure).toHaveTextContent(/Index|%/);
+    expect(figure).toHaveTextContent(/CDE .*signal|%/);
     expect(figure).not.toHaveTextContent(bannedCurrencyPattern);
   });
 

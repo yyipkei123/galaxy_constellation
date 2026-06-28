@@ -10,7 +10,7 @@ export function MethodologyNote() {
       Enriched figures are modelled estimates expressed as indices / ranges / % per Mastercard CDE data-sharing rules.
       Mastercard CDE methodology: matched coverage {methodology.matchedCoveragePct}% across modelled guest wallet
       cohorts, refreshed {methodology.refresh}, with {methodology.activeMetricCount} active CDE metrics using{' '}
-      {methodology.basis}.
+      {methodology.basis}. Use the CDE Guide in the top bar for signal interpretation.
     </p>
   );
 }
