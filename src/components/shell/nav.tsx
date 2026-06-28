@@ -6,6 +6,7 @@ import {
   Activity,
   BarChart3,
   Gem,
+  LineChart,
   Map,
   Megaphone,
   PlaneTakeoff,
@@ -27,6 +28,7 @@ const walletNavItems: Array<{ href: string; label: string; shortLabel: string; i
   { href: '/leakage', label: 'Leakage', shortLabel: 'Leakage', icon: Activity },
   { href: '/propensity', label: 'Audience', shortLabel: 'Audience', icon: ScanSearch },
   { href: '/activation', label: 'Activation', shortLabel: 'Activate', icon: Megaphone },
+  { href: '/measurement', label: 'Measurement', shortLabel: 'Measure', icon: LineChart },
   { href: '/marketscan', label: 'Market Scan', shortLabel: 'Market', icon: Radar },
 ];
 

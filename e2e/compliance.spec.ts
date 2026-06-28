@@ -1,9 +1,10 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const routes = ['/', '/wallet', '/segments', '/guests', '/guests/MEM-••••3421', '/leakage', '/propensity', '/activation', '/marketscan', '/corridors', '/corridors/korea', '/acquisition'];
+const routes = ['/', '/wallet', '/segments', '/guests', '/guests/MEM-••••3421', '/leakage', '/propensity', '/activation', '/measurement', '/marketscan', '/corridors', '/corridors/korea', '/acquisition'];
 const interruptedNavigationMessage = 'is interrupted by another navigation';
 const fallbackBaseUrl = 'http://127.0.0.1:3000';
 const bannedCdeTokenPattern = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣/i;
+const measurementBannedCdeTokenPattern = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣|\braw spend\b/i;
 const bannedCdeTokenOrUnsafeAmountPattern = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣|5000/i;
 
 function normalizedPathname(pathname: string) {
@@ -146,6 +147,13 @@ test.describe('Galaxy Constellation rendered compliance', () => {
         await expect(page.getByRole('heading', { name: /Priority Corridor Acquisition/i })).toBeVisible();
         await expect(page.getByRole('heading', { name: /Content draft/i })).toBeVisible();
         await expect(page.getByText(/No live model call/i)).toBeVisible();
+      }
+
+      if (route === '/measurement') {
+        await expect(page.getByRole('heading', { name: /Measurement Loop/i })).toBeVisible();
+        await expect(page.getByText(/causal lift, not attribution/i).first()).toBeVisible();
+        await expect(page.getByRole('figure', { name: /Lift over time/i }).first()).toBeVisible();
+        await expect(page.locator('body')).not.toContainText(measurementBannedCdeTokenPattern);
       }
 
       if (route === '/leakage') {
