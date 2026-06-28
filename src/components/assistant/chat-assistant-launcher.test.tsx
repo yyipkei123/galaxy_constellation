@@ -131,13 +131,53 @@ describe('ChatAssistantLauncher', () => {
     expect(within(launcher).getByText('Ask CDE AI')).toHaveClass('lg:inline');
   });
 
-  it('keeps the assistant panel max height inside the safe-area-adjusted viewport', () => {
+  it('renders a full-height governed assistant with starter prompts, follow-ups, and audit trail', () => {
     renderLauncher();
 
     const dialog = openAssistant();
 
-    expect(dialog).toHaveClass('bottom-[calc(env(safe-area-inset-bottom)+5rem)]');
-    expect(dialog).toHaveClass('max-h-[min(42rem,calc(100dvh_-_env(safe-area-inset-bottom)_-_7rem))]');
+    expect(dialog).toHaveClass('fixed');
+    expect(dialog).toHaveClass('inset-y-0');
+    expect(dialog).toHaveClass('right-0');
+    expect(dialog).toHaveClass('w-[min(100vw,30rem)]');
+    expect(dialog).toHaveClass('border-l');
+    expect(dialog).toHaveClass('bg-galaxy-ink/98');
+    expect(dialog).not.toHaveClass('rounded-lg');
+    expect(within(dialog).getAllByText('Grounded · Auditable').length).toBeGreaterThanOrEqual(2);
+    expect(within(dialog).getByText('This assistant only answers from the governed CDE semantic layer; figures are traceable, nothing is fabricated.')).toBeInTheDocument();
+
+    const starterPrompts = within(dialog).getByLabelText('Starter prompts');
+    [
+      'Which segment leaks most luxury wallet?',
+      'Who are my top 10 leads to pitch this quarter?',
+      'What is the headroom if we close F&B leakage?',
+      'Which corridor should we prioritise and why?',
+      'Draft the pitch for guest MEM-••••3421',
+    ].forEach((prompt) => {
+      expect(within(starterPrompts).getByRole('button', { name: prompt })).toBeInTheDocument();
+    });
+
+    expect(within(dialog).getByLabelText('Follow-ups')).toBeInTheDocument();
+
+    fireEvent.click(within(dialog).getByRole('button', { name: /Show the data behind this/i }));
+
+    expect(within(dialog).getByText('Source')).toBeInTheDocument();
+    expect(within(dialog).getByText('Route')).toBeInTheDocument();
+    expect(dialog).not.toHaveTextContent(/\b(?:MOP|HKD)\b|\$|元|澳門幣/i);
+  });
+
+  it('uses a full-height right drawer for the assistant panel', () => {
+    renderLauncher();
+
+    const dialog = openAssistant();
+
+    expect(dialog).toHaveClass('fixed');
+    expect(dialog).toHaveClass('inset-y-0');
+    expect(dialog).toHaveClass('right-0');
+    expect(dialog).toHaveClass('w-[min(100vw,30rem)]');
+    expect(dialog).toHaveClass('border-l');
+    expect(dialog).not.toHaveClass('bottom-[calc(env(safe-area-inset-bottom)+5rem)]');
+    expect(dialog).not.toHaveClass('max-h-[min(42rem,calc(100dvh_-_env(safe-area-inset-bottom)_-_7rem))]');
   });
 
   it('moves focus into the dialog, lets Tab leave the non-modal drawer, and closes with Escape', async () => {
@@ -222,16 +262,16 @@ describe('ChatAssistantLauncher', () => {
     expect(dialog).not.toHaveTextContent(/5000/i);
   });
 
-  it('runs suggested persona prompts from the latest response', () => {
+  it('runs follow-up prompts from the latest response', () => {
     renderLauncher();
     const dialog = openAssistant();
 
-    expect(within(dialog).queryByRole('button', { name: 'Which segment has the largest leakage gap?' })).not.toBeInTheDocument();
-    expect(within(dialog).getByRole('button', { name: 'Which leakage driver is largest for the selected segment?' })).toBeInTheDocument();
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Which persona should we target first?' }));
+    expect(within(dialog).queryByRole('button', { name: 'Which persona should we target first?' })).not.toBeInTheDocument();
+    expect(within(dialog).getByLabelText('Follow-ups')).toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Compare luxury retail against F&B headroom' }));
 
-    expect(within(dialog).getByText('Persona targeting answer')).toBeInTheDocument();
-    expect(within(dialog).getByRole('figure', { name: 'Top personas' })).toBeInTheDocument();
+    expect(within(dialog).getByText('F&B Headroom')).toBeInTheDocument();
+    expect(within(dialog).getByRole('figure', { name: 'Ranked F&B leakage headroom' })).toBeInTheDocument();
   });
 
   it('uses the selected persona id from app state in persona answers', () => {
@@ -240,7 +280,11 @@ describe('ChatAssistantLauncher', () => {
     renderLauncher({ selectedPersonaId: selectedPersona?.id });
     const dialog = openAssistant();
 
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Which persona should we target first?' }));
+    fireEvent.change(
+      within(dialog).getByRole('textbox', { name: 'Ask the AI insight assistant' }),
+      { target: { value: 'Which persona should we target first?' } },
+    );
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Send question' }));
 
     expect(within(dialog).getByText('Persona targeting answer')).toBeInTheDocument();
     expect(within(dialog).getByText(/ranks Private Dining Hosts first/i)).toBeInTheDocument();
@@ -288,6 +332,10 @@ describe('ChatAssistantLauncher', () => {
 
     expect(within(dialog).getByText('Top Pitch Leads')).toBeInTheDocument();
     expect(within(dialog).getByRole('figure', { name: 'Top 10 governed leads' })).toBeInTheDocument();
-    expect(within(dialog).getByRole('button', { name: 'Draft the pitch for guest MEM-••••3421' })).toBeInTheDocument();
+    expect(
+      within(within(dialog).getByLabelText('Follow-ups')).getByRole('button', {
+        name: 'Draft the pitch for guest MEM-••••3421',
+      }),
+    ).toBeInTheDocument();
   });
 });

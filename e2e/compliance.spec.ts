@@ -182,19 +182,29 @@ test.describe('Galaxy Constellation rendered compliance', () => {
     const assistant = page.getByRole('dialog', { name: 'AI insight assistant' });
 
     await expect(assistant).toBeVisible();
-    await expect(assistant.getByText(/^(Generated local demo narrative|Generated assistant insight)$/i)).toBeVisible();
-    await expect(assistant.getByRole('figure', { name: 'Leakage drivers' })).toBeVisible();
+    await expect(assistant.getByText('Grounded · Auditable').first()).toBeVisible();
+    await expect(assistant.getByText('This assistant only answers from the governed CDE semantic layer; figures are traceable, nothing is fabricated.')).toBeVisible();
+    await expect(assistant.getByRole('figure', { name: 'Ranked luxury retail leakage' })).toBeVisible();
+
+    await assistant.getByRole('button', { name: /Show the data behind this/i }).first().click();
+    await expect(assistant.getByText('Source', { exact: true })).toBeVisible();
+    await expect(assistant.getByText('Route', { exact: true })).toBeVisible();
+
+    await assistant.getByRole('button', { name: 'Who are my top 10 leads to pitch this quarter?' }).click();
+    await expect(assistant.getByText('Top Pitch Leads')).toBeVisible();
+    await expect(assistant.getByRole('figure', { name: 'Top 10 governed leads' })).toBeVisible();
+    await expect(assistant).not.toContainText(/HKD|MOP|\$|元|澳門幣/i);
 
     await page.getByRole('textbox', { name: 'Ask the AI insight assistant' }).fill('Show HKD 5000 leakage');
     await assistant.getByRole('button', { name: 'Send question' }).click();
 
-    await expect(assistant.getByText('Leakage opportunity answer')).toBeVisible();
+    await expect(assistant.getByText('Governed CDE Fallback')).toBeVisible();
     await expect(assistant).not.toContainText(/HKD|MOP|\$|元|澳門幣|5000/i);
 
     await page.getByRole('textbox', { name: 'Ask the AI insight assistant' }).fill('Show 5000 leakage');
     await assistant.getByRole('button', { name: 'Send question' }).click();
 
-    await expect(assistant.getByText('Leakage opportunity answer')).toHaveCount(2);
+    await expect(assistant.getByText('Leakage opportunity answer')).toHaveCount(1);
     await expect(assistant).not.toContainText(/HKD|MOP|\$|元|澳門幣|5000/i);
 
     await page.getByRole('textbox', { name: 'Ask the AI insight assistant' }).fill('Which persona should we target first?');

@@ -42,7 +42,14 @@ type UserMessage = {
 
 type ChatMessage = AssistantMessage | UserMessage;
 
-const STARTER_PROMPT = 'Which leakage driver is largest for the selected segment?';
+const STARTER_PROMPTS = [
+  'Which segment leaks most luxury wallet?',
+  'Who are my top 10 leads to pitch this quarter?',
+  'What is the headroom if we close F&B leakage?',
+  'Which corridor should we prioritise and why?',
+  'Draft the pitch for guest MEM-••••3421',
+] as const;
+const STARTER_PROMPT = STARTER_PROMPTS[0];
 
 function getResponseLabel(response: ChatAssistantResponse, isStarter: boolean): string {
   if (isStarter) return 'Opening insight answer';
@@ -90,6 +97,8 @@ function getDisplayVisual(response: ChatAssistantResponse, isStarter: boolean): 
 function ResponseCard({ message }: { message: AssistantMessage }) {
   const { response } = message;
   const isStarter = message.prompt === STARTER_PROMPT;
+  const [isAuditOpen, setIsAuditOpen] = useState(false);
+  const auditPanelId = `${message.id}-audit-facts`;
 
   return (
     <article className="rounded-lg border border-galaxy-border bg-galaxy-charcoal/80 p-4 text-galaxy-cream shadow-xl shadow-black/20">
@@ -99,8 +108,8 @@ function ResponseCard({ message }: { message: AssistantMessage }) {
         </span>
         <div className="min-w-0 flex-1 space-y-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-muted">
-              Generated local demo narrative
+            <p className="inline-flex rounded-full border border-galaxy-gold/35 bg-galaxy-gold/10 px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-galaxy-gold">
+              {response.governanceBadge}
             </p>
             <p className="mt-1 text-sm font-semibold text-galaxy-gold">{getResponseLabel(response, isStarter)}</p>
             <h2 className="mt-1 text-base font-semibold text-galaxy-cream">{response.title}</h2>
@@ -128,6 +137,49 @@ function ResponseCard({ message }: { message: AssistantMessage }) {
 
           <ChatResponseVisual visual={getDisplayVisual(response, isStarter)} />
 
+          <div className="rounded-lg border border-galaxy-border bg-galaxy-ink/45">
+            <button
+              type="button"
+              aria-expanded={isAuditOpen}
+              aria-controls={auditPanelId}
+              onClick={() => setIsAuditOpen((current) => !current)}
+              className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.12em] text-galaxy-gold transition hover:bg-galaxy-gold/10"
+            >
+              <span>Show the data behind this</span>
+              <span aria-hidden="true" className="text-galaxy-muted">
+                {isAuditOpen ? 'Hide' : 'Open'}
+              </span>
+            </button>
+
+            {isAuditOpen ? (
+              <div id={auditPanelId} className="border-t border-galaxy-border p-3">
+                {response.auditFacts.length > 0 ? (
+                  <div className="space-y-2" aria-label="Governed audit facts">
+                    <div className="grid grid-cols-[1fr_auto] gap-2 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-galaxy-muted sm:grid-cols-[1fr_auto_1fr_auto]">
+                      <span>Fact</span>
+                      <span>Value</span>
+                      <span>Source</span>
+                      <span>Route</span>
+                    </div>
+                    {response.auditFacts.map((fact) => (
+                      <div
+                        key={`${fact.id}-${fact.source}`}
+                        className="grid gap-2 rounded-lg border border-galaxy-border bg-galaxy-charcoal/55 p-3 text-sm sm:grid-cols-[1fr_auto_1fr_auto] sm:items-center"
+                      >
+                        <span className="font-semibold text-galaxy-cream">{fact.label}</span>
+                        <span className="text-galaxy-gold">{String(fact.value)}</span>
+                        <span className="min-w-0 break-words text-xs text-galaxy-muted">{fact.source}</span>
+                        <span className="text-xs font-semibold text-galaxy-cream/80">{fact.route}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-galaxy-muted">No governed facts selected.</p>
+                )}
+              </div>
+            ) : null}
+          </div>
+
           {response.links.length > 0 ? (
             <nav className="flex flex-wrap gap-2" aria-label="Assistant route links">
               {response.links.map((link) => (
@@ -153,6 +205,36 @@ function UserBubble({ message }: { message: UserMessage }) {
       <p className="max-w-[85%] rounded-lg border border-galaxy-gold/30 bg-galaxy-gold/12 px-3 py-2 text-sm leading-6 text-galaxy-cream">
         {message.content}
       </p>
+    </div>
+  );
+}
+
+function PromptChipGroup({
+  label,
+  prompts,
+  onSelect,
+}: {
+  label: string;
+  prompts: readonly string[];
+  onSelect: (prompt: string) => void;
+}) {
+  if (prompts.length === 0) return null;
+
+  return (
+    <div className="space-y-2">
+      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-galaxy-muted">{label}</p>
+      <div className="flex gap-2 overflow-x-auto pb-1" aria-label={label}>
+        {prompts.map((prompt) => (
+          <button
+            key={prompt}
+            type="button"
+            onClick={() => onSelect(prompt)}
+            className="shrink-0 rounded-full border border-galaxy-border bg-galaxy-charcoal/80 px-3 py-1.5 text-xs font-semibold text-galaxy-cream transition hover:border-galaxy-gold hover:text-galaxy-gold"
+          >
+            {prompt}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
@@ -232,12 +314,17 @@ export function ChatAssistantPanel({ context, onClose }: ChatAssistantPanelProps
       role="dialog"
       aria-label="AI insight assistant"
       onKeyDown={handleDialogKeyDown}
-      className="fixed bottom-[calc(env(safe-area-inset-bottom)+5rem)] right-4 z-50 flex max-h-[min(42rem,calc(100dvh_-_env(safe-area-inset-bottom)_-_7rem))] w-[min(calc(100vw-2rem),26rem)] flex-col overflow-hidden rounded-lg border border-galaxy-border bg-galaxy-ink/96 shadow-2xl shadow-black/45 backdrop-blur sm:right-6"
+      className="fixed inset-y-0 right-0 z-[60] flex w-[min(100vw,30rem)] flex-col overflow-hidden border-l border-galaxy-border bg-galaxy-ink/98 shadow-2xl shadow-black/45 backdrop-blur"
     >
-      <header className="flex items-start justify-between gap-4 border-b border-galaxy-border bg-galaxy-charcoal/90 p-4">
-        <div>
+      <header className="flex items-start justify-between gap-4 border-b border-galaxy-border bg-galaxy-charcoal/90 p-5">
+        <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-muted">AI insight assistant</p>
-          <p className="mt-1 text-sm text-galaxy-cream/80">Generated local demo narrative for CDE-safe planning.</p>
+          <p className="inline-flex rounded-full border border-galaxy-gold/35 bg-galaxy-gold/10 px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-galaxy-gold">
+            Grounded · Auditable
+          </p>
+          <p className="max-w-sm text-sm leading-6 text-galaxy-cream/82">
+            This assistant only answers from the governed CDE semantic layer; figures are traceable, nothing is fabricated.
+          </p>
         </div>
         <button
           ref={closeButtonRef}
@@ -261,40 +348,32 @@ export function ChatAssistantPanel({ context, onClose }: ChatAssistantPanelProps
         <div ref={messagesEndRef} aria-hidden="true" />
       </div>
 
-      {latestResponse ? (
-        <div className="border-t border-galaxy-border px-4 py-3">
-          <div className="flex gap-2 overflow-x-auto pb-1" aria-label="Suggested prompts">
-            {latestResponse.suggestedQuestions.map((suggestion) => (
-              <button
-                key={suggestion}
-                type="button"
-                onClick={() => submitQuestion(suggestion)}
-                className="shrink-0 rounded-full border border-galaxy-border bg-galaxy-charcoal/80 px-3 py-1.5 text-xs font-semibold text-galaxy-cream transition hover:border-galaxy-gold hover:text-galaxy-gold"
-              >
-                {suggestion}
-              </button>
-            ))}
-          </div>
+      <footer className="shrink-0 border-t border-galaxy-border bg-galaxy-charcoal/92">
+        <div className="space-y-3 px-4 py-3">
+          <PromptChipGroup label="Starter prompts" prompts={STARTER_PROMPTS} onSelect={submitQuestion} />
+          {latestResponse ? (
+            <PromptChipGroup label="Follow-ups" prompts={latestResponse.suggestedQuestions} onSelect={submitQuestion} />
+          ) : null}
         </div>
-      ) : null}
 
-      <form onSubmit={handleSubmit} className="flex items-center gap-2 border-t border-galaxy-border bg-galaxy-charcoal/92 p-4">
-        <input
-          ref={inputRef}
-          value={question}
-          onChange={(event) => setQuestion(event.target.value)}
-          aria-label="Ask the AI insight assistant"
-          placeholder="Ask about leakage, personas, activation, or CDE rules"
-          className="min-w-0 flex-1 rounded-lg border border-galaxy-border bg-galaxy-ink px-3 py-2 text-sm text-galaxy-cream placeholder:text-galaxy-muted"
-        />
-        <button
-          type="submit"
-          aria-label="Send question"
-          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-galaxy-gold/45 bg-galaxy-gold/12 text-galaxy-gold transition hover:border-galaxy-gold hover:bg-galaxy-gold/20"
-        >
-          <Send aria-hidden="true" size={16} />
-        </button>
-      </form>
+        <form onSubmit={handleSubmit} className="flex items-center gap-2 border-t border-galaxy-border p-4">
+          <input
+            ref={inputRef}
+            value={question}
+            onChange={(event) => setQuestion(event.target.value)}
+            aria-label="Ask the AI insight assistant"
+            placeholder="Ask about leakage, personas, activation, or CDE rules"
+            className="min-w-0 flex-1 rounded-lg border border-galaxy-border bg-galaxy-ink px-3 py-2 text-sm text-galaxy-cream placeholder:text-galaxy-muted"
+          />
+          <button
+            type="submit"
+            aria-label="Send question"
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-galaxy-gold/45 bg-galaxy-gold/12 text-galaxy-gold transition hover:border-galaxy-gold hover:bg-galaxy-gold/20"
+          >
+            <Send aria-hidden="true" size={16} />
+          </button>
+        </form>
+      </footer>
     </section>
   );
 }
