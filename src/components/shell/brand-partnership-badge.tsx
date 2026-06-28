@@ -9,6 +9,7 @@ export function BrandPartnershipBadge({ className }: BrandPartnershipBadgeProps)
   return (
     <div
       aria-label="Galaxy Macau and Mastercard data partnership"
+      role="group"
       className={clsx(
         'inline-flex min-h-8 shrink-0 items-center gap-2 rounded-full border border-galaxy-border bg-galaxy-charcoal/70 px-2 py-1',
         className,

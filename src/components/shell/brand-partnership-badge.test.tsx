@@ -7,7 +7,9 @@ describe('BrandPartnershipBadge', () => {
   it('renders a compact accessible data partnership badge without currency text', () => {
     const { container } = render(<BrandPartnershipBadge />);
 
-    const badge = screen.getByLabelText('Galaxy Macau and Mastercard data partnership');
+    const badge = screen.getByRole('group', {
+      name: 'Galaxy Macau and Mastercard data partnership',
+    });
     const galaxyLogo = screen.getByRole('img', { name: 'Galaxy Macau' });
     const mastercardLogo = screen.getByRole('img', { name: 'Mastercard' });
 
