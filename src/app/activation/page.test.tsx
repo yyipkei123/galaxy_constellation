@@ -105,6 +105,12 @@ function renderActivation(options?: Parameters<typeof mockAppState>[0]) {
   return { ...view, ...mocks };
 }
 
+function topFallbackSegments() {
+  return [...latestSegments]
+    .sort((first, second) => second.opportunityIndex - first.opportunityIndex)
+    .slice(0, 2);
+}
+
 describe('activation route', () => {
   afterEach(() => {
     vi.clearAllMocks();
@@ -143,6 +149,28 @@ describe('activation route', () => {
     expect(screen.queryByRole('main')).not.toBeInTheDocument();
   });
 
+  it('launches the clicked non-first activation card lever into measurement', () => {
+    const view = renderActivation();
+    const fallbackLevers = topFallbackSegments()
+      .flatMap((segment) => segment.recommendedPlays.map((play) => play.lever))
+      .slice(0, 4);
+
+    if (fallbackLevers.length < 2 || fallbackLevers[0] === fallbackLevers[1]) {
+      throw new Error('Expected fallback activation cards to expose distinct first and second levers');
+    }
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Push to campaign' })[1]);
+
+    expect(view.launchCampaign).toHaveBeenCalledTimes(1);
+    expect(view.launchCampaign).toHaveBeenCalledWith(expect.objectContaining({
+      source: 'activation',
+      lever: fallbackLevers[1],
+    }));
+    expect(view.launchCampaign).not.toHaveBeenCalledWith(expect.objectContaining({
+      lever: fallbackLevers[0],
+    }));
+  });
+
   it('renders activation cards only for the active saved audience segment ids', () => {
     const savedSegment = latestSegments.find((segment) => segment.id === 'family-leisure-seekers') ?? latestSegments[0];
 
@@ -161,6 +189,32 @@ describe('activation route', () => {
     expect(screen.queryByText('Michelin-to-boutique retail path')).not.toBeInTheDocument();
     expect(screen.queryByText('Top leakage segments')).not.toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: 'Push to campaign' }).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('launches mixed saved audiences with only valid rendered segment ids', () => {
+    const validSegment = latestSegments.find((segment) => segment.id === 'family-leisure-seekers') ?? latestSegments[0];
+    const view = renderActivation({
+      savedAudiences: [{
+        id: 'saved-mixed',
+        name: 'Mixed saved audience',
+        segmentIds: [validSegment.id, 'stale-segment-id'],
+        createdAt: '2026-06-24T00:00:00.000Z',
+      }],
+    });
+
+    expect(screen.getByText('Active audience')).toBeInTheDocument();
+    expect(screen.getAllByText('Mixed saved audience').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText('Holiday certainty bundle')).toBeInTheDocument();
+    expect(screen.queryByText('Michelin-to-boutique retail path')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Push to campaign' }));
+
+    expect(view.launchCampaign).toHaveBeenCalledTimes(1);
+    expect(view.launchCampaign).toHaveBeenCalledWith(expect.objectContaining({
+      source: 'activation',
+      audienceName: 'Mixed saved audience',
+      segmentIds: [validSegment.id],
+    }));
   });
 
   it.each([

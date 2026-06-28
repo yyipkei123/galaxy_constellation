@@ -124,12 +124,12 @@ export default function ActivationPage() {
   const activeAudienceBand = audienceBand(cardSegments);
   const activeRecaptureIndex = averageIndex(cardSegments);
 
-  function pushAudienceCampaign() {
+  function pushAudienceCampaign(lever: unknown) {
     launchCampaign({
       source: 'activation',
       audienceName: activeAudience.name,
-      segmentIds: activeAudience.segmentIds,
-      lever: cards[0]?.play.lever ?? 'Galaxy Rewards activation',
+      segmentIds: cardSegments.map((segment) => segment.id),
+      lever: safeText(lever, 'Galaxy Rewards activation'),
     });
   }
 
@@ -195,7 +195,7 @@ export default function ActivationPage() {
               audienceName={activeAudience.name}
               audienceSizeBand={activeAudienceBand}
               recaptureIndex={activeRecaptureIndex || finiteValue(segment.opportunityIndex)}
-              onPush={pushAudienceCampaign}
+              onPush={() => pushAudienceCampaign(play.lever)}
             />
           )) : (
             <Panel>
