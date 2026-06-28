@@ -1,7 +1,14 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import type { MouseEventHandler, ReactNode } from 'react';
 import { beforeEach, vi } from 'vitest';
-import { latestQuarter, latestSegments, methodology, personaRecords, quarters } from '@/data';
+import {
+  campaigns,
+  latestQuarter,
+  latestSegments,
+  methodology,
+  personaRecords,
+  quarters,
+} from '@/data';
 import { useAppState } from '@/store/app-store';
 import { ChatAssistantLauncher } from './chat-assistant-launcher';
 
@@ -63,6 +70,11 @@ function mockAppState({ selectedPersonaId = '' }: { selectedPersonaId?: string }
     campaignToast: null,
     pushCampaign: vi.fn(),
     clearCampaignToast: vi.fn(),
+    launchedCampaigns: [],
+    launchCampaign: vi.fn(),
+    savedScenarios: [],
+    saveScenario: vi.fn(),
+    removeSavedScenario: vi.fn(),
   });
 }
 
@@ -178,7 +190,7 @@ describe('ChatAssistantLauncher', () => {
     );
     fireEvent.click(within(dialog).getByRole('button', { name: 'Send question' }));
 
-    expect(within(dialog).getByText('Leakage opportunity answer')).toBeInTheDocument();
+    expect(within(dialog).getByText('Governed CDE Fallback')).toBeInTheDocument();
     expect(dialog).not.toHaveTextContent(/\b(?:MOP|HKD)\b|\$|元|澳門幣|5000/i);
   });
 
@@ -232,5 +244,50 @@ describe('ChatAssistantLauncher', () => {
 
     expect(within(dialog).getByText('Persona targeting answer')).toBeInTheDocument();
     expect(within(dialog).getByText(/ranks Private Dining Hosts first/i)).toBeInTheDocument();
+  });
+
+  it('passes semantic context and launched campaigns into the assistant', () => {
+    vi.mocked(useAppState).mockReturnValue({
+      quarters,
+      selectedQuarter: latestQuarter,
+      selectedQuarterId: latestQuarter.id,
+      setSelectedQuarterId: vi.fn(),
+      segments: latestSegments,
+      selectedSegment: latestSegments[0],
+      selectedSegmentId: latestSegments[0].id,
+      setSelectedSegmentId: vi.fn(),
+      selectedPersonaId: '',
+      setSelectedPersonaId: vi.fn(),
+      methodology,
+      filters: {
+        segmentIds: latestSegments.map((segment) => segment.id),
+        channel: 'all',
+        minPropensity: 0,
+      },
+      setFilters: vi.fn(),
+      savedAudiences: [],
+      saveAudience: vi.fn(),
+      removeSavedAudience: vi.fn(),
+      campaignToast: null,
+      pushCampaign: vi.fn(),
+      clearCampaignToast: vi.fn(),
+      launchedCampaigns: [campaigns[1]],
+      launchCampaign: vi.fn(),
+      savedScenarios: [],
+      saveScenario: vi.fn(),
+      removeSavedScenario: vi.fn(),
+    });
+    render(<ChatAssistantLauncher />);
+    const dialog = openAssistant();
+
+    fireEvent.change(
+      within(dialog).getByRole('textbox', { name: 'Ask the AI insight assistant' }),
+      { target: { value: 'Who are my top 10 leads to pitch this quarter?' } },
+    );
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Send question' }));
+
+    expect(within(dialog).getByText('Top Pitch Leads')).toBeInTheDocument();
+    expect(within(dialog).getByRole('figure', { name: 'Top 10 governed leads' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Draft the pitch for guest MEM-••••3421' })).toBeInTheDocument();
   });
 });

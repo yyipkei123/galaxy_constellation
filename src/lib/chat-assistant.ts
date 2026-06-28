@@ -1,4 +1,20 @@
-import { type Methodology, type Segment, type SegmentPersona } from '@/data';
+import {
+  type Corridor,
+  type Guest,
+  type MeasurementCampaign,
+  type Methodology,
+  type Segment,
+  type SegmentPersona,
+} from '@/data';
+import {
+  buildCdeSemanticLayer,
+  queryCdeSemanticLayer,
+  type SemanticFact,
+  type SemanticIntent,
+  type SemanticQueryResult,
+  type SemanticRoute,
+  type SemanticVisualKind,
+} from '@/lib/cde-semantic-layer';
 import { formatEnriched } from './format';
 import { buildLeakageDrivers, buildPortfolioInsightNarrative } from './insights';
 
@@ -9,9 +25,10 @@ export type ChatAssistantIntent =
   | 'persona'
   | 'activation'
   | 'methodology'
-  | 'fallback';
+  | 'fallback'
+  | SemanticIntent;
 
-export type ChatAssistantVisualKind = 'bar-list' | 'metric-strip';
+export type ChatAssistantVisualKind = SemanticVisualKind;
 
 export interface ChatVisualItem {
   id: string;
@@ -33,7 +50,7 @@ export interface ChatAssistantEvidence {
   detail?: string;
 }
 
-type ChatAssistantHref = '/' | '/segments' | '/leakage' | '/activation' | '/propensity';
+type ChatAssistantHref = SemanticRoute | '/propensity';
 
 export interface ChatAssistantLink {
   label: string;
@@ -43,9 +60,11 @@ export interface ChatAssistantLink {
 export interface ChatAssistantResponse {
   id: string;
   intent: ChatAssistantIntent;
+  governanceBadge: 'Grounded · Auditable';
   title: string;
   answer: string;
   evidence: ChatAssistantEvidence[];
+  auditFacts: SemanticFact[];
   visual: ChatAssistantVisual;
   links: ChatAssistantLink[];
   suggestedQuestions: string[];
@@ -58,14 +77,20 @@ export interface ChatAssistantContext {
   selectedSegmentId?: string;
   personas: SegmentPersona[];
   selectedPersonaId?: string;
+  guests?: Guest[];
+  corridors?: Corridor[];
+  campaigns?: MeasurementCampaign[];
 }
 
 const DEFAULT_SUGGESTIONS = [
   'Which leakage driver is largest for the selected segment?',
+  'Who are my top 10 leads to pitch this quarter?',
+  'Draft the pitch for guest MEM-••••3421',
   'Which persona should we target first?',
   'What should activation do next?',
 ] as const;
 
+const GOVERNANCE_BADGE = 'Grounded · Auditable' as const;
 const FALLBACK_BAND = 'Indexed band equiv./mo';
 const CDE_SAFE_REDACTION = 'CDE-safe value';
 const NON_FINITE_REDACTION = 'finite CDE value';
@@ -86,8 +111,10 @@ const numericFragmentPattern = /\b\d+(?:[.,]\d+)*(?:\s*[km])?\b/gi;
 const englishAmountWordFragmentPattern = new RegExp(`\\b${englishAmountWord}\\b`, 'gi');
 const chineseAmountWordFragmentPattern = new RegExp(chineseAmountWordSource, 'gi');
 const currencyTokenPattern = /MOP|HKD|\$|元|澳門幣/gi;
-const nonFiniteTextPattern = /\b(?:NaN|Infinity)\b/gi;
+const nonFiniteTextPattern = /NaN|Infinity/gi;
 const sensitiveAmountPromptPattern = /\b(?:leak|leaking|leakage|gap|outside|recapture|wallet|spend|spending|cash|value|amount|raw|currency|money)\b|MOP|HKD|\$|元|澳門幣/i;
+const exactSensitivePromptPattern = /\b(?:exact|raw|actual)\b.*\b(?:spend|spending|amount|value|wallet|money|revenue|leakage)\b/i;
+const governedCurrencyPromptPattern = /\b(?:hkd|mop)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣/i;
 
 function finiteNumber(value: number | undefined, fallback = 0): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
@@ -232,6 +259,18 @@ function sanitizeEvidence(evidence: ChatAssistantEvidence): ChatAssistantEvidenc
   };
 }
 
+function sanitizeAuditFact(fact: SemanticFact): SemanticFact {
+  return {
+    id: sanitizeChatAssistantText(fact.id),
+    label: sanitizeChatAssistantText(fact.label),
+    value: typeof fact.value === 'number'
+      ? finiteNumber(fact.value)
+      : sanitizeChatAssistantText(String(fact.value)),
+    source: sanitizeChatAssistantText(fact.source),
+    route: sanitizeChatAssistantText(fact.route),
+  };
+}
+
 function sanitizeVisualItem(item: ChatVisualItem): ChatVisualItem {
   return {
     id: sanitizeChatAssistantText(item.id),
@@ -246,9 +285,11 @@ function sanitizeResponse(response: ChatAssistantResponse): ChatAssistantRespons
   return {
     id: sanitizeChatAssistantText(response.id),
     intent: response.intent,
+    governanceBadge: GOVERNANCE_BADGE,
     title: sanitizeChatAssistantText(response.title),
     answer: sanitizeChatAssistantText(response.answer),
     evidence: response.evidence.map(sanitizeEvidence),
+    auditFacts: response.auditFacts.map(sanitizeAuditFact),
     visual: {
       kind: response.visual.kind,
       title: sanitizeChatAssistantText(response.visual.title),
@@ -262,11 +303,97 @@ function sanitizeResponse(response: ChatAssistantResponse): ChatAssistantRespons
   };
 }
 
-function makeResponse(input: Omit<ChatAssistantResponse, 'suggestedQuestions'>): ChatAssistantResponse {
+type ChatAssistantResponseInput = Omit<ChatAssistantResponse, 'governanceBadge' | 'auditFacts' | 'suggestedQuestions'> & {
+  auditFacts?: SemanticFact[];
+  suggestedQuestions?: string[];
+};
+
+function makeResponse(input: ChatAssistantResponseInput): ChatAssistantResponse {
   return sanitizeResponse({
     ...input,
-    suggestedQuestions: [...DEFAULT_SUGGESTIONS],
+    governanceBadge: GOVERNANCE_BADGE,
+    auditFacts: input.auditFacts ?? [],
+    suggestedQuestions: input.suggestedQuestions ?? [...DEFAULT_SUGGESTIONS],
   });
+}
+
+function hasSemanticLayerInput(context: Partial<ChatAssistantContext>): context is Partial<ChatAssistantContext> & {
+  methodology: Methodology;
+  segments: Segment[];
+  personas: SegmentPersona[];
+  guests: Guest[];
+  corridors: Corridor[];
+  campaigns: MeasurementCampaign[];
+} {
+  return Boolean(
+    context.methodology
+    && Array.isArray(context.segments)
+    && Array.isArray(context.personas)
+    && Array.isArray(context.guests)
+    && Array.isArray(context.corridors)
+    && Array.isArray(context.campaigns),
+  );
+}
+
+function requiresGovernedFallback(question: string): boolean {
+  return exactSensitivePromptPattern.test(question) || governedCurrencyPromptPattern.test(question);
+}
+
+function semanticEvidenceFromFacts(facts: SemanticFact[]): ChatAssistantEvidence[] {
+  return facts.slice(0, 3).map((fact) => ({
+    label: String(fact.label),
+    value: String(fact.value),
+    detail: fact.source,
+  }));
+}
+
+function semanticSuggestedQuestions(result: SemanticQueryResult): string[] {
+  if (result.intent !== 'topLeads') return result.followUps.length > 0 ? result.followUps : [...DEFAULT_SUGGESTIONS];
+
+  const specificPitch = 'Draft the pitch for guest MEM-••••3421';
+
+  return result.followUps
+    .map((followUp) => (
+      followUp === 'Draft a pitch for a masked guest ID' ? specificPitch : followUp
+    ))
+    .filter((followUp, index, followUps) => followUps.indexOf(followUp) === index);
+}
+
+function responseFromSemanticResult(result: SemanticQueryResult): ChatAssistantResponse {
+  return makeResponse({
+    id: `chat-semantic-${result.intent}`,
+    intent: result.intent,
+    title: result.title,
+    answer: result.answer,
+    evidence: semanticEvidenceFromFacts(result.auditFacts),
+    auditFacts: result.auditFacts,
+    visual: result.visual,
+    links: result.links,
+    suggestedQuestions: semanticSuggestedQuestions(result),
+  });
+}
+
+function buildSemanticResponse(
+  question: string,
+  context: Partial<ChatAssistantContext>,
+  legacyIntent: ChatAssistantIntent,
+): ChatAssistantResponse | undefined {
+  if (!hasSemanticLayerInput(context)) return undefined;
+
+  const result = queryCdeSemanticLayer(question, buildCdeSemanticLayer({
+    methodology: context.methodology,
+    segments: context.segments,
+    personas: context.personas,
+    guests: context.guests,
+    corridors: context.corridors,
+    campaigns: context.campaigns,
+  }));
+
+  if (result.intent !== 'governedFallback' || requiresGovernedFallback(question) || legacyIntent === 'fallback') {
+    return responseFromSemanticResult(result);
+  }
+
+  return undefined;
 }
 
 function segmentName(segment: Segment | undefined): string {
@@ -510,6 +637,9 @@ function buildFallbackResponse(): ChatAssistantResponse {
 
 export function buildChatAssistantResponse(question: string, context: Partial<ChatAssistantContext> = {}): ChatAssistantResponse {
   const intent = classifyIntent(question);
+  const semanticResponse = buildSemanticResponse(question, context, intent);
+
+  if (semanticResponse) return semanticResponse;
 
   switch (intent) {
     case 'overview':

@@ -76,6 +76,63 @@ describe('ChatResponseVisual', () => {
     expect(screen.getByText('Persona evidence')).toBeInTheDocument();
   });
 
+  it('renders a lead-list visual with masked MEM ids and index values', () => {
+    const visual: ChatAssistantVisual = {
+      kind: 'lead-list',
+      title: 'Top 10 governed leads',
+      items: [
+        {
+          id: 'MEM-••••3421',
+          label: 'MEM-••••3421',
+          value: 96,
+          formattedValue: 'Index 96',
+          description: 'Cosmopolitan Connoisseurs | luxury retail | 18-28k equiv./mo',
+        },
+      ],
+    };
+
+    render(<ChatResponseVisual visual={visual} />);
+
+    expect(screen.getByRole('figure', { name: /Top 10 governed leads/i })).toBeInTheDocument();
+    expect(screen.getByText('MEM-••••3421')).toBeInTheDocument();
+    expect(screen.getByText('Index 96')).toBeInTheDocument();
+  });
+
+  it('renders a line-series visual with week labels and percent lift without currency', () => {
+    const visual: ChatAssistantVisual = {
+      kind: 'line-series',
+      title: 'Measurement weekly lift',
+      items: [
+        {
+          id: 'campaign-week-1',
+          label: 'W1',
+          value: 4.7,
+          formattedValue: '4.7%',
+          description: 'Test versus control lift.',
+        },
+      ],
+    };
+
+    render(<ChatResponseVisual visual={visual} />);
+
+    expect(screen.getByRole('figure', { name: /Measurement weekly lift/i })).toBeInTheDocument();
+    expect(screen.getByText('W1')).toBeInTheDocument();
+    expect(screen.getByText('4.7%')).toBeInTheDocument();
+    expect(screen.getByRole('figure', { name: /Measurement weekly lift/i })).not.toHaveTextContent(/MOP|HKD|\$|元|澳門幣/i);
+  });
+
+  it('renders a useful no-facts empty state for fact-table visuals', () => {
+    const visual: ChatAssistantVisual = {
+      kind: 'fact-table',
+      title: 'Governed CDE scope',
+      items: [],
+    };
+
+    render(<ChatResponseVisual visual={visual} />);
+
+    expect(screen.getByText('No governed facts are available for this answer.')).toBeInTheDocument();
+  });
+
   it('renders an empty state for visuals without items', () => {
     const visual: ChatAssistantVisual = {
       kind: 'metric-strip',

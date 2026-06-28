@@ -1,4 +1,13 @@
-import { latestSegments, methodology, personaRecords, type Segment, type SegmentPersona } from '@/data';
+import {
+  campaigns,
+  corridors,
+  guests,
+  latestSegments,
+  methodology,
+  personaRecords,
+  type Segment,
+  type SegmentPersona,
+} from '@/data';
 import { buildLeakageDrivers } from './insights';
 import {
   buildChatAssistantResponse,
@@ -9,6 +18,18 @@ import {
 } from './chat-assistant';
 
 const bannedCurrencyPattern = /MOP|HKD|\$|元|澳門幣/i;
+const unsafeCurrencyFragmentPattern = /(?:MOP500|HKD500|HKD 5000|5000 leakage)/i;
+
+const sprint3Context = {
+  methodology,
+  segments: latestSegments,
+  selectedSegment: latestSegments[0],
+  selectedSegmentId: latestSegments[0].id,
+  personas: personaRecords,
+  guests,
+  corridors,
+  campaigns,
+} satisfies ChatAssistantContext;
 
 function expectSortedDescending(values: number[]) {
   values.forEach((value, index) => {
@@ -17,7 +38,66 @@ function expectSortedDescending(values: number[]) {
   });
 }
 
+function expectGovernedSafe(value: unknown) {
+  const serialized = JSON.stringify(value);
+
+  expect(serialized).not.toMatch(bannedCurrencyPattern);
+  expect(serialized).not.toMatch(/NaN|Infinity/);
+}
+
 describe('buildChatAssistantResponse', () => {
+  it('answers top lead questions from governed semantic facts with a lead-list visual', () => {
+    const response = buildChatAssistantResponse('Who are my top 10 leads to pitch this quarter?', sprint3Context);
+
+    expect(response.intent).toBe('topLeads');
+    expect(response.governanceBadge).toBe('Grounded · Auditable');
+    expect(response.auditFacts.length).toBeGreaterThanOrEqual(3);
+    expect(response.visual.kind).toBe('lead-list');
+    expect(response.visual.items).toHaveLength(10);
+    expect(response.suggestedQuestions).toContain('Draft the pitch for guest MEM-••••3421');
+    expect(response.evidence).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: expect.any(String),
+          value: expect.any(String),
+        }),
+      ]),
+    );
+    expectGovernedSafe(response);
+  });
+
+  it('routes corridor and measurement questions through governed semantic intents and links', () => {
+    const corridor = buildChatAssistantResponse('Which corridor should we prioritise and why?', sprint3Context);
+    const measurement = buildChatAssistantResponse('Did the measurement campaign work and what was the lift?', sprint3Context);
+
+    expect(corridor.intent).toBe('corridorPriority');
+    expect(corridor.links).toEqual(expect.arrayContaining([expect.objectContaining({ href: '/corridors' })]));
+    expect(corridor.auditFacts.length).toBeGreaterThanOrEqual(3);
+    expect(corridor.visual.kind).toBe('corridor-card');
+
+    expect(measurement.intent).toBe('measurement');
+    expect(measurement.links).toEqual(expect.arrayContaining([expect.objectContaining({ href: '/measurement' })]));
+    expect(measurement.auditFacts.length).toBeGreaterThanOrEqual(3);
+    expect(measurement.visual.kind).toBe('line-series');
+    expectGovernedSafe({ corridor, measurement });
+  });
+
+  it('keeps compact and exact currency prompts inside the governed CDE safety boundary', () => {
+    const responses = [
+      buildChatAssistantResponse('MOP500 campaign lift', sprint3Context),
+      buildChatAssistantResponse('HKD500 luxury wallet leakage', sprint3Context),
+      buildChatAssistantResponse('Show exact HKD 5000 leakage', sprint3Context),
+    ];
+
+    responses.forEach((response) => {
+      expect(response.intent).toBe('governedFallback');
+      expect(response.governanceBadge).toBe('Grounded · Auditable');
+      expect(response.auditFacts.length).toBeGreaterThanOrEqual(3);
+      expectGovernedSafe(response);
+      expect(JSON.stringify(response)).not.toMatch(unsafeCurrencyFragmentPattern);
+    });
+  });
+
   it('answers leakage questions with ranked CDE driver data and a leakage route link', () => {
     const selectedSegment = latestSegments[0];
     const response = buildChatAssistantResponse('Which segment has the largest leakage gap?', {

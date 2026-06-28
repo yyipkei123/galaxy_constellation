@@ -2,21 +2,24 @@
 
 import { useMemo, useRef, useState } from 'react';
 import { MessageCircle } from 'lucide-react';
-import { personaRecords } from '@/data';
+import { campaigns, corridors, guests, personaRecords } from '@/data';
 import { useAppState } from '@/store/app-store';
 import { CHAT_ASSISTANT_DIALOG_ID, ChatAssistantPanel } from './chat-assistant-panel';
 
 export function ChatAssistantLauncher() {
-  const { methodology, segments, selectedPersonaId, selectedSegment } = useAppState();
+  const { launchedCampaigns, methodology, segments, selectedPersonaId, selectedSegment } = useAppState();
   const [isOpen, setIsOpen] = useState(false);
   const launcherRef = useRef<HTMLButtonElement>(null);
   const context = useMemo(() => ({
+    campaigns: [...campaigns, ...launchedCampaigns],
+    corridors,
+    guests,
     methodology,
     personas: personaRecords,
     segments,
     selectedPersonaId,
     selectedSegment,
-  }), [methodology, segments, selectedPersonaId, selectedSegment]);
+  }), [launchedCampaigns, methodology, segments, selectedPersonaId, selectedSegment]);
   const launcherLabel = isOpen ? 'Close AI insight assistant' : 'Open AI insight assistant';
 
   function restoreLauncherFocus() {
