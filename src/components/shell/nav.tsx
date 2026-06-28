@@ -13,6 +13,7 @@ import {
   Radar,
   Route,
   ScanSearch,
+  SlidersHorizontal,
   UsersRound,
   WalletCards,
   type LucideIcon,
@@ -29,6 +30,7 @@ const walletNavItems: Array<{ href: string; label: string; shortLabel: string; i
   { href: '/propensity', label: 'Audience', shortLabel: 'Audience', icon: ScanSearch },
   { href: '/activation', label: 'Activation', shortLabel: 'Activate', icon: Megaphone },
   { href: '/measurement', label: 'Measurement', shortLabel: 'Measure', icon: LineChart },
+  { href: '/simulate', label: 'Simulator', shortLabel: 'Simulate', icon: SlidersHorizontal },
   { href: '/marketscan', label: 'Market Scan', shortLabel: 'Market', icon: Radar },
 ];
 

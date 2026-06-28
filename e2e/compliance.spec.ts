@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const routes = ['/', '/wallet', '/segments', '/guests', '/guests/MEM-••••3421', '/leakage', '/propensity', '/activation', '/measurement', '/marketscan', '/corridors', '/corridors/korea', '/acquisition'];
+const routes = ['/', '/wallet', '/segments', '/guests', '/guests/MEM-••••3421', '/leakage', '/propensity', '/activation', '/measurement', '/simulate', '/marketscan', '/corridors', '/corridors/korea', '/acquisition'];
 const interruptedNavigationMessage = 'is interrupted by another navigation';
 const fallbackBaseUrl = 'http://127.0.0.1:3000';
 const bannedCdeTokenPattern = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣/i;
@@ -154,6 +154,14 @@ test.describe('Galaxy Constellation rendered compliance', () => {
         await expect(page.getByText(/causal lift, not attribution/i).first()).toBeVisible();
         await expect(page.getByRole('figure', { name: /Lift over time/i }).first()).toBeVisible();
         await expect(page.locator('body')).not.toContainText(measurementBannedCdeTokenPattern);
+      }
+
+      if (route === '/simulate') {
+        await expect(page.getByRole('heading', { name: /What-if Scenario Simulator/i })).toBeVisible();
+        await expect(page.getByRole('slider', { name: /Recapture leakage/i })).toBeVisible();
+        await expect(page.getByRole('figure', { name: /Scenario constellation shift/i })).toBeVisible();
+        await expect(page.locator('body')).not.toContainText(bannedCdeTokenPattern);
+        await expect(page.locator('body')).not.toContainText(/NaN|Infinity/);
       }
 
       if (route === '/leakage') {
