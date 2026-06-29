@@ -1,6 +1,12 @@
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
-import { latestQuarter, latestSegments, methodology, quarters, type Segment } from '@/data';
+import {
+  latestQuarter,
+  latestSegments,
+  methodology,
+  quarters,
+  type Segment,
+} from '@/data';
 import { useAppState } from '@/store/app-store';
 import Home from './page';
 
@@ -13,16 +19,24 @@ vi.mock('@/store/app-store', async (importOriginal) => {
   };
 });
 
-function mockAppState(segments: Segment[] = latestSegments) {
+const bannedCdeDisplayPattern = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣|raw[-\s]?spend|exact\s+spend/i;
+
+function mockAppState(
+  segments: Segment[] = latestSegments,
+  selectedSegmentId = segments[0]?.id ?? 'missing-segment-id',
+) {
+  const setSelectedSegmentId = vi.fn();
+  const selectedSegment = segments.find((segment) => segment.id === selectedSegmentId) ?? latestSegments[0];
+
   vi.mocked(useAppState).mockReturnValue({
     quarters,
     selectedQuarter: latestQuarter,
     selectedQuarterId: latestQuarter.id,
     setSelectedQuarterId: vi.fn(),
     segments,
-    selectedSegment: latestSegments[0],
-    selectedSegmentId: latestSegments[0].id,
-    setSelectedSegmentId: vi.fn(),
+    selectedSegment,
+    selectedSegmentId,
+    setSelectedSegmentId,
     selectedPersonaId: '',
     setSelectedPersonaId: vi.fn(),
     methodology,
@@ -38,109 +52,86 @@ function mockAppState(segments: Segment[] = latestSegments) {
     campaignToast: null,
     pushCampaign: vi.fn(),
     clearCampaignToast: vi.fn(),
+    launchedCampaigns: [],
+    launchCampaign: vi.fn(),
+    savedScenarios: [],
+    saveScenario: vi.fn(),
+    removeSavedScenario: vi.fn(),
   });
+
+  return { setSelectedSegmentId };
 }
 
-function renderHome() {
-  mockAppState();
-  return render(<Home />);
+function renderHome(segments?: Segment[], selectedSegmentId?: string) {
+  const state = mockAppState(segments, selectedSegmentId);
+  const result = render(<Home />);
+
+  return { ...result, ...state };
+}
+
+function expectCdeSafeOutput(container: HTMLElement) {
+  expect(container.textContent).not.toMatch(bannedCdeDisplayPattern);
+  container.querySelectorAll('*').forEach((element) => {
+    Array.from(element.attributes).forEach((attribute) => {
+      expect(attribute.value).not.toMatch(bannedCdeDisplayPattern);
+    });
+  });
 }
 
 describe('overview route', () => {
-  it('renders the Galaxy Constellation overview surface', () => {
-    renderHome();
+  it('composes the Open Design dashboard sections without a nested main landmark', () => {
+    const { container } = renderHome();
 
-    expect(screen.getByRole('heading', { name: /Galaxy Constellation/i })).toBeInTheDocument();
-    expect(screen.getByTestId('overview-constellation-hero')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Wallet headroom constellation/i })).toBeInTheDocument();
-    expect(screen.getByRole('figure', { name: /Wallet constellation/i })).toBeInTheDocument();
-    expect(screen.getByText(/Pitch-now cluster/i)).toBeInTheDocument();
-    expect(screen.getByText(/Galaxy already knows stay, dining and rewards behavior/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/Guest Wallet Intelligence/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText(/Mastercard CDE/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText(/modelled off-property wallet/i)).toBeInTheDocument();
-
-    expect(screen.getByText('Matched guest base')).toBeInTheDocument();
-    expect(screen.getByText('Galaxy wallet capture')).toBeInTheDocument();
-    expect(screen.getByText('Wallet headroom')).toBeInTheDocument();
-    expect(screen.getByText('Top ranked finding')).toBeInTheDocument();
-    expect(screen.getByText('Top-tier rewards propensity')).toBeInTheDocument();
-    expect(screen.getByText('Opportunity benchmark')).toBeInTheDocument();
-    [
-      'Matched guest base',
-      'Galaxy wallet capture',
-      'Top-tier rewards propensity',
-      'Opportunity benchmark',
-    ].forEach((label) => {
-      const card = screen.getByText(label).closest('article');
-      expect(card).not.toBeNull();
-      expect(within(card as HTMLElement).getAllByText('CDE').length).toBeGreaterThanOrEqual(1);
-    });
-
-    expect(screen.getByRole('heading', { name: /Category wallet snapshot/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /This period's headline findings/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Insight engine/i })).toBeInTheDocument();
-    expect(screen.getByText(/Galaxy first-party signal/i)).toBeInTheDocument();
-    expect(screen.getByText(/Mastercard CDE reveal/i)).toBeInTheDocument();
-    expect(screen.getByText(/Discovered opportunity/i)).toBeInTheDocument();
-    expect(screen.getAllByText('CDE').length).toBeGreaterThanOrEqual(4);
-  });
-
-  it('links top opportunities to leakage in descending opportunity order', () => {
-    renderHome();
-    const expectedSegments = [...latestSegments]
-      .sort((first, second) => second.opportunityIndex - first.opportunityIndex)
-      .slice(0, 3);
-    const links = screen.getAllByRole('link').filter((link) => link.getAttribute('href') === '/leakage');
-
-    expect(links).toHaveLength(3);
-    expectedSegments.forEach((segment, index) => {
-      expect(links[index]).toHaveAttribute('href', '/leakage');
-      expect(within(links[index]).getByText(segment.name)).toBeInTheDocument();
-      expect(within(links[index]).getByText(`CDE index signal ${Math.round(segment.opportunityIndex)}`)).toBeInTheDocument();
-    });
-  });
-
-  it('renders finite fallback aggregate values when segments are empty', () => {
-    mockAppState([]);
-    render(<Home />);
-
-    expect(screen.getByText('~0-0k')).toBeInTheDocument();
-    expect(screen.getAllByText('0%').length).toBeGreaterThanOrEqual(2);
-    expect(screen.getByText('0.00')).toBeInTheDocument();
-    expect(screen.getAllByText(/CDE .*signal 0|CDE opportunity benchmark 0/).length).toBeGreaterThanOrEqual(1);
-    expect(screen.queryByText(/NaN|Infinity/i)).not.toBeInTheDocument();
-    expect(screen.getByText('No category wallet segments available for this quarter.')).toBeInTheDocument();
-    expect(screen.getAllByText('No active CDE segment insights available for this quarter.').length)
-      .toBeGreaterThanOrEqual(1);
-  });
-
-  it('does not surface non-finite aggregate values from unexpected segment data', () => {
-    const malformedSegment = {
-      ...latestSegments[0],
-      sizeLowK: Number.NaN,
-      sizeHighK: Number.POSITIVE_INFINITY,
-      metrics: {
-        ...latestSegments[0].metrics,
-        shareOfWallet: Number.NaN,
-      },
-      propensities: {
-        ...latestSegments[0].propensities,
-        topTierRewards: Number.POSITIVE_INFINITY,
-      },
-      categories: {},
-      opportunityIndex: Number.POSITIVE_INFINITY,
-    };
-
-    expect(() => {
-      mockAppState([malformedSegment as unknown as Segment]);
-      render(<Home />);
-    }).not.toThrow();
-    expect(screen.queryByText(/NaN|Infinity/i)).not.toBeInTheDocument();
-  });
-
-  it('does not render its own main landmark because the shell owns it', () => {
-    renderHome();
     expect(screen.queryByRole('main')).not.toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Guest wallet intelligence hero' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Executive summary' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Boardroom answer' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'How to read Galaxy Constellation' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Decision workspace' })).toBeInTheDocument();
+    expect(screen.getByRole('complementary', { name: 'Ask CDE AI' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Find the wallet gap Galaxy can win next/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Wallet headroom constellation/i })).toBeInTheDocument();
+    expect(screen.getByRole('tablist', { name: 'Dashboard workspace tabs' })).toBeInTheDocument();
+    expectCdeSafeOutput(container);
+  });
+
+  it('lets the reading guide open the workbench and activation panels', () => {
+    const { container } = renderHome();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open analytics workbench' }));
+
+    expect(screen.getByRole('tab', { name: /Workbench/i })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tabpanel', { name: 'Workbench' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Jump to campaign action' }));
+
+    expect(screen.getByRole('tab', { name: /Activation/i })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tabpanel', { name: 'Activation' })).toBeInTheDocument();
+    expectCdeSafeOutput(container);
+  });
+
+  it('connects constellation segment selection back to app state', () => {
+    const { container, setSelectedSegmentId } = renderHome();
+
+    fireEvent.click(screen.getByRole('button', { name: /Select Aspiring Mass-Affluent/i }));
+
+    expect(setSelectedSegmentId).toHaveBeenCalledWith('aspiring-mass-affluent');
+    expect(screen.getByRole('button', { name: /Select Aspiring Mass-Affluent/i })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getByRole('complementary', { name: 'Ask CDE AI' })).toHaveTextContent(
+      'Audience selection updated',
+    );
+    expectCdeSafeOutput(container);
+  });
+
+  it('renders finite fallback values when segments are empty', () => {
+    const { container } = renderHome([]);
+
+    expect(screen.getByText('0-0k')).toBeInTheDocument();
+    expect(screen.getAllByText(/No active segment/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByText(/NaN|Infinity/i)).not.toBeInTheDocument();
+    expectCdeSafeOutput(container);
   });
 });
