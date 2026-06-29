@@ -80,7 +80,7 @@ export function TopBar() {
           Executive wallet intelligence cockpit
         </h1>
         <p className="mt-1 max-w-[62ch] text-[13px] leading-5 text-galaxy-muted">
-          Turn Galaxy first-party behavior plus Mastercard CDE into a ranked marketing action plan for each quarter.
+          Turn Galaxy behavioral signals plus Mastercard CDE into a ranked marketing action plan for each quarter.
         </p>
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <span

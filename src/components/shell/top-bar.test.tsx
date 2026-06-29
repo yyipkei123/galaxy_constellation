@@ -118,6 +118,7 @@ describe('TopBar', () => {
     );
 
     expect(screen.getByRole('banner')).toHaveTextContent('Executive wallet intelligence cockpit');
+    expect(screen.getByRole('banner')).not.toHaveTextContent(/Galaxy first-party/i);
     expect(screen.getByText('7 CDE metrics')).toBeInTheDocument();
     expect(screen.getByText('Coverage 63%')).toBeInTheDocument();
     expect(screen.getByLabelText('Galaxy Macau and Mastercard data partnership')).toBeInTheDocument();
