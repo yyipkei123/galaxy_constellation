@@ -319,8 +319,10 @@ describe('TopBar', () => {
     expect(contentColumn).toHaveClass('lg:pb-0');
     expect(main).toHaveClass('min-w-0');
     expect(main).toHaveClass('flex-1');
-    expect(main).toHaveClass('px-4');
-    expect(main).toHaveClass('py-5');
+    expect(main).toHaveClass('px-3');
+    expect(main).toHaveClass('py-[18px]');
+    expect(main).toHaveClass('sm:px-5');
+    expect(main).toHaveClass('md:px-[26px]');
     expect(main).not.toHaveClass('pb-24');
     expect(main).not.toHaveClass('lg:pb-6');
     expect(container.textContent).not.toMatch(/HKD|MOP|\$|元|澳門幣/i);
