@@ -111,7 +111,6 @@ textarea {
 
 .galaxy-glass-panel {
   position: relative;
-  overflow: hidden;
   border-color: color-mix(in oklch, var(--galaxy-glass-edge) 42%, transparent);
   background:
     linear-gradient(145deg, color-mix(in oklch, white 7%, transparent), transparent 42%),
@@ -129,6 +128,7 @@ textarea {
   position: absolute;
   inset: 0;
   z-index: 0;
+  border-radius: inherit;
   pointer-events: none;
   background:
     linear-gradient(118deg, var(--galaxy-glass-highlight), transparent 26%),

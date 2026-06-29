@@ -1,5 +1,16 @@
 import { render, screen } from '@testing-library/react';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { Panel } from './panel';
+
+const globalsCss = readFileSync(join(process.cwd(), 'src/app/globals.css'), 'utf8');
+
+function cssRuleFor(selector: string) {
+  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = globalsCss.match(new RegExp(`${escapedSelector}\\s*\\{([^}]*)\\}`));
+
+  return match?.[1] ?? '';
+}
 
 describe('Panel', () => {
   it('renders default panel content', () => {
@@ -29,6 +40,12 @@ describe('Panel', () => {
 
     expect(screen.getByText('Tooltip-safe panel').closest('section')).not.toHaveClass(
       'overflow-hidden',
+    );
+  });
+
+  it('does not clip panel content through the shared glass panel stylesheet', () => {
+    expect(cssRuleFor('.galaxy-glass-panel')).not.toMatch(
+      /(?:^|;)\s*overflow\s*:\s*hidden\s*(?:;|$)/,
     );
   });
 
