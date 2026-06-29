@@ -88,23 +88,20 @@ describe('TopBar', () => {
     vi.restoreAllMocks();
   });
 
-  it('shows compact CDE methodology metrics and defaults the quarter selector to Q2 2026', () => {
+  it('shows cockpit metadata and defaults the segmented quarter selector to Q2 2026', () => {
     render(
       <AppStateProvider>
         <TopBar />
       </AppStateProvider>,
     );
 
+    expect(screen.getByRole('banner')).toHaveTextContent('Executive wallet intelligence cockpit');
     expect(screen.getByText('7 CDE metrics')).toBeInTheDocument();
     expect(screen.getByText('Coverage 63%')).toBeInTheDocument();
     expect(screen.getByLabelText('Galaxy Macau and Mastercard data partnership')).toBeInTheDocument();
-    expect(screen.getByRole('img', { name: 'Galaxy Macau' })).toBeInTheDocument();
-    expect(screen.getByRole('img', { name: 'Mastercard' })).toBeInTheDocument();
-    expect(screen.getByText('Data partnership')).toHaveClass('hidden');
-    expect(screen.getByText('Data partnership')).toHaveClass('sm:inline');
     expect(screen.getByRole('button', { name: /Open CDE signal guide/i })).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: /quarter selector/i })).toHaveValue('2026-q2');
-    expect(screen.getByRole('option', { name: '2026 Q2' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: /Quarter selector/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '2026 Q2' })).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('opens a global CDE signal guide from the top bar', () => {
@@ -196,21 +193,43 @@ describe('TopBar', () => {
     expect(screen.getByText('7 CDE metrics')).toBeInTheDocument();
     expect(screen.getByText('7 CDE metrics')).toHaveAttribute('aria-label', '7 active CDE metrics');
     expect(screen.getByText('Coverage 63%')).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: /quarter selector/i })).toHaveValue('2026-q2');
+    expect(screen.getByRole('group', { name: /quarter selector/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '2026 Q2' })).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('updates the selected reporting quarter from the accessible selector', async () => {
+  it('updates the selected reporting quarter from the accessible segmented selector', async () => {
     render(
       <AppStateProvider>
         <TopBar />
       </AppStateProvider>,
     );
 
-    fireEvent.change(screen.getByRole('combobox', { name: /quarter selector/i }), {
-      target: { value: '2026-q1' },
+    fireEvent.click(screen.getByRole('button', { name: '2026 Q1' }));
+
+    expect(screen.getByRole('button', { name: '2026 Q1' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: '2026 Q2' })).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('copies a CDE-safe executive narrative for the selected segment', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText },
     });
 
-    expect(screen.getByRole('combobox', { name: /quarter selector/i })).toHaveValue('2026-q1');
+    render(
+      <AppStateProvider>
+        <TopBar />
+      </AppStateProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Copy narrative' }));
+
+    await waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));
+    expect(writeText.mock.calls[0][0]).toContain('Galaxy Constellation combines Galaxy first-party behavior with Mastercard CDE');
+    expect(writeText.mock.calls[0][0]).toContain('2026 Q2');
+    expect(writeText.mock.calls[0][0]).not.toMatch(/\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣/i);
+    expect(screen.getByRole('status')).toHaveTextContent('Narrative copied');
   });
 
   it('exposes the spec app-state action names for downstream tasks', () => {
@@ -293,13 +312,8 @@ describe('TopBar', () => {
       </AppStateProvider>,
     );
 
-    const snapshotChip = screen.getByText('2026 Q2 snapshot');
-    const refreshChip = screen.getByText('Quarterly CDE refresh');
-
-    expect(snapshotChip).toHaveClass('hidden');
-    expect(snapshotChip).toHaveClass('md:inline-flex');
-    expect(refreshChip).toHaveClass('hidden');
-    expect(refreshChip).toHaveClass('md:inline-flex');
+    expect(screen.getByRole('banner')).toHaveTextContent('Executive wallet intelligence cockpit');
+    expect(screen.getByRole('button', { name: 'Copy narrative' })).toBeInTheDocument();
     expect(container.textContent).not.toMatch(/HKD|MOP|\$|元|澳門幣/i);
   });
 
