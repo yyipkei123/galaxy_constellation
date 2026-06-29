@@ -16,6 +16,38 @@ function segmentNarrative(
   return `Galaxy Constellation combines Galaxy first-party behavior with Mastercard CDE to rank wallet headroom by segment. For ${quarterLabel}, ${segmentName} leads the current briefing with Index ${Math.round(opportunityIndex)} opportunity headroom, ${Math.round(leakagePct)}% leakage, and ${cashBand} cross-property cash.`;
 }
 
+async function copyText(text: string) {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    // Fall back to the legacy textarea path below.
+  }
+
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.readOnly = true;
+  textarea.setAttribute('aria-hidden', 'true');
+  textarea.style.position = 'fixed';
+  textarea.style.top = '0';
+  textarea.style.left = '-9999px';
+
+  try {
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
+
+    return document.execCommand('copy');
+  } catch {
+    return false;
+  } finally {
+    textarea.remove();
+  }
+}
+
 export function TopBar() {
   const {
     methodology,
@@ -37,12 +69,8 @@ export function TopBar() {
       selectedSegment.crossPropertyCashBand,
     );
 
-    try {
-      await navigator.clipboard.writeText(narrative);
-      setCopyStatus('Narrative copied');
-    } catch {
-      setCopyStatus('Copy unavailable in this preview');
-    }
+    const copied = await copyText(narrative);
+    setCopyStatus(copied ? 'Narrative copied' : 'Copy unavailable in this preview');
   }
 
   return (

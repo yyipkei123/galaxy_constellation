@@ -78,9 +78,31 @@ function StoreBehaviorProbe() {
   );
 }
 
+function QuarterProbe() {
+  const { selectedQuarterId } = useAppState();
+
+  return <output aria-label="selected quarter">{selectedQuarterId}</output>;
+}
+
+function setClipboard(value: { writeText: ReturnType<typeof vi.fn> } | undefined) {
+  Object.defineProperty(navigator, 'clipboard', {
+    configurable: true,
+    value,
+  });
+}
+
+function installExecCommand() {
+  Object.defineProperty(document, 'execCommand', {
+    configurable: true,
+    value: vi.fn(),
+  });
+}
+
 describe('TopBar', () => {
   beforeEach(() => {
     mockPathname = '/wallet';
+    setClipboard(undefined);
+    installExecCommand();
   });
 
   afterEach(() => {
@@ -201,21 +223,23 @@ describe('TopBar', () => {
     render(
       <AppStateProvider>
         <TopBar />
+        <QuarterProbe />
       </AppStateProvider>,
     );
+
+    expect(screen.getByLabelText('selected quarter')).toHaveTextContent('2026-q2');
 
     fireEvent.click(screen.getByRole('button', { name: '2026 Q1' }));
 
     expect(screen.getByRole('button', { name: '2026 Q1' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('button', { name: '2026 Q2' })).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByLabelText('selected quarter')).toHaveTextContent('2026-q1');
   });
 
-  it('copies a CDE-safe executive narrative for the selected segment', async () => {
+  it('copies a CDE-safe executive narrative with the Clipboard API', async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
-    Object.defineProperty(navigator, 'clipboard', {
-      configurable: true,
-      value: { writeText },
-    });
+    const execCommand = vi.spyOn(document, 'execCommand');
+    setClipboard({ writeText });
 
     render(
       <AppStateProvider>
@@ -229,6 +253,101 @@ describe('TopBar', () => {
     expect(writeText.mock.calls[0][0]).toContain('Galaxy Constellation combines Galaxy first-party behavior with Mastercard CDE');
     expect(writeText.mock.calls[0][0]).toContain('2026 Q2');
     expect(writeText.mock.calls[0][0]).not.toMatch(/\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣/i);
+    expect(execCommand).not.toHaveBeenCalled();
+    expect(screen.getByRole('status')).toHaveTextContent('Narrative copied');
+  });
+
+  it('falls back to a temporary textarea when the Clipboard API rejects', async () => {
+    const writeText = vi.fn().mockRejectedValue(new Error('denied'));
+    const execCommand = vi.spyOn(document, 'execCommand').mockReturnValue(true);
+    setClipboard({ writeText });
+
+    render(
+      <AppStateProvider>
+        <TopBar />
+      </AppStateProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Copy narrative' }));
+
+    await waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(execCommand).toHaveBeenCalledWith('copy'));
+    expect(document.querySelector('textarea')).toBeNull();
+    expect(screen.getByRole('status')).toHaveTextContent('Narrative copied');
+  });
+
+  it('falls back to a temporary textarea when the Clipboard API is missing', async () => {
+    const execCommand = vi.spyOn(document, 'execCommand').mockReturnValue(true);
+    setClipboard(undefined);
+
+    render(
+      <AppStateProvider>
+        <TopBar />
+      </AppStateProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Copy narrative' }));
+
+    await waitFor(() => expect(execCommand).toHaveBeenCalledWith('copy'));
+    expect(document.querySelector('textarea')).toBeNull();
+    expect(screen.getByRole('status')).toHaveTextContent('Narrative copied');
+  });
+
+  it('reports copy unavailable when Clipboard API and fallback copy both fail', async () => {
+    const writeText = vi.fn().mockRejectedValue(new Error('denied'));
+    vi.spyOn(document, 'execCommand').mockReturnValue(false);
+    setClipboard({ writeText });
+
+    render(
+      <AppStateProvider>
+        <TopBar />
+      </AppStateProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Copy narrative' }));
+
+    await waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));
+    expect(screen.getByRole('status')).toHaveTextContent('Copy unavailable in this preview');
+  });
+
+  it('reports copy unavailable when textarea fallback throws', async () => {
+    vi.spyOn(document, 'execCommand').mockImplementation(() => {
+      throw new Error('blocked');
+    });
+    setClipboard(undefined);
+
+    render(
+      <AppStateProvider>
+        <TopBar />
+      </AppStateProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Copy narrative' }));
+
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Copy unavailable in this preview'));
+    expect(document.querySelector('textarea')).toBeNull();
+  });
+
+  it('keeps copied narrative CDE-safe when falling back after Clipboard API rejection', async () => {
+    const writeText = vi.fn().mockRejectedValue(new Error('denied'));
+    const execCommand = vi.spyOn(document, 'execCommand').mockImplementation(() => {
+      const activeElement = document.activeElement;
+      expect(activeElement).toBeInstanceOf(HTMLTextAreaElement);
+      expect((activeElement as HTMLTextAreaElement).value).toContain('Galaxy Constellation combines Galaxy first-party behavior with Mastercard CDE');
+      expect((activeElement as HTMLTextAreaElement).value).not.toMatch(/\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣/i);
+      return true;
+    });
+    setClipboard({ writeText });
+
+    render(
+      <AppStateProvider>
+        <TopBar />
+      </AppStateProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Copy narrative' }));
+
+    await waitFor(() => expect(execCommand).toHaveBeenCalledWith('copy'));
     expect(screen.getByRole('status')).toHaveTextContent('Narrative copied');
   });
 
