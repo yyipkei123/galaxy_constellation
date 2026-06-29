@@ -63,13 +63,14 @@ export function Nav() {
   return (
     <nav
       aria-label="Primary navigation"
-      className="relative flex w-full min-w-0 max-w-full gap-2 overflow-x-auto pb-1 [scrollbar-width:none] lg:flex-col lg:overflow-visible lg:pb-0"
+      className="relative flex w-full min-w-0 max-w-full gap-2 overflow-x-auto pb-1 [scrollbar-width:none] lg:grid lg:gap-2 lg:overflow-visible lg:pb-0"
     >
-      {navItems.map((item) => {
+      {navItems.map((item, index) => {
         const Icon = item.icon;
         const isActive = item.href === '/'
           ? pathname === '/'
           : pathname === item.href || pathname.startsWith(`${item.href}/`);
+        const navIndex = String(index + 1).padStart(2, '0');
 
         return (
           <Link
@@ -78,20 +79,25 @@ export function Nav() {
             ref={isActive ? activeLinkRef : undefined}
             aria-label={item.label}
             className={clsx(
-              'flex h-10 shrink-0 items-center gap-2 rounded-md px-3 text-xs font-medium transition-colors sm:text-sm lg:h-11 lg:gap-3',
+              'group flex h-11 shrink-0 items-center justify-between gap-3 rounded-xl border px-3 text-left text-xs font-semibold transition sm:text-sm lg:w-full',
               isActive
-                ? 'bg-galaxy-gold text-galaxy-ink'
-                : 'text-galaxy-muted hover:bg-galaxy-slate hover:text-galaxy-cream',
+                ? 'border-galaxy-gold/40 bg-galaxy-gold/12 text-galaxy-cream shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]'
+                : 'border-transparent text-galaxy-muted hover:border-galaxy-gold/40 hover:bg-galaxy-slate/60 hover:text-galaxy-cream',
             )}
             aria-current={isActive ? 'page' : undefined}
           >
-            <Icon aria-hidden="true" className="h-4 w-4 shrink-0" />
-            <span aria-hidden="true" className="lg:hidden">{item.shortLabel}</span>
-            <span className="hidden lg:inline">{item.label}</span>
+            <span className="flex min-w-0 items-center gap-2">
+              <Icon aria-hidden="true" className="h-4 w-4 shrink-0 lg:hidden" />
+              <span aria-hidden="true" className="lg:hidden">{item.shortLabel}</span>
+              <span className="hidden truncate lg:inline">{item.label}</span>
+            </span>
+            <span aria-hidden="true" className="hidden font-mono text-[11px] text-galaxy-muted/70 lg:inline">
+              {navIndex}
+            </span>
           </Link>
         );
       })}
-      <div className="mt-4 hidden items-center gap-2 rounded-md border border-galaxy-border px-3 py-2 text-xs text-galaxy-muted lg:flex">
+      <div className="mt-4 hidden items-center gap-2 rounded-xl border border-white/10 bg-galaxy-charcoal/50 px-3 py-2 text-xs text-galaxy-muted lg:flex">
         <Map aria-hidden="true" className="h-4 w-4 text-galaxy-gold" />
         {isAcquisitionLens(pathname) ? 'Inbound corridor view' : 'Cotai wallet view'}
       </div>

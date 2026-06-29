@@ -2,6 +2,7 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import type { MouseEventHandler, ReactNode } from 'react';
 import { vi } from 'vitest';
 import { latestQuarter, latestSegments, methodology, quarters, type Segment } from '@/data';
+import { getIndexSignalBand } from '@/components/ui/formatted-values';
 import { useAppState } from '@/store/app-store';
 import LeakagePage from './page';
 
@@ -98,15 +99,11 @@ describe('cross-property leakage route', () => {
     const headline = screen.getByRole('region', { name: 'Headline opportunity index' });
     expect(within(headline).getByText('Headline opportunity index')).toBeInTheDocument();
     expect(within(headline).getByText(`CDE opportunity signal ${Math.round(latestSegments[0].opportunityIndex)}`)).toBeInTheDocument();
-    expect(within(headline).getByText('High recapture priority')).toBeInTheDocument();
-    expect(within(headline).getByText('CDE index legend')).toBeInTheDocument();
-    expect(within(headline).getByText(/100 = matched-cohort baseline/i)).toBeInTheDocument();
-    expect(within(headline).getByText('<90')).toBeInTheDocument();
-    expect(within(headline).getByText('90-109')).toBeInTheDocument();
-    expect(within(headline).getByText('110-129')).toBeInTheDocument();
-    expect(within(headline).getByText('130+')).toBeInTheDocument();
+    expect(within(headline).getByText(getIndexSignalBand(latestSegments[0].opportunityIndex).label)).toBeInTheDocument();
     expect(within(headline).getByText(latestSegments[0].crossPropertyCashBand)).toBeInTheDocument();
     expect(within(headline).getByText(/equiv\.\/mo/)).toBeInTheDocument();
+    expect(screen.queryByText('Opportunity snapshot')).not.toBeInTheDocument();
+    expect(screen.queryByText('CDE index legend')).not.toBeInTheDocument();
   });
 
   it('renders the leakage flow and cross-site cash spend callout without raw currency', () => {

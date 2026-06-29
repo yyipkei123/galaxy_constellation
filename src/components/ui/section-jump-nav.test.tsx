@@ -37,4 +37,35 @@ describe('SectionJumpNav', () => {
     expect(screen.getByRole('link', { name: 'Brief' })).toHaveAttribute('aria-current', 'true');
     expect(screen.getByRole('link', { name: 'History' })).not.toHaveAttribute('aria-current');
   });
+
+  it('keeps sticky gutters aligned with AppShell responsive padding', () => {
+    render(
+      <SectionJumpNav
+        label="Dashboard sections"
+        items={[
+          { id: 'executive-summary', label: 'Executive summary' },
+          { id: 'portfolio-risk', label: 'Portfolio risk' },
+        ]}
+      />,
+    );
+
+    const nav = screen.getByRole('navigation', { name: 'Dashboard sections' });
+
+    expect(nav).toHaveClass('-mx-3');
+    expect(nav).toHaveClass('px-3');
+    expect(nav).toHaveClass('sm:-mx-5');
+    expect(nav).toHaveClass('sm:px-5');
+    expect(nav).toHaveClass('md:-mx-[26px]');
+    expect(nav).toHaveClass('md:px-[26px]');
+    expect(nav).toHaveClass('lg:static');
+    expect(nav).toHaveClass('lg:mx-0');
+    expect(nav).toHaveClass('lg:rounded-lg');
+    expect(nav).toHaveClass('lg:border');
+    expect(nav).toHaveClass('lg:bg-galaxy-charcoal/60');
+    expect(nav).toHaveClass('lg:px-3');
+    expect(nav).not.toHaveClass('-mx-4');
+    expect(nav).not.toHaveClass('px-4');
+    expect(nav).not.toHaveClass('md:-mx-8');
+    expect(nav).not.toHaveClass('md:px-8');
+  });
 });

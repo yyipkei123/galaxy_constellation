@@ -75,4 +75,12 @@ describe('Nav', () => {
     expect(screen.getByText('Activate')).toHaveAttribute('aria-hidden', 'true');
     expect(screen.getByText('Market')).toHaveAttribute('aria-hidden', 'true');
   });
+
+  it('renders Open Design numeric nav indexes on desktop labels', () => {
+    render(<Nav />);
+
+    expect(screen.getByRole('link', { name: 'Overview' })).toHaveTextContent('01');
+    expect(screen.getByRole('link', { name: 'Wallet' })).toHaveTextContent('03');
+    expect(screen.getByText('Cotai wallet view')).toBeInTheDocument();
+  });
 });

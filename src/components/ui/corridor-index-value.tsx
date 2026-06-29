@@ -6,7 +6,7 @@ export function CorridorIndexValue({ label, value }: { label: string; value: num
   }
 
   return (
-    <span className="inline-flex items-center gap-2 whitespace-nowrap">
+    <span className="inline-flex max-w-full flex-wrap items-center gap-x-2 gap-y-1">
       <span>{label} index {Math.round(value)}</span>
       <CdeChip />
     </span>

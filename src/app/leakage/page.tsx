@@ -9,7 +9,7 @@ import {
   ExecutiveSummaryPanel,
   HeadlineFindings,
 } from '@/components/panels/insight-storytelling';
-import { BandValue, IndexSignalLegend, IndexValue } from '@/components/ui/formatted-values';
+import { BandValue, IndexValue } from '@/components/ui/formatted-values';
 import { Overline } from '@/components/ui/overline';
 import { PageHeader } from '@/components/ui/page-header';
 import { Panel } from '@/components/ui/panel';
@@ -191,20 +191,18 @@ export default function LeakagePage() {
         <div
           role="region"
           aria-label="Headline opportunity index"
-          className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem] xl:items-start"
+          className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem] xl:items-center"
         >
           <div className="min-w-0">
-            <Overline>Opportunity snapshot</Overline>
+            <Overline>Segment recapture signal</Overline>
+            <h2 className="mt-3 font-serif text-3xl text-galaxy-cream">Headline opportunity index</h2>
             <p className="mt-3 text-sm leading-6 text-galaxy-muted">
-              Current segment recapture headroom remains indexed and banded for CDE compliance. The index compares
-              the selected segment with the matched Galaxy x Mastercard CDE cohort, where 100 is the baseline.
+              This segment-specific readout ranks recapture priority with governed CDE indices and banded cash
+              opportunity signals.
             </p>
-            <div className="mt-4">
-              <IndexSignalLegend />
-            </div>
           </div>
           <div className="rounded-lg border border-galaxy-gold/30 bg-galaxy-ink/45 p-4">
-            <p className="text-sm font-semibold text-galaxy-gold">Headline opportunity index</p>
+            <p className="text-sm font-semibold text-galaxy-gold">Selected segment signal</p>
             <div className="mt-3 text-3xl font-semibold text-galaxy-cream">
               <IndexValue value={activeSegment.opportunityIndex} label="CDE opportunity signal" showSignal />
             </div>

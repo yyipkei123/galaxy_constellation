@@ -1,5 +1,16 @@
 import { render, screen } from '@testing-library/react';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { Panel } from './panel';
+
+const globalsCss = readFileSync(join(process.cwd(), 'src/app/globals.css'), 'utf8');
+
+function cssRuleFor(selector: string) {
+  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = globalsCss.match(new RegExp(`${escapedSelector}\\s*\\{([^}]*)\\}`));
+
+  return match?.[1] ?? '';
+}
 
 describe('Panel', () => {
   it('renders default panel content', () => {
@@ -32,6 +43,12 @@ describe('Panel', () => {
     );
   });
 
+  it('does not clip panel content through the shared glass panel stylesheet', () => {
+    expect(cssRuleFor('.galaxy-glass-panel')).not.toMatch(
+      /(?:^|;)\s*overflow\s*:\s*hidden\s*(?:;|$)/,
+    );
+  });
+
   it('supports glass depth without removing caller classes', () => {
     render(
       <Panel variant="glass" className="border-galaxy-gold/40">
@@ -42,5 +59,21 @@ describe('Panel', () => {
     const panel = screen.getByText('Glass panel').closest('section');
     expect(panel).toHaveClass('backdrop-blur');
     expect(panel).toHaveClass('border-galaxy-gold/40');
+  });
+
+  it('renders the Open Design glass material classes without changing the section contract', () => {
+    render(
+      <Panel variant="glass" className="px-4">
+        <h2>Glass surface</h2>
+      </Panel>,
+    );
+
+    const panel = screen.getByText('Glass surface').closest('section');
+
+    expect(panel).not.toBeNull();
+    expect(panel).toHaveClass('galaxy-glass-panel');
+    expect(panel).toHaveClass('rounded-[20px]');
+    expect(panel).toHaveClass('border-white/10');
+    expect(panel).not.toHaveClass('p-6');
   });
 });
