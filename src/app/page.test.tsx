@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { vi } from 'vitest';
 import {
   latestQuarter,
@@ -85,6 +85,14 @@ describe('overview route', () => {
     expect(screen.queryByRole('main')).not.toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Guest wallet intelligence hero' })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Executive summary' })).toBeInTheDocument();
+    const opportunitySnapshot = screen.getByRole('region', { name: 'Opportunity snapshot' });
+    expect(opportunitySnapshot).toBeInTheDocument();
+    expect(within(opportunitySnapshot).getByText('CDE index legend')).toBeInTheDocument();
+    expect(within(opportunitySnapshot).getByText(/100 = matched-cohort baseline/i)).toBeInTheDocument();
+    expect(within(opportunitySnapshot).getByText('<90')).toBeInTheDocument();
+    expect(within(opportunitySnapshot).getByText('90-109')).toBeInTheDocument();
+    expect(within(opportunitySnapshot).getByText('110-129')).toBeInTheDocument();
+    expect(within(opportunitySnapshot).getByText('130+')).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Boardroom answer' })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'How to read Galaxy Constellation' })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Decision workspace' })).toBeInTheDocument();

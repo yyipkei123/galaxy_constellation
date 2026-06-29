@@ -6,6 +6,7 @@ import { DashboardHero } from '@/components/dashboard/dashboard-hero';
 import { DecisionWorkspace } from '@/components/dashboard/decision-workspace';
 import { ExecutiveMetrics } from '@/components/dashboard/executive-metrics';
 import { getTopSegment, type DashboardTabId } from '@/components/dashboard/open-design-view-model';
+import { OpportunitySnapshot } from '@/components/dashboard/opportunity-snapshot';
 import { ReadingGuide } from '@/components/dashboard/reading-guide';
 import { useAppState } from '@/store/app-store';
 
@@ -47,6 +48,7 @@ export default function Home() {
     <div className="space-y-[18px] text-galaxy-cream">
       <DashboardHero methodology={methodology} quarter={selectedQuarter} />
       <ExecutiveMetrics methodology={methodology} segments={segments} />
+      <OpportunitySnapshot />
       <BoardroomBrief quarter={selectedQuarter} segment={selectedSegment} />
       <ReadingGuide onJump={jumpToWorkspace} />
       <DecisionWorkspace
