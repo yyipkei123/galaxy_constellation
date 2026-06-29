@@ -14,6 +14,7 @@ import { formatEnriched, formatGuestBand, formatPropensity } from '@/lib/format'
 
 export type DashboardTabId = 'opportunity' | 'wallet' | 'segments' | 'activation' | 'workbench';
 export type SegmentPriorityStatus = 'priority' | 'watch' | 'nurture';
+export type SegmentPriority = SegmentPriorityStatus;
 export type AssistantPromptId = 'map' | 'trust' | 'campaign' | 'default';
 
 export interface BuildOpenDesignDashboardViewModelInput {
@@ -24,7 +25,9 @@ export interface BuildOpenDesignDashboardViewModelInput {
 }
 
 export interface BoardroomBrief {
+  headline: string;
   title: string;
+  description: string;
   body: string;
   action: string;
   audience: string;
@@ -43,6 +46,8 @@ export interface ExecutiveMetric {
 export interface ConstellationPoint {
   id: string;
   name: string;
+  left: number;
+  top: number;
   x: number;
   y: number;
   size: number;
@@ -57,7 +62,9 @@ export interface ConstellationPoint {
 export interface WalletRow {
   category: CoreCategory;
   label: string;
+  capturedSharePct: number;
   capturedPct: number;
+  leakageSharePct: number;
   leakagePct: number;
   walletIndex: number;
   capturedLabel: string;
@@ -70,10 +77,14 @@ export interface WalletRow {
 export interface SegmentPriorityRow {
   id: string;
   name: string;
+  summary: string;
   rank: number;
   sizeBand: string;
+  audience: string;
+  index: number;
   opportunity: number;
   opportunityLabel: string;
+  priority: SegmentPriorityStatus;
   leakage: number;
   leakageLabel: string;
   propensity: number;
@@ -89,8 +100,12 @@ export interface ActivationPlaybookRow {
   segment: string;
   rank: number;
   title: string;
+  summary: string;
   channel: RecommendedPlay['channel'];
+  indexLabel: string;
   lever: string;
+  nextAction: string;
+  cashBand: string;
   offerAction: string;
   rationale: string;
   measurementWindow: string;
@@ -101,12 +116,14 @@ export interface ActivationPlaybookRow {
 export interface WorkbenchRow {
   id: string;
   segment: string;
+  index: string;
   opportunity: number;
   opportunityLabel: string;
   leakage: number;
   leakageLabel: string;
   propensity: number;
   propensityLabel: string;
+  confidence: string;
   formula: string;
   decision: string;
   guardrail: string;
@@ -169,17 +186,18 @@ export const dashboardTabs: Array<{ id: DashboardTabId; label: string }> = [
   { id: 'workbench', label: 'Workbench' },
 ];
 
-export const constellationPositions: Record<string, { x: number; y: number; size: number; tone: ConstellationPoint['tone'] }> = {
-  'cosmopolitan-connoisseurs': { x: 68, y: 31, size: 56, tone: 'gold' },
-  'gba-cross-border-explorers': { x: 77, y: 58, size: 48, tone: 'positive' },
-  'diamond-high-rollers': { x: 40, y: 24, size: 44, tone: 'gold' },
-  'aspiring-mass-affluent': { x: 28, y: 64, size: 60, tone: 'leak' },
-  'family-leisure-seekers': { x: 49, y: 76, size: 45, tone: 'positive' },
-  'mice-business-guests': { x: 26, y: 38, size: 46, tone: 'gold' },
+export const constellationPositions: Record<string, { left: number; top: number; x: number; y: number; size: number; tone: ConstellationPoint['tone'] }> = {
+  'cosmopolitan-connoisseurs': { left: 68, top: 31, x: 68, y: 31, size: 56, tone: 'gold' },
+  'gba-cross-border-explorers': { left: 77, top: 58, x: 77, y: 58, size: 48, tone: 'positive' },
+  'diamond-high-rollers': { left: 40, top: 24, x: 40, y: 24, size: 44, tone: 'gold' },
+  'aspiring-mass-affluent': { left: 28, top: 64, x: 28, y: 64, size: 60, tone: 'leak' },
+  'family-leisure-seekers': { left: 49, top: 76, x: 49, y: 76, size: 45, tone: 'positive' },
+  'mice-business-guests': { left: 26, top: 38, x: 26, y: 38, size: 46, tone: 'gold' },
 };
 
 const bannedDisplayPattern = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣/i;
 const unsafeCopyPattern = /raw[-\s]?spend|exact\s+spend/i;
+const nonFiniteTextPattern = /\b(?:NaN|Infinity)\b/i;
 
 const CATEGORY_LABELS: Record<CoreCategory, string> = {
   hospitality: 'Hospitality',
@@ -275,7 +293,15 @@ function average(values: number[]) {
 
 function safeCopy(value: unknown, fallback: string) {
   const text = typeof value === 'string' ? value.trim() : '';
-  if (!text || bannedDisplayPattern.test(text) || unsafeCopyPattern.test(text)) return fallback;
+  if (
+    !text
+    || bannedDisplayPattern.test(text)
+    || unsafeCopyPattern.test(text)
+    || nonFiniteTextPattern.test(text)
+  ) {
+    return fallback;
+  }
+
   return text;
 }
 
@@ -511,10 +537,15 @@ export function buildBoardroomBrief(quarter: Quarter | null | undefined, segment
   const safeSegment = normalizeSegment(segment);
   const play = firstPlay(safeSegment);
   const leakage = getPrimaryLeakage(safeSegment);
+  const description = 'Open the meeting with a decision, not a dashboard tour. The page then proves the recommendation through CDE-ranked opportunity, wallet leakage, and a governed campaign handoff.';
 
   if (safeSegment.id === 'no-active-segment') {
+    const title = `${safeQuarterLabel}: hold activation until CDE segment coverage is ready.`;
+
     return {
-      title: `${safeQuarterLabel}: hold activation until CDE segment coverage is ready.`,
+      headline: title,
+      title,
+      description,
       body: 'No active CDE segment is available for this quarter. Keep the overview in read-only mode until governed cohort signals are refreshed.',
       action: FALLBACK_PLAY.lever,
       audience: displayGuestBand(safeSegment),
@@ -523,8 +554,12 @@ export function buildBoardroomBrief(quarter: Quarter | null | undefined, segment
     };
   }
 
+  const title = `${safeQuarterLabel}: pitch ${safeSegment.name} first.`;
+
   return {
-    title: `${safeQuarterLabel}: pitch ${safeSegment.name} first.`,
+    headline: title,
+    title,
+    description,
     body: `${safeSegment.name} is the first decision: ${formatIndex(safeSegment.opportunityIndex)} opportunity, ${leakage.leakageLabel} ${leakage.label} leakage, and ${safeSegment.crossPropertyCashBand} modelled wallet band. Keep the move at cohort level and validate through the next CDE refresh.`,
     action: play.lever,
     audience: displayGuestBand(safeSegment),
@@ -595,7 +630,9 @@ export function buildWalletRows(segments: Segment[] | null | undefined): WalletR
     return {
       category,
       label: CATEGORY_LABELS[category],
+      capturedSharePct: capturedPct,
       capturedPct,
+      leakageSharePct: leakagePct,
       leakagePct,
       walletIndex,
       capturedLabel: formatPct(capturedPct),
@@ -618,10 +655,14 @@ export function buildSegmentPriorityRows(segments: Segment[] | null | undefined)
     return {
       id: segment.id,
       name: segment.name,
+      summary: segment.signatureTrait,
       rank: index + 1,
       sizeBand: displayGuestBand(segment),
+      audience: displayGuestBand(segment),
+      index: segment.opportunityIndex,
       opportunity: segment.opportunityIndex,
       opportunityLabel: compactIndex(segment.opportunityIndex),
+      priority: priorityForSegment(segment),
       leakage: leakage.leakagePct,
       leakageLabel: `${leakage.leakageLabel} ${leakage.label}`,
       propensity,
@@ -645,8 +686,12 @@ export function buildActivationPlaybookRows(segments: Segment[] | null | undefin
       segment: topSegment.name,
       rank: index + 1,
       title: safePlay.title,
+      summary: safePlay.rationale,
       channel: safePlay.channel,
+      indexLabel: compactIndex(topSegment.opportunityIndex),
       lever: safePlay.lever,
+      nextAction: safePlay.lever,
+      cashBand: topSegment.crossPropertyCashBand,
       offerAction: safePlay.offerTerm ?? safePlay.lever,
       rationale: safePlay.rationale,
       measurementWindow: 'Next quarterly CDE refresh',
@@ -657,6 +702,13 @@ export function buildActivationPlaybookRows(segments: Segment[] | null | undefin
 }
 
 export const buildPlaybookRows = buildActivationPlaybookRows;
+
+function confidenceForRow(index: number, row: SegmentPriorityRow) {
+  if (index === 0) return 'Strong coverage';
+  if (row.status === 'watch' || row.channel === 'Online') return 'Mobile-ready';
+  if (row.status === 'priority') return 'Broad sample';
+  return 'High value, smaller base';
+}
 
 function decisionForRow(index: number, status: SegmentPriorityStatus) {
   if (index === 0) return 'Pitch first';
@@ -670,10 +722,14 @@ export function buildWorkbenchRows(segments: Segment[] | null | undefined): Work
   const visibleRows = rows.length > 0 ? rows.slice(0, 4) : [{
     id: 'no-active-segment',
     name: 'No active segment',
+    summary: 'No active CDE segment is available.',
     rank: 1,
     sizeBand: '0-0k matched guests',
+    audience: '0-0k matched guests',
+    index: 0,
     opportunity: 0,
     opportunityLabel: compactIndex(0),
+    priority: 'nurture' as const,
     leakage: 0,
     leakageLabel: `${formatPct(0)} Hospitality`,
     propensity: 0,
@@ -686,12 +742,14 @@ export function buildWorkbenchRows(segments: Segment[] | null | undefined): Work
   return visibleRows.map((row, index) => ({
     id: `${row.id}-workbench`,
     segment: row.name,
+    index: String(row.opportunity),
     opportunity: row.opportunity,
     opportunityLabel: row.opportunityLabel,
     leakage: row.leakage,
     leakageLabel: row.leakageLabel,
     propensity: row.propensity,
     propensityLabel: row.propensityLabel,
+    confidence: row.id === 'no-active-segment' ? 'Awaiting coverage' : confidenceForRow(index, row),
     formula: 'Opportunity index + primary category leakage + propensity + channel readiness.',
     decision: row.id === 'no-active-segment' ? 'Await governed segment' : decisionForRow(index, row.status),
     guardrail: 'Use the score to pick the next cohort action, then measure with holdout at refresh.',
@@ -755,24 +813,29 @@ export function buildConstellationPoints(
   const selected = selectedId(selectedSegmentId);
   const ranked = rankedSegments(segments);
   const topId = ranked[0]?.id ?? '';
+  const selectedExists = selected ? ranked.some((segment) => segment.id === selected) : false;
 
   return ranked.map((segment, index) => {
     const position = constellationPositions[segment.id];
     const leakage = getPrimaryLeakage(segment);
-    const generatedX = 18 + ((index * 29) % 64);
-    const generatedY = 22 + ((index * 37) % 58);
+    const generatedLeft = 18 + ((index * 29) % 64);
+    const generatedTop = 22 + ((index * 37) % 58);
+    const left = position?.left ?? generatedLeft;
+    const top = position?.top ?? generatedTop;
     const generatedSize = Math.min(64, Math.max(32, 32 + Math.round(segment.opportunityIndex / 4)));
 
     return {
       id: segment.id,
       name: segment.name,
-      x: position?.x ?? generatedX,
-      y: position?.y ?? generatedY,
+      left,
+      top,
+      x: position?.x ?? left,
+      y: position?.y ?? top,
       size: position?.size ?? generatedSize,
       rank: index + 1,
       opportunity: segment.opportunityIndex,
       leakage: leakage.leakagePct,
-      isSelected: selected ? segment.id === selected : segment.id === topId,
+      isSelected: selectedExists ? segment.id === selected : segment.id === topId,
       isTop: segment.id === topId,
       tone: position?.tone ?? (priorityForSegment(segment) === 'priority' ? 'gold' : 'market'),
     };

@@ -13,7 +13,24 @@ import {
 const bannedCopyPattern = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣|NaN|Infinity|raw[-\s]?spend|exact\s+spend/i;
 
 function expectDisplaySafe(value: unknown) {
-  expect(JSON.stringify(value)).not.toMatch(bannedCopyPattern);
+  if (typeof value === 'number') {
+    expect(Number.isFinite(value)).toBe(true);
+    return;
+  }
+
+  if (typeof value === 'string') {
+    expect(value).not.toMatch(bannedCopyPattern);
+    return;
+  }
+
+  if (Array.isArray(value)) {
+    value.forEach(expectDisplaySafe);
+    return;
+  }
+
+  if (value && typeof value === 'object') {
+    Object.values(value).forEach(expectDisplaySafe);
+  }
 }
 
 describe('open design dashboard view model', () => {
@@ -43,7 +60,9 @@ describe('open design dashboard view model', () => {
 
     expect(model.topSegment.name).toBe(expectedTopSegment.name);
     expect(model.topSegment.name).toBe('Cosmopolitan Connoisseurs');
+    expect(model.boardroomBrief.headline).toBe('2026 Q2: pitch Cosmopolitan Connoisseurs first.');
     expect(model.boardroomBrief.title).toBe('2026 Q2: pitch Cosmopolitan Connoisseurs first.');
+    expect(model.boardroomBrief.description).toContain('Open the meeting with a decision');
     expect(model.boardroomBrief.body).toContain('CDE index signal 118');
     expect(model.boardroomBrief.body).toContain('Retail/Luxury leakage');
     expect(model.boardroomBrief.action).toBe('Reservation-linked retail benefit');
@@ -72,6 +91,8 @@ describe('open design dashboard view model', () => {
     model.constellationPoints.forEach((point) => {
       expect(Number.isFinite(point.x)).toBe(true);
       expect(Number.isFinite(point.y)).toBe(true);
+      expect(Number.isFinite(point.left)).toBe(true);
+      expect(Number.isFinite(point.top)).toBe(true);
       expect(Number.isFinite(point.size)).toBe(true);
       expect(Number.isFinite(point.rank)).toBe(true);
     });
@@ -79,6 +100,8 @@ describe('open design dashboard view model', () => {
     expect(model.walletRows.map((row) => row.category)).toEqual([...CORE_CATEGORIES]);
     expect(model.walletRows[0]).toMatchObject({
       label: 'Hospitality',
+      capturedSharePct: expect.any(Number),
+      leakagePct: expect.any(Number),
       capturedLabel: expect.stringMatching(/^\d+%$/),
       leakageLabel: expect.stringMatching(/^\d+%$/),
       indexLabel: expect.stringMatching(/^CDE index signal \d+$/),
@@ -88,6 +111,8 @@ describe('open design dashboard view model', () => {
       id: expectedTopSegment.id,
       name: expectedTopSegment.name,
       status: 'priority',
+      priority: 'priority',
+      summary: expectedTopSegment.signatureTrait,
       channel: 'Hybrid',
       action: 'Reservation-linked retail benefit',
     });
@@ -100,12 +125,18 @@ describe('open design dashboard view model', () => {
       segment: 'Cosmopolitan Connoisseurs',
       channel: 'Hybrid',
       lever: 'Reservation-linked retail benefit',
+      nextAction: 'Reservation-linked retail benefit',
+      summary: expect.stringContaining('High F&B intensity'),
+      indexLabel: 'Index 118',
+      cashBand: '14-22k equiv./mo',
       offerAction: 'Chef table access with curated boutique appointment',
       measurementWindow: 'Next quarterly CDE refresh',
     });
 
     expect(model.workbenchRows[0]).toMatchObject({
       segment: 'Cosmopolitan Connoisseurs',
+      index: '118',
+      confidence: 'Strong coverage',
       decision: 'Pitch first',
     });
     expect(model.guardrails.map((guardrail) => guardrail.id)).toEqual([
@@ -150,11 +181,12 @@ describe('open design dashboard view model', () => {
 
   it('sanitizes malformed and non-finite segment input before building copy', () => {
     const malformedSegment = {
-      id: 'HKD-segment',
-      name: 'MOP Segment $',
+      id: 'nan-segment',
+      name: 'NaN Infinity Segment',
       sizeLowK: Number.NaN,
       sizeHighK: Number.POSITIVE_INFINITY,
-      sizeBand: 'HKD $1 matched guests',
+      sizeBand: 'Infinity matched guests',
+      signatureTrait: 'NaN exact spend signal',
       metrics: {
         shareOfWallet: Number.NaN,
         shareOfVisits: Number.POSITIVE_INFINITY,
@@ -179,10 +211,10 @@ describe('open design dashboard view model', () => {
       opportunityIndex: Number.POSITIVE_INFINITY,
       recommendedPlays: [
         {
-          title: 'HKD offer',
-          lever: '$ raw spend extraction',
+          title: 'Infinity offer',
+          lever: 'NaN activation path',
           rationale: 'Use raw spend to calculate exact spend.',
-          offerTerm: 'MOP 500',
+          offerTerm: 'Infinity benefit',
           channel: 'Online',
         },
       ],
@@ -234,6 +266,21 @@ describe('open design dashboard view model', () => {
     expect(buildWorkbenchRows(segments)[0]).toMatchObject({
       segment: 'High Opportunity',
       decision: 'Pitch first',
+    });
+  });
+
+  it('falls back to the top constellation point when selected segment id is stale', () => {
+    const model = buildOpenDesignDashboardViewModel({
+      selectedQuarter: latestQuarter,
+      segments: latestSegments,
+      methodology,
+      selectedSegmentId: 'stale-segment-id',
+    });
+
+    expect(model.constellationPoints.filter((point) => point.isSelected)).toHaveLength(1);
+    expect(model.constellationPoints.find((point) => point.isSelected)).toMatchObject({
+      id: model.topSegment.id,
+      isTop: true,
     });
   });
 
