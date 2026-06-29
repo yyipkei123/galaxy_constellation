@@ -25,4 +25,22 @@ describe('AppShell', () => {
     expect(screen.getByText('Galaxy Macau x Mastercard CDE')).toBeInTheDocument();
     expect(screen.getByText(/Enriched figures are modelled estimates/i)).toBeInTheDocument();
   });
+
+  it('keeps the side rail sticky without applying glass positioning to the aside', () => {
+    render(
+      <AppStateProvider>
+        <AppShell>
+          <section aria-label="test content">Route content</section>
+        </AppShell>
+      </AppStateProvider>,
+    );
+
+    const sideRail = screen.getByTestId('app-shell-side-rail');
+
+    expect(sideRail).toHaveClass('lg:sticky');
+    expect(sideRail).toHaveClass('lg:top-0');
+    expect(sideRail).toHaveClass('lg:h-screen');
+    expect(sideRail).not.toHaveClass('galaxy-glass-panel');
+    expect(sideRail.querySelector('.galaxy-glass-panel')).toBeInTheDocument();
+  });
 });

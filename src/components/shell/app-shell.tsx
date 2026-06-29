@@ -11,13 +11,18 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="relative z-[1] min-h-screen text-galaxy-cream">
       <div className="mx-auto grid min-h-screen w-full max-w-[1680px] min-w-0 border-x border-white/10 bg-galaxy-ink/30 backdrop-blur-[6px] lg:grid-cols-[280px_minmax(0,1fr)]">
-        <aside className="galaxy-glass-panel min-w-0 border-b border-white/10 px-[18px] py-[18px] lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r lg:px-[22px] lg:py-7">
-          <CoBrandLockup />
-          <div className="mt-[18px] min-w-0 lg:mt-9">
-            <Nav />
-          </div>
-          <div className="hidden lg:block">
-            <CurrentRefreshCard />
+        <aside
+          data-testid="app-shell-side-rail"
+          className="min-w-0 border-b border-white/10 lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r"
+        >
+          <div className="galaxy-glass-panel min-h-full min-w-0 px-[18px] py-[18px] lg:h-full lg:px-[22px] lg:py-7">
+            <CoBrandLockup />
+            <div className="mt-[18px] min-w-0 lg:mt-9">
+              <Nav />
+            </div>
+            <div className="hidden lg:block">
+              <CurrentRefreshCard />
+            </div>
           </div>
         </aside>
 
