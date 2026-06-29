@@ -12,11 +12,11 @@ function heatClass(value: number) {
 
 export function SeasonalityHeatmap({ corridors, showNotes = true }: { corridors: Corridor[]; showNotes?: boolean }) {
   return (
-    <div>
+    <div className="min-w-0 max-w-full">
       <p className="mb-3 text-xs leading-5 text-galaxy-muted">
         Travel intensity index by month; 100 = this corridor monthly baseline.
       </p>
-      <div className="overflow-x-auto">
+      <div className="max-w-full overflow-x-auto">
         <table
           role="table"
           aria-label="Corridor seasonality heatmap"
