@@ -8,7 +8,7 @@ vi.mock('next/navigation', () => ({
 }));
 
 describe('AppShell', () => {
-  it('keeps route content in the main landmark and mounts the assistant launcher globally', () => {
+  it('keeps route content in the main landmark and mounts global affordances', () => {
     render(
       <AppStateProvider>
         <AppShell>
@@ -20,5 +20,9 @@ describe('AppShell', () => {
     expect(screen.getByRole('main')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Open AI insight assistant' })).toBeInTheDocument();
     expect(screen.getByLabelText('test content')).toHaveTextContent('Route content');
+    expect(screen.getByLabelText('Current CDE refresh')).toHaveTextContent('2026 Q2');
+    expect(screen.getByText('Galaxy Constellation')).toBeInTheDocument();
+    expect(screen.getByText('Galaxy Macau x Mastercard CDE')).toBeInTheDocument();
+    expect(screen.getByText(/Enriched figures are modelled estimates/i)).toBeInTheDocument();
   });
 });
