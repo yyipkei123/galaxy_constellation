@@ -7,10 +7,15 @@ import { ExecutiveMetrics } from './executive-metrics';
 import { buildBoardroomBrief, buildExecutiveMetrics, getTopSegment } from './open-design-view-model';
 import { ReadingGuide } from './reading-guide';
 
-const bannedDisplayCopy = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|NaN|Infinity|raw[-\s]?spend|exact\s+spend/i;
+const bannedDisplayCopy = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣|NaN|Infinity|raw[-\s]?spend|exact\s+spend/i;
 
 function expectCdeSafeOutput(container: HTMLElement) {
   expect(container.textContent).not.toMatch(bannedDisplayCopy);
+  container.querySelectorAll('*').forEach((element) => {
+    Array.from(element.attributes).forEach((attribute) => {
+      expect(attribute.value).not.toMatch(bannedDisplayCopy);
+    });
+  });
 }
 
 describe('Open Design static overview sections', () => {
@@ -71,6 +76,18 @@ describe('Open Design static overview sections', () => {
     expect(screen.getByRole('heading', { name: `${latestQuarter.label} snapshot` })).toBeInTheDocument();
     expect(screen.getByLabelText(`${methodology.matchedCoveragePct} percent matched CDE coverage`)).toBeInTheDocument();
     expect(screen.queryByRole('main')).not.toBeInTheDocument();
+    expectCdeSafeOutput(container);
+  });
+
+  it('sanitizes malformed quarter labels in the hero refresh heading', () => {
+    const { container } = render(
+      <DashboardHero
+        methodology={methodology}
+        quarter={{ ...latestQuarter, label: 'HKD NaN 元 Q2' }}
+      />,
+    );
+
+    expect(screen.getByRole('heading', { name: 'No active quarter snapshot' })).toBeInTheDocument();
     expectCdeSafeOutput(container);
   });
 

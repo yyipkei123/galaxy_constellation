@@ -6,6 +6,8 @@ interface DashboardHeroProps {
   quarter?: Quarter | null;
 }
 
+const unsafeDisplayCopyPattern = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣|NaN|Infinity|raw[-\s]?spend|exact\s+spend/i;
+
 function finiteNumber(value: number | undefined): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : 0;
 }
@@ -14,11 +16,18 @@ function clampPct(value: number): number {
   return Math.max(0, Math.min(100, Math.round(value)));
 }
 
+function safeQuarterLabel(value: unknown): string {
+  const label = typeof value === 'string' ? value.trim() : '';
+
+  if (!label || unsafeDisplayCopyPattern.test(label)) return 'No active quarter';
+  return label;
+}
+
 export function DashboardHero({ methodology, quarter }: DashboardHeroProps) {
   const coverage = clampPct(finiteNumber(methodology?.matchedCoveragePct));
   const activeMetricCount = Math.max(0, Math.round(finiteNumber(methodology?.activeMetricCount)));
   const coverageDegrees = Math.round((coverage / 100) * 360);
-  const quarterLabel = quarter?.label ?? 'No active quarter';
+  const quarterLabel = safeQuarterLabel(quarter?.label);
   const ringStyle = {
     background: `conic-gradient(var(--galaxy-accent) 0deg ${coverageDegrees}deg, rgba(255,255,255,0.07) ${coverageDegrees}deg 360deg)`,
   } satisfies CSSProperties;
