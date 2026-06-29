@@ -91,6 +91,13 @@ describe('overview route', () => {
     expect(screen.getByRole('complementary', { name: 'Ask CDE AI' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Find the wallet gap Galaxy can win next/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Wallet headroom constellation/i })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Boardroom answer' })).toHaveTextContent(
+      /pitch Cosmopolitan Connoisseurs first/i,
+    );
+    expect(screen.getByRole('button', { name: /Select Cosmopolitan Connoisseurs/i })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
     expect(screen.getByRole('tablist', { name: 'Dashboard workspace tabs' })).toBeInTheDocument();
     expectCdeSafeOutput(container);
   });

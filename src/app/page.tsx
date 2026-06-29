@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { BoardroomBrief } from '@/components/dashboard/boardroom-brief';
 import { DashboardHero } from '@/components/dashboard/dashboard-hero';
 import { DecisionWorkspace } from '@/components/dashboard/decision-workspace';
@@ -12,11 +13,21 @@ export default function Home() {
   const {
     selectedQuarter,
     segments,
-    selectedSegmentId,
     setSelectedSegmentId,
     methodology,
   } = useAppState();
-  const selectedSegment = segments.find((segment) => segment.id === selectedSegmentId) ?? getTopSegment(segments);
+  const topSegment = getTopSegment(segments);
+  const [dashboardSegmentId, setDashboardSegmentId] = useState(topSegment.id);
+  const selectedSegment = segments.find((segment) => segment.id === dashboardSegmentId) ?? topSegment;
+
+  useEffect(() => {
+    setDashboardSegmentId(topSegment.id);
+  }, [selectedQuarter.id, topSegment.id]);
+
+  function selectDashboardSegment(segmentId: string) {
+    setDashboardSegmentId(segmentId);
+    setSelectedSegmentId(segmentId);
+  }
 
   function jumpToWorkspace(tabId: DashboardTabId) {
     const tab = document.getElementById(`dashboard-tab-${tabId}`);
@@ -43,7 +54,7 @@ export default function Home() {
         quarter={selectedQuarter}
         segments={segments}
         selectedSegmentId={selectedSegment.id}
-        onSelectedSegmentChange={setSelectedSegmentId}
+        onSelectedSegmentChange={selectDashboardSegment}
       />
     </div>
   );
