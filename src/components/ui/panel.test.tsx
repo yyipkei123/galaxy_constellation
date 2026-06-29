@@ -43,4 +43,20 @@ describe('Panel', () => {
     expect(panel).toHaveClass('backdrop-blur');
     expect(panel).toHaveClass('border-galaxy-gold/40');
   });
+
+  it('renders the Open Design glass material classes without changing the section contract', () => {
+    render(
+      <Panel variant="glass" className="px-4">
+        <h2>Glass surface</h2>
+      </Panel>,
+    );
+
+    const panel = screen.getByText('Glass surface').closest('section');
+
+    expect(panel).not.toBeNull();
+    expect(panel).toHaveClass('galaxy-glass-panel');
+    expect(panel).toHaveClass('rounded-[20px]');
+    expect(panel).toHaveClass('border-white/10');
+    expect(panel).not.toHaveClass('p-6');
+  });
 });
