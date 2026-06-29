@@ -87,8 +87,12 @@ test.describe('Galaxy Constellation rendered compliance', () => {
       await expect(body).not.toContainText('$');
 
       if (route === '/') {
-        await expect(page.getByRole('heading', { name: /This period's headline findings/i })).toBeVisible();
-        await expect(page.getByRole('heading', { name: /Insight engine/i })).toBeVisible();
+        await expect(page.getByRole('region', { name: 'Guest wallet intelligence hero' })).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Find the wallet gap Galaxy can win next/i })).toBeVisible();
+        await expect(page.getByRole('region', { name: 'Boardroom answer' })).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Wallet headroom constellation/i })).toBeVisible();
+        await expect(page.getByRole('region', { name: 'How to read Galaxy Constellation' })).toBeVisible();
+        await expect(page.getByRole('complementary', { name: 'Ask CDE AI' })).toBeVisible();
       }
 
       if (route === '/wallet') {
@@ -269,9 +273,21 @@ test.describe('Galaxy Constellation rendered compliance', () => {
     await page.goto('/');
 
     await expect(page.getByRole('link', { name: /Overview/i })).toBeVisible();
-    await expect(page.getByLabel(/Quarter selector/i)).toBeVisible();
+    await expect(page.getByRole('group', { name: /Quarter selector/i })).toBeVisible();
     await expect(page.getByRole('banner').getByLabel('Galaxy Macau and Mastercard data partnership')).toBeVisible();
-    await expect(page.getByRole('heading', { name: /Galaxy Constellation/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Find the wallet gap Galaxy can win next/i })).toBeVisible();
+  });
+
+  test('mobile overview keeps Open Design dashboard within viewport width', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+
+    await expect(page.getByRole('heading', { name: /Find the wallet gap Galaxy can win next/i })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'How to read Galaxy Constellation' })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Decision workspace' })).toBeVisible();
+    await expect(page.getByRole('complementary', { name: 'Ask CDE AI' })).toBeVisible();
+    await expect(page.locator('body')).not.toContainText(/HKD|MOP|\$|元|澳門幣/);
+    expect(await documentScrollWidth(page)).toBeLessThanOrEqual(390);
   });
 
   test('mobile viewport keeps leakage heading and methodology accessible', async ({ page }) => {
