@@ -74,6 +74,18 @@ function Probe() {
   );
 }
 
+function PresenterModeProbe() {
+  const { isPresenterMode, setPresenterMode, togglePresenterMode } = useAppState();
+
+  return (
+    <div>
+      <output aria-label="presenter mode">{String(isPresenterMode)}</output>
+      <button type="button" onClick={() => setPresenterMode(true)}>Enable presenter mode</button>
+      <button type="button" onClick={togglePresenterMode}>Toggle presenter mode</button>
+    </div>
+  );
+}
+
 describe('AppStateProvider sprint 3 state', () => {
   it('launches campaigns and saves scenarios through app state actions', () => {
     render(
@@ -116,5 +128,21 @@ describe('AppStateProvider sprint 3 state', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Launch shared diamond' }));
 
     expect(screen.getByLabelText('launched campaign count')).toHaveTextContent('2');
+  });
+
+  it('toggles presenter mode through app state', () => {
+    render(
+      <AppStateProvider>
+        <PresenterModeProbe />
+      </AppStateProvider>,
+    );
+
+    expect(screen.getByLabelText('presenter mode')).toHaveTextContent('false');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Enable presenter mode' }));
+    expect(screen.getByLabelText('presenter mode')).toHaveTextContent('true');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Toggle presenter mode' }));
+    expect(screen.getByLabelText('presenter mode')).toHaveTextContent('false');
   });
 });

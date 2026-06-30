@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { PresenterModeToggle } from '@/components/presentation/presenter-mode-toggle';
 import { useAppState } from '@/store/app-store';
 import { BrandPartnershipBadge } from './brand-partnership-badge';
 import { CdeSignalGuide } from './cde-signal-guide';
@@ -76,9 +77,9 @@ export function TopBar() {
   return (
     <header className="galaxy-glass-panel flex min-h-16 flex-col gap-4 rounded-[18px] border border-white/10 px-[18px] py-3.5 md:flex-row md:items-center md:justify-between">
       <div className="min-w-0">
-        <h1 className="m-0 text-sm font-semibold leading-tight text-galaxy-cream">
+        <p className="m-0 text-sm font-semibold leading-tight text-galaxy-cream">
           Executive wallet intelligence cockpit
-        </h1>
+        </p>
         <p className="mt-1 max-w-[62ch] text-[13px] leading-5 text-galaxy-muted">
           Turn Galaxy behavioral signals plus Mastercard CDE into a ranked marketing action plan for each quarter.
         </p>
@@ -120,6 +121,7 @@ export function TopBar() {
             );
           })}
         </div>
+        <PresenterModeToggle />
         <button
           type="button"
           onClick={copyNarrative}

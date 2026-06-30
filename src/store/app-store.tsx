@@ -71,6 +71,9 @@ interface AppStateValue {
   setSelectedSegmentId: (segmentId: string) => void;
   selectedPersonaId: string;
   setSelectedPersonaId: (personaId: string) => void;
+  isPresenterMode: boolean;
+  setPresenterMode: (enabled: boolean) => void;
+  togglePresenterMode: () => void;
   methodology: Methodology;
   filters: AudienceFilters;
   setFilters: (filters: SetStateAction<AudienceFilters>) => void;
@@ -99,6 +102,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [selectedQuarterId, setSelectedQuarterIdState] = useState(latestQuarter.id);
   const [selectedSegmentId, setSelectedSegmentIdState] = useState(latestSegments[0].id);
   const [selectedPersonaId, setSelectedPersonaIdState] = useState('');
+  const [isPresenterMode, setPresenterMode] = useState(false);
   const [filters, setFiltersState] = useState<AudienceFilters>(defaultAudienceFilters);
   const [savedAudiences, setSavedAudiences] = useState<SavedAudience[]>([]);
   const [campaignToast, setCampaignToast] = useState<CampaignToast | null>(null);
@@ -129,6 +133,10 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
   const setSelectedPersonaId = useCallback((personaId: string) => {
     setSelectedPersonaIdState(personaId);
+  }, []);
+
+  const togglePresenterMode = useCallback(() => {
+    setPresenterMode((current) => !current);
   }, []);
 
   const setFilters = useCallback((nextFilters: SetStateAction<AudienceFilters>) => {
@@ -202,6 +210,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setSelectedSegmentId,
     selectedPersonaId,
     setSelectedPersonaId,
+    isPresenterMode,
+    setPresenterMode,
+    togglePresenterMode,
     methodology,
     filters,
     setFilters,
@@ -219,6 +230,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   }), [
     campaignToast,
     filters,
+    isPresenterMode,
     launchCampaign,
     launchedCampaigns,
     removeSavedAudience,
@@ -235,6 +247,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setSelectedPersonaId,
     setSelectedQuarterId,
     setSelectedSegmentId,
+    togglePresenterMode,
   ]);
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;

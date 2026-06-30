@@ -437,6 +437,25 @@ describe('TopBar', () => {
     expect(container.textContent).not.toMatch(/HKD|MOP|\$|元|澳門幣/i);
   });
 
+  it('uses a non-heading cockpit label and toggles presenter mode', () => {
+    render(
+      <AppStateProvider>
+        <TopBar />
+      </AppStateProvider>,
+    );
+
+    expect(screen.getByRole('banner')).toHaveTextContent('Executive wallet intelligence cockpit');
+    expect(screen.queryByRole('heading', { name: 'Executive wallet intelligence cockpit' })).not.toBeInTheDocument();
+
+    const presenterToggle = screen.getByRole('button', { name: 'Turn presenter mode on' });
+    expect(presenterToggle).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(presenterToggle);
+
+    expect(screen.getByRole('button', { name: 'Turn presenter mode off' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText('Presenter')).toBeInTheDocument();
+  });
+
   it('keeps fixed assistant bottom clearance after the footer instead of inside main', () => {
     const { container } = render(
       <AppStateProvider>
