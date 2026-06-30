@@ -211,7 +211,7 @@ export const presentationSteps: PresentationStep[] = [
     observation: 'The corridor detail moves from aggregate source-market signal into persona, timing, offer, and content hand-off.',
     recommendedAction: 'Use Korea as one proof screen, then move quickly into the campaign content hand-off.',
     nextHref: '/acquisition?corridor=korea',
-    nextLabel: 'Generate campaign content',
+    nextLabel: 'Open acquisition hand-off',
     tourSummary: 'Show why Korea is the priority corridor.',
   },
   {

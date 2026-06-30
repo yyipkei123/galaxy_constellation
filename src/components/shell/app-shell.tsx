@@ -31,9 +31,13 @@ export function AppShell({ children }: { children: ReactNode }) {
             <TopBar />
           </div>
           <main className="min-w-0 flex-1 px-3 py-[18px] sm:px-5 md:px-[26px]">
-            <div className="space-y-[18px]">
-              <StoryActionStrip />
-              {children}
+            <div className="flex flex-col gap-[18px]">
+              <div className="order-2 md:order-1">
+                <StoryActionStrip />
+              </div>
+              <div className="order-1 md:order-2">
+                {children}
+              </div>
             </div>
           </main>
           <footer className="border-t border-white/10 px-5 py-4 md:px-[26px]">

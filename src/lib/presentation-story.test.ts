@@ -24,6 +24,14 @@ describe('presentation story model', () => {
     expect(resolvePresentationStep('/corridors').id).toBe('sourceMarkets');
   });
 
+  it('keeps corridor detail presentation next action distinct from page CTAs', () => {
+    const corridorDetail = resolvePresentationStep('/corridors/korea');
+
+    expect(corridorDetail.nextHref).toBe('/acquisition?corridor=korea');
+    expect(corridorDetail.nextLabel).toBe('Open acquisition hand-off');
+    expect(corridorDetail.nextLabel).not.toBe('Generate campaign content');
+  });
+
   it('keeps the recommended presenter tour focused on the Lens A decision story', () => {
     expect(mainPresenterTourStops.map((step) => step.id)).toEqual([
       'journey',

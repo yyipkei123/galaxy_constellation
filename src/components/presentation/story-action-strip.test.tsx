@@ -45,4 +45,22 @@ describe('StoryActionStrip', () => {
     expect(within(strip).getByText('Customer 360')).toBeInTheDocument();
     expect(within(strip).getByRole('link', { name: /Build target audience/i })).toHaveAttribute('href', '/propensity');
   });
+
+  it('uses a distinct next-action label for corridor detail guidance', () => {
+    mockPathname = '/corridors/korea';
+
+    render(
+      <AppStateProvider>
+        <StoryActionStrip />
+      </AppStateProvider>,
+    );
+
+    const strip = screen.getByRole('region', { name: 'Client presentation guidance' });
+    expect(within(strip).getByText('Corridor proof')).toBeInTheDocument();
+    expect(within(strip).getByRole('link', { name: /Open acquisition hand-off/i })).toHaveAttribute(
+      'href',
+      '/acquisition?corridor=korea',
+    );
+    expect(within(strip).queryByRole('link', { name: /Generate campaign content/i })).not.toBeInTheDocument();
+  });
 });

@@ -34,6 +34,21 @@ describe('AppShell', () => {
     expect(screen.getByText(/Enriched figures are modelled estimates/i)).toBeInTheDocument();
   });
 
+  it('orders route content before presentation guidance on small screens', () => {
+    render(
+      <AppStateProvider>
+        <AppShell>
+          <section aria-label="test content">Route content</section>
+        </AppShell>
+      </AppStateProvider>,
+    );
+
+    expect(screen.getByRole('region', { name: 'Client presentation guidance' }).parentElement).toHaveClass('order-2');
+    expect(screen.getByRole('region', { name: 'Client presentation guidance' }).parentElement).toHaveClass('md:order-1');
+    expect(screen.getByLabelText('test content').parentElement).toHaveClass('order-1');
+    expect(screen.getByLabelText('test content').parentElement).toHaveClass('md:order-2');
+  });
+
   it('keeps the side rail sticky without applying glass positioning to the aside', () => {
     render(
       <AppStateProvider>
