@@ -2,34 +2,13 @@
 
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { ChevronRight, Presentation, X } from 'lucide-react';
+import { mainPresenterTourStops } from '@/lib/presentation-story';
 
-const presenterStops = [
-  {
-    title: 'Overview',
-    route: '/',
-    summary: 'Start with the portfolio headline, current-quarter CDE coverage, and the top executive finding.',
-  },
-  {
-    title: 'Segments',
-    route: '/segments',
-    summary: 'Move into the persona universe to show where wallet leakage and propensity create activation priority.',
-  },
-  {
-    title: 'Guests',
-    route: '/guests',
-    summary: 'Use the priority lead board and Customer 360 route to connect segment strategy to host action.',
-  },
-  {
-    title: 'Measurement',
-    route: '/measurement',
-    summary: 'Close with holdout proof, lift over time, and the test-versus-control method before scale-up.',
-  },
-  {
-    title: 'Governance',
-    route: '/governance',
-    summary: 'Finish by showing the aggregate panel, privacy controls, and assistant audit trail.',
-  },
-] as const;
+const presenterStops = mainPresenterTourStops.map((step) => ({
+  title: step.title,
+  route: step.href,
+  summary: step.tourSummary,
+}));
 
 const stopCount = presenterStops.length;
 const focusableControlSelector =

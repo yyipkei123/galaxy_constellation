@@ -3,6 +3,18 @@ import { PresenterTour } from './presenter-tour';
 
 describe('PresenterTour', () => {
   it('opens a deterministic presenter tour and advances through the required stops', () => {
+    const expectedStops = [
+      ['1 of 9', 'Journey', 'Route: /journey'],
+      ['2 of 9', 'Overview', 'Route: /'],
+      ['3 of 9', 'Wallet', 'Route: /wallet'],
+      ['4 of 9', 'Segments', 'Route: /segments'],
+      ['5 of 9', 'Guests', 'Route: /guests'],
+      ['6 of 9', 'Audience', 'Route: /propensity'],
+      ['7 of 9', 'Activation', 'Route: /activation'],
+      ['8 of 9', 'Measurement', 'Route: /measurement'],
+      ['9 of 9', 'Governance', 'Route: /governance'],
+    ];
+
     render(<PresenterTour />);
 
     const launcher = screen.getByRole('button', { name: 'Open presenter tour' });
@@ -12,18 +24,15 @@ describe('PresenterTour', () => {
 
     const dialog = screen.getByRole('dialog', { name: 'Presenter tour' });
     expect(launcher).toHaveAttribute('aria-expanded', 'true');
-    expect(within(dialog).getByText('1 of 5')).toBeInTheDocument();
-    expect(within(dialog).getByRole('heading', { name: 'Overview' })).toBeInTheDocument();
 
-    [
-      ['2 of 5', 'Segments'],
-      ['3 of 5', 'Guests'],
-      ['4 of 5', 'Measurement'],
-      ['5 of 5', 'Governance'],
-    ].forEach(([count, title]) => {
-      fireEvent.click(within(dialog).getByRole('button', { name: 'Next stop' }));
+    expectedStops.forEach(([count, title, route], index) => {
+      if (index > 0) {
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Next stop' }));
+      }
+
       expect(within(dialog).getByText(count)).toBeInTheDocument();
       expect(within(dialog).getByRole('heading', { name: title })).toBeInTheDocument();
+      expect(within(dialog).getByText(route)).toBeInTheDocument();
     });
 
     fireEvent.click(within(dialog).getByRole('button', { name: 'Close' }));
