@@ -83,6 +83,7 @@ test.describe('Galaxy Constellation rendered compliance', () => {
       await expect(partnershipBadge).toBeVisible();
       await expect(partnershipBadge.getByRole('img', { name: 'Galaxy Macau' })).toBeVisible();
       await expect(partnershipBadge.getByRole('img', { name: 'Mastercard' })).toBeVisible();
+      await expect(page.getByRole('region', { name: 'Client presentation guidance' })).toBeVisible();
       await expect(body).not.toContainText('HKD');
       await expect(body).not.toContainText('$');
 
@@ -90,6 +91,7 @@ test.describe('Galaxy Constellation rendered compliance', () => {
         await expect(page.getByRole('region', { name: 'Guest wallet intelligence hero' })).toBeVisible();
         await expect(page.getByRole('heading', { name: /Find the wallet gap Galaxy can win next/i })).toBeVisible();
         await expect(page.getByRole('region', { name: 'Boardroom answer' })).toBeVisible();
+        await expect(page.getByRole('region', { name: 'Client boardroom summary' })).toBeVisible();
         await expect(page.getByRole('heading', { name: /Wallet headroom constellation/i })).toBeVisible();
         await expect(page.getByRole('region', { name: 'How to read Galaxy Constellation' })).toBeVisible();
         await expect(page.getByRole('complementary', { name: 'Ask CDE AI' })).toBeVisible();
@@ -123,16 +125,22 @@ test.describe('Galaxy Constellation rendered compliance', () => {
 
       if (route === '/guests') {
         await expect(page.getByRole('heading', { name: /Priority Lead Board/i })).toBeVisible();
+        await expect(page.getByRole('region', { name: 'Top lead preview' })).toBeVisible();
+        await expect(page.getByRole('link', { name: /Open Customer 360 for MEM-••••\d{4}/ })).toBeVisible();
         await expect(page.getByRole('figure', { name: /Priority quadrant/i })).toBeVisible();
         await expect(page.getByText(/Masked synthetic demo records only\. CDE values render as percentages/i)).toBeVisible();
       }
 
       if (route.startsWith('/guests/')) {
-        await expect(page.getByRole('heading', { name: /Customer 360/i })).toBeVisible();
+        const hostActionSummary = page.getByRole('region', { name: 'Host action summary' });
+
+        await expect(page.getByRole('heading', { name: 'Customer 360', level: 1 })).toBeVisible();
+        await expect(hostActionSummary).toBeVisible();
+        await expect(hostActionSummary.getByText('What to offer')).toBeVisible();
         await expect(page.getByRole('heading', { name: /Synthetic CRM identity/i })).toBeVisible();
         await expect(page.getByRole('heading', { name: /Galaxy purchase and stay history/i })).toBeVisible();
         await expect(page.getByText(/Demo-only synthetic identity/i)).toBeVisible();
-        await expect(page.getByText(/Galaxy first-party/i)).toBeVisible();
+        await expect(page.getByText('Galaxy first-party', { exact: true })).toBeVisible();
         await expect(page.getByText('What Galaxy sees')).toBeVisible();
         await expect(page.getByText('What Mastercard CDE adds')).toBeVisible();
         await expect(page.getByText('Suggested pitch script')).toBeVisible();
@@ -150,7 +158,7 @@ test.describe('Galaxy Constellation rendered compliance', () => {
       if (route === '/corridors/korea') {
         await expect(page.getByRole('heading', { name: /Korea Corridor Detail/i })).toBeVisible();
         await expect(page.getByText('2020 base · refresh pending')).toBeVisible();
-        await expect(page.getByRole('link', { name: /Generate campaign content/i })).toBeVisible();
+        await expect(page.getByRole('link', { name: 'Generate campaign content', exact: true })).toBeVisible();
       }
 
       if (route === '/acquisition') {
@@ -326,7 +334,7 @@ test.describe('Galaxy Constellation rendered compliance', () => {
     await page.goto('/corridors/korea');
 
     await expect(page.getByRole('heading', { name: /Korea Corridor Detail/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /Generate campaign content/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Generate campaign content', exact: true })).toBeVisible();
     await expect(page.locator('body')).not.toContainText(/HKD|MOP|\$|元|澳門幣/);
     expect(await documentScrollWidth(page)).toBeLessThanOrEqual(390);
   });
@@ -338,10 +346,41 @@ test.describe('Galaxy Constellation rendered compliance', () => {
     await page.getByRole('button', { name: 'Open presenter tour' }).click();
 
     const dialog = page.getByRole('dialog', { name: 'Presenter tour' });
+    const presenterStops = [
+      'Journey',
+      'Overview',
+      'Wallet',
+      'Segments',
+      'Guests',
+      'Audience',
+      'Activation',
+      'Measurement',
+      'Governance',
+    ];
+
     await expect(dialog).toBeVisible();
-    await expect(dialog.getByText('1 of 5')).toBeVisible();
-    await expect(dialog.getByRole('heading', { name: 'Overview' })).toBeVisible();
+    for (const [index, stop] of presenterStops.entries()) {
+      if (index > 0) {
+        await dialog.getByRole('button', { name: 'Next stop' }).click();
+      }
+
+      await expect(dialog.getByText(`${index + 1} of 9`)).toBeVisible();
+      await expect(dialog.getByRole('heading', { name: stop })).toBeVisible();
+    }
     expect(await documentScrollWidth(page)).toBeLessThanOrEqual(390);
+  });
+
+  test('presenter mode hides floating controls while keeping guidance visible', async ({ page }) => {
+    await page.goto('/');
+
+    await expect(page.getByRole('button', { name: 'Open presenter tour' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Open AI insight assistant' })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Presenter mode' }).click();
+
+    await expect(page.getByRole('region', { name: 'Client presentation guidance' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Open presenter tour' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Open AI insight assistant' })).toHaveCount(0);
   });
 
   for (const viewport of [
