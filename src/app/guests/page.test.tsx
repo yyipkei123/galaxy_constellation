@@ -19,6 +19,8 @@ describe('guests route', () => {
     const { container } = render(<GuestsPage />);
 
     expect(screen.getByRole('heading', { name: /Priority Lead Board/i })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Top lead preview' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /^Open Customer 360 for MEM-••••\d{4}$/ })).toBeInTheDocument();
     expect(screen.getByRole('figure', { name: /Priority quadrant/i })).toBeInTheDocument();
     expect(screen.getByText(/Galaxy already knows internal behavior/i)).toBeInTheDocument();
     expect(screen.getByText(/Mastercard CDE adds external behavior/i)).toBeInTheDocument();
@@ -50,7 +52,7 @@ describe('guests route', () => {
     guests
       .filter((guest) => guest.segmentId === selectedSegment.id)
       .forEach((guest) => {
-        expect(screen.getByText(guest.id)).toBeInTheDocument();
+        expect(screen.getAllByText(guest.id).length).toBeGreaterThan(0);
         expect(screen.getByRole('link', { name: `${guest.id} guest priority bubble` })).toHaveAttribute(
           'href',
           `/guests/${encodeURIComponent(guest.id)}`,

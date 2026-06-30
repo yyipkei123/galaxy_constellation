@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { PriorityQuadrant } from '@/components/charts/priority-quadrant';
 import { LeadBoard } from '@/components/panels/lead-board';
+import { TopLeadPreview } from '@/components/panels/top-lead-preview';
 import { Panel } from '@/components/ui/panel';
 import { guests, latestSegments, topPriorityGuests } from '@/data';
 
@@ -75,6 +76,7 @@ function GuestsPageContent() {
         </Panel>
       ) : null}
 
+      <TopLeadPreview guests={scopedGuests} />
       <PriorityQuadrant guests={quadrantGuests} />
       <LeadBoard guests={scopedGuests} onAction={setToast} />
 
