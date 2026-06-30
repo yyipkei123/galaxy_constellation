@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react';
-import { ChatAssistantLauncher } from '@/components/assistant/chat-assistant-launcher';
+import { PresentationFloatingControls } from '@/components/presentation/presentation-floating-controls';
+import { StoryActionStrip } from '@/components/presentation/story-action-strip';
 import { MethodologyNote } from '@/components/ui/methodology-note';
 import { CoBrandLockup } from './co-brand-lockup';
 import { CurrentRefreshCard } from './current-refresh-card';
 import { Nav } from './nav';
-import { PresenterTour } from './presenter-tour';
 import { TopBar } from './top-bar';
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -30,14 +30,18 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="min-w-0 px-3 pt-3 sm:px-5 md:px-[26px] md:pt-[26px]">
             <TopBar />
           </div>
-          <main className="min-w-0 flex-1 px-3 py-[18px] sm:px-5 md:px-[26px]">{children}</main>
+          <main className="min-w-0 flex-1 px-3 py-[18px] sm:px-5 md:px-[26px]">
+            <div className="space-y-[18px]">
+              <StoryActionStrip />
+              {children}
+            </div>
+          </main>
           <footer className="border-t border-white/10 px-5 py-4 md:px-[26px]">
             <MethodologyNote />
           </footer>
         </div>
       </div>
-      <PresenterTour />
-      <ChatAssistantLauncher />
+      <PresentationFloatingControls />
     </div>
   );
 }

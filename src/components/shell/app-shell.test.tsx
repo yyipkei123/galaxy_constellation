@@ -1,13 +1,19 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
 import { AppStateProvider } from '@/store/app-store';
 import { AppShell } from './app-shell';
 
+let mockPathname = '/';
+
 vi.mock('next/navigation', () => ({
-  usePathname: () => '/',
+  usePathname: () => mockPathname,
 }));
 
 describe('AppShell', () => {
+  beforeEach(() => {
+    mockPathname = '/';
+  });
+
   it('keeps route content in the main landmark and mounts global affordances', () => {
     render(
       <AppStateProvider>
@@ -18,6 +24,8 @@ describe('AppShell', () => {
     );
 
     expect(screen.getByRole('main')).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Client presentation guidance' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open presenter tour' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Open AI insight assistant' })).toBeInTheDocument();
     expect(screen.getByLabelText('test content')).toHaveTextContent('Route content');
     expect(screen.getByLabelText('Current CDE refresh')).toHaveTextContent('2026 Q2');
@@ -42,5 +50,26 @@ describe('AppShell', () => {
     expect(sideRail).toHaveClass('lg:h-screen');
     expect(sideRail).not.toHaveClass('galaxy-glass-panel');
     expect(sideRail.querySelector('.galaxy-glass-panel')).toBeInTheDocument();
+  });
+
+  it('keeps presentation guidance while hiding floating controls in presenter mode', () => {
+    render(
+      <AppStateProvider>
+        <AppShell>
+          <section aria-label="test content">Route content</section>
+        </AppShell>
+      </AppStateProvider>,
+    );
+
+    expect(screen.getByRole('region', { name: 'Client presentation guidance' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open presenter tour' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open AI insight assistant' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Presenter mode' }));
+
+    expect(screen.getByRole('region', { name: 'Client presentation guidance' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Presenter mode' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.queryByRole('button', { name: 'Open presenter tour' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Open AI insight assistant' })).not.toBeInTheDocument();
   });
 });
