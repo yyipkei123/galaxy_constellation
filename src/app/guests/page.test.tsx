@@ -10,6 +10,10 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(mockSegmentId ? `segment=${mockSegmentId}` : ''),
 }));
 
+function expectElementBefore(first: Element, second: Element) {
+  expect(Boolean(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+}
+
 describe('guests route', () => {
   beforeEach(() => {
     mockSegmentId = '';
@@ -18,10 +22,14 @@ describe('guests route', () => {
   it('renders the Priority Lead Board, quadrant, and data fusion thesis', () => {
     const { container } = render(<GuestsPage />);
 
+    const topLeadPreview = screen.getByRole('region', { name: 'Top lead preview' });
+    const priorityQuadrant = screen.getByRole('figure', { name: /Priority quadrant/i });
+
     expect(screen.getByRole('heading', { name: /Priority Lead Board/i })).toBeInTheDocument();
-    expect(screen.getByRole('region', { name: 'Top lead preview' })).toBeInTheDocument();
+    expect(topLeadPreview).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /^Open Customer 360 for MEM-••••\d{4}$/ })).toBeInTheDocument();
-    expect(screen.getByRole('figure', { name: /Priority quadrant/i })).toBeInTheDocument();
+    expect(priorityQuadrant).toBeInTheDocument();
+    expectElementBefore(topLeadPreview, priorityQuadrant);
     expect(screen.getByText(/Galaxy already knows internal behavior/i)).toBeInTheDocument();
     expect(screen.getByText(/Mastercard CDE adds external behavior/i)).toBeInTheDocument();
     expect(screen.getAllByText(/who to pitch next/i).length).toBeGreaterThan(0);
@@ -44,10 +52,14 @@ describe('guests route', () => {
     render(<GuestsPage />);
 
     const scopeStatus = screen.getByRole('status');
+    const topLeadPreview = screen.getByRole('region', { name: 'Top lead preview' });
+    const priorityQuadrant = screen.getByRole('figure', { name: /Priority quadrant/i });
     const scopedGuestCount = guests.filter((guest) => guest.segmentId === selectedSegment.id).length;
 
     expect(scopeStatus).toHaveTextContent(`Scoped to ${selectedSegment.name}`);
     expect(scopeStatus).toHaveTextContent(`Showing ${scopedGuestCount} matched guests`);
+    expectElementBefore(scopeStatus, topLeadPreview);
+    expectElementBefore(topLeadPreview, priorityQuadrant);
     expect(screen.getByRole('link', { name: /Clear segment scope/i })).toHaveAttribute('href', '/guests');
     guests
       .filter((guest) => guest.segmentId === selectedSegment.id)
