@@ -447,12 +447,12 @@ describe('TopBar', () => {
     expect(screen.getByRole('banner')).toHaveTextContent('Executive wallet intelligence cockpit');
     expect(screen.queryByRole('heading', { name: 'Executive wallet intelligence cockpit' })).not.toBeInTheDocument();
 
-    const presenterToggle = screen.getByRole('button', { name: 'Turn presenter mode on' });
+    const presenterToggle = screen.getByRole('button', { name: 'Presenter mode' });
     expect(presenterToggle).toHaveAttribute('aria-pressed', 'false');
 
     fireEvent.click(presenterToggle);
 
-    expect(screen.getByRole('button', { name: 'Turn presenter mode off' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Presenter mode' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByText('Presenter')).toBeInTheDocument();
   });
 

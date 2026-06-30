@@ -16,6 +16,8 @@ const mockStore = vi.hoisted(() => ({
   setSelectedQuarterId: vi.fn(),
   setSelectedSegmentId: vi.fn(),
   setSelectedPersonaId: vi.fn(),
+  setPresenterMode: vi.fn(),
+  togglePresenterMode: vi.fn(),
   setFilters: vi.fn(),
 }));
 
@@ -35,6 +37,9 @@ vi.mock('@/store/app-store', () => ({
     setSelectedSegmentId: mockStore.setSelectedSegmentId,
     selectedPersonaId: '',
     setSelectedPersonaId: mockStore.setSelectedPersonaId,
+    isPresenterMode: false,
+    setPresenterMode: mockStore.setPresenterMode,
+    togglePresenterMode: mockStore.togglePresenterMode,
     methodology: null,
     filters: {
       segmentIds: [],

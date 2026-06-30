@@ -57,6 +57,9 @@ function mockAppState({ selectedPersonaId = '' }: { selectedPersonaId?: string }
     setSelectedSegmentId: vi.fn(),
     selectedPersonaId,
     setSelectedPersonaId: vi.fn(),
+    isPresenterMode: false,
+    setPresenterMode: vi.fn(),
+    togglePresenterMode: vi.fn(),
     methodology,
     filters: {
       segmentIds: latestSegments.map((segment) => segment.id),
@@ -303,6 +306,9 @@ describe('ChatAssistantLauncher', () => {
       setSelectedSegmentId: vi.fn(),
       selectedPersonaId: '',
       setSelectedPersonaId: vi.fn(),
+      isPresenterMode: false,
+      setPresenterMode: vi.fn(),
+      togglePresenterMode: vi.fn(),
       methodology,
       filters: {
         segmentIds: latestSegments.map((segment) => segment.id),
