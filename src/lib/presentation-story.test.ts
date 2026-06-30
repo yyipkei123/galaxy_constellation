@@ -1,3 +1,5 @@
+import { topPriorityGuests } from '@/data';
+
 import {
   mainPresenterTourStops,
   presentationSteps,
@@ -45,6 +47,13 @@ describe('presentation story model', () => {
       '/measurement',
       '/governance',
     ]);
+  });
+
+  it('links the guest priority step to the current top Customer 360', () => {
+    const guests = resolvePresentationStep('/guests');
+
+    expect(guests.nextHref).toBe(`/guests/${encodeURIComponent(topPriorityGuests[0].id)}`);
+    expect(guests.nextLabel).toBe('Open top Customer 360');
   });
 
   it('has complete copy and next actions for every route step', () => {

@@ -1,3 +1,5 @@
+import { topPriorityGuests } from '@/data';
+
 export type PresentationStepId =
   | 'journey'
   | 'overview'
@@ -28,6 +30,8 @@ export interface PresentationStep {
   nextLabel: string;
   tourSummary: string;
 }
+
+const topCustomer360Href = `/guests/${encodeURIComponent(topPriorityGuests[0].id)}`;
 
 export const presentationSteps: PresentationStep[] = [
   {
@@ -86,7 +90,7 @@ export const presentationSteps: PresentationStep[] = [
     presentationRole: 'Host action bridge',
     observation: 'The priority board translates segment strategy into a ranked host queue.',
     recommendedAction: 'Open the top lead quickly so the client sees who to contact and why.',
-    nextHref: '/guests/MEM-%E2%80%A2%E2%80%A2%E2%80%A2%E2%80%A23421',
+    nextHref: topCustomer360Href,
     nextLabel: 'Open top Customer 360',
     tourSummary: 'Show that the strategy becomes a real host action queue.',
   },
