@@ -81,6 +81,7 @@ function PresenterModeProbe() {
     <div>
       <output aria-label="presenter mode">{String(isPresenterMode)}</output>
       <button type="button" onClick={() => setPresenterMode(true)}>Enable presenter mode</button>
+      <button type="button" onClick={() => setPresenterMode(false)}>Disable presenter mode</button>
       <button type="button" onClick={togglePresenterMode}>Toggle presenter mode</button>
     </div>
   );
@@ -137,6 +138,12 @@ describe('AppStateProvider sprint 3 state', () => {
       </AppStateProvider>,
     );
 
+    expect(screen.getByLabelText('presenter mode')).toHaveTextContent('false');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Enable presenter mode' }));
+    expect(screen.getByLabelText('presenter mode')).toHaveTextContent('true');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Disable presenter mode' }));
     expect(screen.getByLabelText('presenter mode')).toHaveTextContent('false');
 
     fireEvent.click(screen.getByRole('button', { name: 'Enable presenter mode' }));
