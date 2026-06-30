@@ -97,6 +97,7 @@ describe('overview route', () => {
     expect(within(opportunitySnapshot).getByText('110-129')).toBeInTheDocument();
     expect(within(opportunitySnapshot).getByText('130+')).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Boardroom answer' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Client boardroom summary' })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'How to read Galaxy Constellation' })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Decision workspace' })).toBeInTheDocument();
     expect(screen.getByRole('complementary', { name: 'Ask CDE AI' })).toBeInTheDocument();
