@@ -4,6 +4,7 @@ import { FusionPanel } from '@/components/panels/fusion-panel';
 import { GuestIdentityPanel } from '@/components/panels/guest-identity-panel';
 import { GuestProfileHeader } from '@/components/panels/guest-profile-header';
 import { GuestTimeline } from '@/components/panels/guest-timeline';
+import { HostActionSummaryCard } from '@/components/panels/host-action-summary-card';
 import { HostBriefingPanel } from '@/components/panels/host-briefing-panel';
 import { NbaRecommendationCard } from '@/components/panels/nba-recommendation-card';
 import { PitchScriptCard } from '@/components/panels/pitch-script-card';
@@ -44,6 +45,7 @@ export default async function GuestDetailPage({ params }: { params: Promise<{ id
   return (
     <div className="space-y-6 text-galaxy-cream">
       <GuestProfileHeader guest={guest} />
+      <HostActionSummaryCard guest={guest} />
       <SectionJumpNav
         label="Customer 360 sections"
         items={[

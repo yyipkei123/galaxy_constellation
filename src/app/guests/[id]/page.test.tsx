@@ -70,13 +70,14 @@ describe('guest detail route', () => {
   it('also resolves a decoded masked id for direct unit rendering', async () => {
     render(await GuestDetailPage({ params: Promise.resolve({ id: guests[0].id }) }));
 
-    expect(screen.getByText(guests[0].id)).toBeInTheDocument();
+    expect(screen.getAllByText(guests[0].id).length).toBeGreaterThan(0);
   });
 
   it('places a host briefing and section navigation near the top of Customer 360', async () => {
     const { container } = render(await GuestDetailPage({ params: Promise.resolve({ id: guests[0].id }) }));
 
     const header = screen.getByRole('heading', { name: /Customer 360/i });
+    const hostActionSummary = screen.getByRole('region', { name: 'Host action summary' });
     const nav = screen.getByRole('navigation', { name: 'Customer 360 sections' });
     const briefing = screen.getByRole('region', { name: 'Host briefing summary' });
     const briefSection = requiredElement(container, '#guest-brief');
@@ -92,9 +93,11 @@ describe('guest detail route', () => {
     navLinks.forEach((link) => {
       expect(link).not.toHaveAttribute('aria-current');
     });
+    expect(within(hostActionSummary).getByText('What to offer')).toBeInTheDocument();
     expect(within(briefing).getByText(/Reason to contact now/i)).toBeInTheDocument();
     expect(within(briefing).getByText(/Next action/i)).toBeInTheDocument();
-    expectBefore(header, nav);
+    expectBefore(header, hostActionSummary);
+    expectBefore(hostActionSummary, nav);
     expectBefore(nav, briefSection);
     expectBefore(briefSection, evidenceSection);
     expectBefore(evidenceSection, actionsSection);
