@@ -52,8 +52,8 @@ body {
   margin: 0;
   overflow-x: hidden;
   background:
-    radial-gradient(circle at 14% -12%, color-mix(in oklch, var(--galaxy-champagne) 12%, transparent), transparent 33rem),
-    linear-gradient(145deg, var(--galaxy-bg), oklch(10.5% 0.014 82) 58%, oklch(8.5% 0.01 82));
+    radial-gradient(1200px 800px at 75% -10%, #1A1430 0%, #0A0812 55%),
+    #0A0812;
   color: var(--galaxy-fg);
   text-rendering: optimizeLegibility;
 }
@@ -69,10 +69,10 @@ body::after {
 
 body::before {
   background:
-    radial-gradient(48rem 24rem at 22% 18%, color-mix(in oklch, white 5%, transparent), transparent 65%),
-    radial-gradient(40rem 26rem at 86% 24%, color-mix(in oklch, var(--galaxy-champagne) 7%, transparent), transparent 68%);
-  filter: blur(5px) saturate(1.02);
-  opacity: 0.62;
+    radial-gradient(46rem 28rem at 4% 12%, rgba(212, 175, 94, 0.08), transparent 68%),
+    radial-gradient(44rem 30rem at 58% 112%, rgba(91, 75, 135, 0.14), transparent 70%);
+  filter: blur(5px) saturate(1.04);
+  opacity: 0.58;
 }
 
 body::after {
@@ -88,6 +88,45 @@ body::after {
 ::selection {
   background: color-mix(in oklch, var(--galaxy-accent) 45%, transparent);
   color: var(--galaxy-fg);
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+  }
+
+  50% {
+    opacity: 0.85;
+  }
+}
+
+@keyframes pulseRing {
+  0% {
+    opacity: 0.5;
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+
+  70% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.06);
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 :where(button, a, select, input, textarea, [tabindex]):focus-visible {

@@ -9,25 +9,25 @@ import { TopBar } from './top-bar';
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
-    <div className="relative z-[1] min-h-screen text-galaxy-cream">
-      <div className="mx-auto grid min-h-screen w-full max-w-[1680px] min-w-0 border-x border-white/10 bg-galaxy-ink/30 backdrop-blur-[6px] lg:grid-cols-[280px_minmax(0,1fr)]">
+    <div className="relative z-[1] min-h-[100dvh] text-galaxy-cream">
+      <div className="mx-auto flex min-h-[100dvh] w-full max-w-[1680px] min-w-0 flex-col lg:flex-row">
         <aside
           data-testid="app-shell-side-rail"
-          className="min-w-0 border-b border-white/10 lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r"
+          className="min-w-0 border-b border-[rgba(212,175,94,0.14)] bg-[#0A0812]/60 lg:sticky lg:top-0 lg:h-screen lg:w-[236px] lg:shrink-0 lg:border-b-0 lg:border-r"
         >
-          <div className="galaxy-glass-panel min-h-full min-w-0 px-[18px] py-[18px] lg:h-full lg:px-[22px] lg:py-7">
+          <div className="flex min-h-full min-w-0 flex-col px-[14px] py-5 lg:h-full lg:pb-4">
             <CoBrandLockup />
-            <div className="mt-[18px] min-w-0 lg:mt-9">
+            <div className="mt-[18px] min-w-0 lg:mt-7">
               <Nav />
             </div>
-            <div className="hidden lg:block">
+            <div className="hidden lg:mt-auto lg:block">
               <CurrentRefreshCard />
             </div>
           </div>
         </aside>
 
-        <div className="flex min-w-0 flex-col pb-24 lg:pb-0">
-          <div className="min-w-0 px-3 pt-3 sm:px-5 md:px-[26px] md:pt-[26px]">
+        <div className="flex min-w-0 flex-1 flex-col pb-24 lg:pb-0">
+          <div className="min-w-0 border-b border-[rgba(212,175,94,0.12)] bg-[#0A0812]/50 px-3 py-3 sm:px-5 md:px-7">
             <TopBar />
           </div>
           <main className="min-w-0 flex-1 px-3 py-[18px] sm:px-5 md:px-[26px]">

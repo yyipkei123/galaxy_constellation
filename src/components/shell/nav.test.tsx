@@ -19,16 +19,18 @@ describe('Nav', () => {
     });
   });
 
-  it('points the Audience link to the propensity route', () => {
+  it('renders prototype section headers and route link contracts', () => {
     render(<Nav />);
 
-    expect(screen.getByRole('link', { name: /Audience/i })).toHaveAttribute('href', '/propensity');
-  });
-
-  it('points the Market Scan link to the implemented marketscan route', () => {
-    render(<Nav />);
-
-    expect(screen.getByRole('link', { name: /Market Scan/i })).toHaveAttribute('href', '/marketscan');
+    expect(screen.getByText('Plan')).toBeInTheDocument();
+    expect(screen.getByText('Audience')).toBeInTheDocument();
+    expect(screen.getByText('Act')).toBeInTheDocument();
+    expect(screen.getByText('Measure')).toBeInTheDocument();
+    expect(screen.getByText('Govern')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Overview' })).toHaveTextContent('01');
+    expect(screen.getByRole('link', { name: 'Journey' })).toHaveTextContent('02');
+    expect(screen.getByRole('link', { name: 'Propensity' })).toHaveAttribute('href', '/propensity');
+    expect(screen.getByRole('link', { name: 'Market Scan' })).toHaveAttribute('href', '/marketscan');
   });
 
   it('shows Guests in the wallet lens navigation', () => {

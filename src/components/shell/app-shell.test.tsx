@@ -29,8 +29,9 @@ describe('AppShell', () => {
     expect(screen.getByRole('button', { name: 'Open AI insight assistant' })).toBeInTheDocument();
     expect(screen.getByLabelText('test content')).toHaveTextContent('Route content');
     expect(screen.getByLabelText('Current CDE refresh')).toHaveTextContent('2026 Q2');
-    expect(screen.getByText('Galaxy Constellation')).toBeInTheDocument();
-    expect(screen.getByText('Galaxy Macau x Mastercard CDE')).toBeInTheDocument();
+    expect(screen.getByLabelText('Current CDE refresh')).toHaveTextContent('coverage 63%');
+    expect(screen.getByText('Constellation')).toBeInTheDocument();
+    expect(screen.getByText('Galaxy x Mastercard CDE')).toBeInTheDocument();
     expect(screen.getByText(/Enriched figures are modelled estimates/i)).toBeInTheDocument();
   });
 
@@ -60,11 +61,12 @@ describe('AppShell', () => {
 
     const sideRail = screen.getByTestId('app-shell-side-rail');
 
+    expect(sideRail).toHaveClass('lg:w-[236px]');
     expect(sideRail).toHaveClass('lg:sticky');
     expect(sideRail).toHaveClass('lg:top-0');
     expect(sideRail).toHaveClass('lg:h-screen');
     expect(sideRail).not.toHaveClass('galaxy-glass-panel');
-    expect(sideRail.querySelector('.galaxy-glass-panel')).toBeInTheDocument();
+    expect(sideRail.querySelector('.galaxy-glass-panel')).not.toBeInTheDocument();
   });
 
   it('keeps presentation guidance while hiding floating controls in presenter mode', () => {

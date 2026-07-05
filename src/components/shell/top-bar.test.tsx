@@ -4,7 +4,7 @@ import { AppStateProvider, useAppState } from '@/store/app-store';
 import { AppShell } from './app-shell';
 import { TopBar } from './top-bar';
 
-let mockPathname = '/wallet';
+let mockPathname = '/';
 
 vi.mock('next/navigation', () => ({
   usePathname: () => mockPathname,
@@ -100,7 +100,7 @@ function installExecCommand() {
 
 describe('TopBar', () => {
   beforeEach(() => {
-    mockPathname = '/wallet';
+    mockPathname = '/';
     setClipboard(undefined);
     installExecCommand();
   });
@@ -117,13 +117,12 @@ describe('TopBar', () => {
       </AppStateProvider>,
     );
 
-    expect(screen.getByRole('banner')).toHaveTextContent('Executive wallet intelligence cockpit');
+    expect(screen.getByRole('heading', { name: 'Wallet intelligence cockpit' })).toBeInTheDocument();
     expect(screen.getByRole('banner')).not.toHaveTextContent(/Galaxy first-party/i);
-    expect(screen.getByText('7 CDE metrics')).toBeInTheDocument();
-    expect(screen.getByText('Coverage 63%')).toBeInTheDocument();
+    expect(screen.getByText('7 CDE metrics - Modelled')).toBeInTheDocument();
     expect(screen.getByLabelText('Galaxy Macau and Mastercard data partnership')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Open CDE signal guide/i })).toBeInTheDocument();
-    expect(screen.getByRole('group', { name: /Quarter selector/i })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Quarter selector' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '2026 Q2' })).toHaveAttribute('aria-pressed', 'true');
   });
 
@@ -213,9 +212,7 @@ describe('TopBar', () => {
       </AppStateProvider>,
     );
 
-    expect(screen.getByText('7 CDE metrics')).toBeInTheDocument();
-    expect(screen.getByText('7 CDE metrics')).toHaveAttribute('aria-label', '7 active CDE metrics');
-    expect(screen.getByText('Coverage 63%')).toBeInTheDocument();
+    expect(screen.getByText('7 CDE metrics - Modelled')).toHaveAttribute('aria-label', '7 active CDE metrics - Modelled');
     expect(screen.getByRole('group', { name: /quarter selector/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '2026 Q2' })).toHaveAttribute('aria-pressed', 'true');
   });
@@ -432,20 +429,20 @@ describe('TopBar', () => {
       </AppStateProvider>,
     );
 
-    expect(screen.getByRole('banner')).toHaveTextContent('Executive wallet intelligence cockpit');
+    expect(screen.getByRole('banner')).toHaveTextContent('Wallet intelligence cockpit');
     expect(screen.getByRole('button', { name: 'Copy narrative' })).toBeInTheDocument();
     expect(container.textContent).not.toMatch(/HKD|MOP|\$|元|澳門幣/i);
   });
 
-  it('uses a non-heading cockpit label and toggles presenter mode', () => {
+  it('uses the prototype heading and toggles presenter mode', () => {
     render(
       <AppStateProvider>
         <TopBar />
       </AppStateProvider>,
     );
 
-    expect(screen.getByRole('banner')).toHaveTextContent('Executive wallet intelligence cockpit');
-    expect(screen.queryByRole('heading', { name: 'Executive wallet intelligence cockpit' })).not.toBeInTheDocument();
+    expect(screen.getByRole('banner')).toHaveTextContent('Wallet intelligence cockpit');
+    expect(screen.getByRole('heading', { name: 'Wallet intelligence cockpit' })).toBeInTheDocument();
 
     const presenterToggle = screen.getByRole('button', { name: 'Presenter mode' });
     expect(presenterToggle).toHaveAttribute('aria-pressed', 'false');
