@@ -21,6 +21,26 @@ type Stat = ConstellationRedesignModel['selectedStats'][number];
 type Node = ConstellationRedesignModel['constellationNodes'][number];
 type SegmentRow = ConstellationRedesignModel['segmentRows'][number];
 type ChannelState = Record<string, boolean>;
+type AiAnswerKey = 'explain' | 'trust' | 'brief';
+
+interface SharedRouteControls {
+  windowWeeks: number;
+  setWindowWeeks: (weeks: number) => void;
+  reachPct: number;
+  setReachPct: (pct: number) => void;
+  depthPct: number;
+  setDepthPct: (pct: number) => void;
+  exported: boolean;
+  setExported: (exported: boolean) => void;
+  aiOpen: boolean;
+  setAiOpen: (open: boolean) => void;
+  aiAnswerKey: AiAnswerKey | null;
+  setAiAnswerKey: (key: AiAnswerKey | null) => void;
+  aiInput: string;
+  setAiInput: (input: string) => void;
+  onToggleChannel: (channel: string) => void;
+  onSelectSegment: (segmentId: string) => void;
+}
 
 const rawModelledWalletBandPattern = /(\d+(?:\.\d+)?-\d+(?:\.\d+)?)k \/mo/g;
 
@@ -50,7 +70,7 @@ export function ConstellationRedesignScreen({
   const [depthPct, setDepthPct] = useState(15);
   const [exported, setExported] = useState(false);
   const [aiOpen, setAiOpen] = useState(true);
-  const [aiAnswerKey, setAiAnswerKey] = useState<'explain' | 'trust' | 'brief' | null>(null);
+  const [aiAnswerKey, setAiAnswerKey] = useState<AiAnswerKey | null>(null);
   const [aiInput, setAiInput] = useState('');
   const [audienceBriefDrafted, setAudienceBriefDrafted] = useState(false);
 
@@ -73,67 +93,106 @@ export function ConstellationRedesignScreen({
       ...current,
       [channel]: !current[channel],
     }));
+    setExported(false);
   }
 
   function selectSegment(segmentId: string) {
     setSelectedSegmentId(segmentId);
     setAudienceBriefDrafted(false);
+    setExported(false);
+    setAiAnswerKey(null);
+  }
+
+  function selectWindow(weeks: number) {
+    setWindowWeeks(weeks);
+    setExported(false);
+  }
+
+  function updateReachPct(pct: number) {
+    setReachPct(pct);
+    setExported(false);
+  }
+
+  function updateDepthPct(pct: number) {
+    setDepthPct(pct);
+    setExported(false);
   }
 
   function buildAudienceBriefDraft() {
     setAudienceBriefDrafted(true);
   }
 
+  const sharedControls: SharedRouteControls = {
+    windowWeeks,
+    setWindowWeeks: selectWindow,
+    reachPct,
+    setReachPct: updateReachPct,
+    depthPct,
+    setDepthPct: updateDepthPct,
+    exported,
+    setExported,
+    aiOpen,
+    setAiOpen,
+    aiAnswerKey,
+    setAiAnswerKey,
+    aiInput,
+    setAiInput,
+    onToggleChannel: toggleChannel,
+    onSelectSegment: selectSegment,
+  };
+
   return (
-    <section aria-label={model.screenLabel} className="space-y-[18px] text-galaxy-cream">
+    <div className="space-y-[18px] text-galaxy-cream">
       {pageId === 'overview' ? (
-        <Overview
-          model={model}
-          coveragePct={coveragePct}
-          activeMetricCount={activeMetricCount}
-          windowWeeks={windowWeeks}
-          setWindowWeeks={setWindowWeeks}
-          reachPct={reachPct}
-          setReachPct={setReachPct}
-          depthPct={depthPct}
-          setDepthPct={setDepthPct}
-          exported={exported}
-          setExported={setExported}
-          aiOpen={aiOpen}
-          setAiOpen={setAiOpen}
-          aiAnswerKey={aiAnswerKey}
-          setAiAnswerKey={setAiAnswerKey}
-          aiInput={aiInput}
-          setAiInput={setAiInput}
-          onToggleChannel={toggleChannel}
-          onSelectSegment={selectSegment}
-        />
+        <section aria-label={model.screenLabel} className="space-y-[18px]">
+          <Overview
+            model={model}
+            coveragePct={coveragePct}
+            activeMetricCount={activeMetricCount}
+            controls={sharedControls}
+          />
+        </section>
       ) : (
-        renderRouteBody(model, selectSegment, audienceBriefDrafted, buildAudienceBriefDraft)
+        <div className="grid gap-[18px] xl:grid-cols-[minmax(0,1fr)_360px]">
+          <section aria-label={model.screenLabel} className="min-w-0 space-y-[18px]">
+            {renderRouteBody(model, sharedControls, audienceBriefDrafted, buildAudienceBriefDraft)}
+          </section>
+          <CdeAiDock model={model} {...sharedControls} />
+        </div>
       )}
-    </section>
+    </div>
   );
 }
 
 function renderRouteBody(
   model: ConstellationRedesignModel,
-  onSelectSegment: (segmentId: string) => void,
+  controls: SharedRouteControls,
   audienceBriefDrafted: boolean,
   onBuildAudienceBrief: () => void,
 ) {
   switch (model.pageId) {
     case 'segments':
-      return renderSegments(model, onSelectSegment, audienceBriefDrafted, onBuildAudienceBrief);
+      return renderSegments(model, controls.onSelectSegment, audienceBriefDrafted, onBuildAudienceBrief);
     case 'leakage':
-      return renderLeakage(model, onSelectSegment);
+      return renderLeakage(model, controls.onSelectSegment);
     case 'journey':
-      return renderJourney(model, onSelectSegment);
+      return renderJourney(model, controls.onSelectSegment);
     case 'wallet':
-      return renderWallet(model, onSelectSegment);
+      return renderWallet(model, controls.onSelectSegment);
     case 'guests':
-      return renderGuests(model, onSelectSegment);
+      return renderGuests(model, controls.onSelectSegment);
     case 'propensity':
-      return renderPropensity(model, onSelectSegment);
+      return renderPropensity(model, controls.onSelectSegment);
+    case 'activation':
+      return renderActivation(model, controls);
+    case 'simulate':
+      return renderSimulator(model, controls);
+    case 'measurement':
+      return renderMeasurement(model);
+    case 'marketscan':
+      return renderMarketScan(model);
+    case 'governance':
+      return renderGovernance(model);
     default:
       return <PlaceholderScreen model={model} />;
   }
@@ -143,42 +202,12 @@ function Overview({
   model,
   coveragePct,
   activeMetricCount,
-  windowWeeks,
-  setWindowWeeks,
-  reachPct,
-  setReachPct,
-  depthPct,
-  setDepthPct,
-  exported,
-  setExported,
-  aiOpen,
-  setAiOpen,
-  aiAnswerKey,
-  setAiAnswerKey,
-  aiInput,
-  setAiInput,
-  onToggleChannel,
-  onSelectSegment,
+  controls,
 }: {
   model: ConstellationRedesignModel;
   coveragePct: number;
   activeMetricCount: number;
-  windowWeeks: number;
-  setWindowWeeks: (weeks: number) => void;
-  reachPct: number;
-  setReachPct: (pct: number) => void;
-  depthPct: number;
-  setDepthPct: (pct: number) => void;
-  exported: boolean;
-  setExported: (exported: boolean) => void;
-  aiOpen: boolean;
-  setAiOpen: (open: boolean) => void;
-  aiAnswerKey: 'explain' | 'trust' | 'brief' | null;
-  setAiAnswerKey: (key: 'explain' | 'trust' | 'brief' | null) => void;
-  aiInput: string;
-  setAiInput: (input: string) => void;
-  onToggleChannel: (channel: string) => void;
-  onSelectSegment: (segmentId: string) => void;
+  controls: SharedRouteControls;
 }) {
   return (
     <>
@@ -216,7 +245,7 @@ function Overview({
               nodes={model.constellationNodes}
               segmentRows={model.segmentRows}
               selectedSegmentName={model.selectedSegment.name}
-              onSelectSegment={onSelectSegment}
+              onSelectSegment={controls.onSelectSegment}
             />
             <SelectedFinding model={model} />
           </div>
@@ -226,7 +255,7 @@ function Overview({
               <div>
                 <h2 className="text-lg font-semibold text-galaxy-cream">CDE index legend</h2>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-galaxy-muted">
-                  Indexed, banded and aggregated signals only; no member-level or merchant-level values are shown.
+                  Indexed, banded and aggregated signals only; no individual or venue-specific values are shown.
                 </p>
               </div>
               <p className="rounded-full border border-galaxy-positive/35 bg-galaxy-positive/10 px-3 py-1 text-xs font-semibold text-galaxy-positive">
@@ -254,22 +283,7 @@ function Overview({
 
         <CdeAiDock
           model={model}
-          windowWeeks={windowWeeks}
-          setWindowWeeks={setWindowWeeks}
-          reachPct={reachPct}
-          setReachPct={setReachPct}
-          depthPct={depthPct}
-          setDepthPct={setDepthPct}
-          exported={exported}
-          setExported={setExported}
-          aiOpen={aiOpen}
-          setAiOpen={setAiOpen}
-          aiAnswerKey={aiAnswerKey}
-          setAiAnswerKey={setAiAnswerKey}
-          aiInput={aiInput}
-          setAiInput={setAiInput}
-          onToggleChannel={onToggleChannel}
-          onSelectSegment={onSelectSegment}
+          {...controls}
         />
       </div>
     </>
@@ -302,9 +316,11 @@ function StatTile({ label, value, sub }: { label: string; value: string; sub: st
 function SegmentChipBar({
   chips,
   onSelectSegment,
+  buttonLabelPrefix = '',
 }: {
   chips: ConstellationRedesignModel['segmentChips'];
   onSelectSegment: (segmentId: string) => void;
+  buttonLabelPrefix?: string;
 }) {
   return (
     <div role="group" className="flex min-w-0 gap-2 overflow-x-auto pb-1" aria-label="Segment shortcuts">
@@ -312,6 +328,7 @@ function SegmentChipBar({
         <button
           key={chip.id}
           type="button"
+          aria-label={buttonLabelPrefix ? `${buttonLabelPrefix}${chip.label}` : undefined}
           aria-pressed={chip.selected}
           onClick={() => onSelectSegment(chip.id)}
           className={clsx(
@@ -882,6 +899,502 @@ function renderPropensity(model: ConstellationRedesignModel, onSelectSegment: (s
   );
 }
 
+function renderActivation(model: ConstellationRedesignModel, controls: SharedRouteControls) {
+  function askAiBrief() {
+    controls.setAiOpen(true);
+    controls.setAiAnswerKey('brief');
+  }
+
+  return (
+    <>
+      <section className="galaxy-glass-panel rounded-[24px] border border-white/10 p-5 md:p-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
+          {model.quarter.label} activation setup
+        </p>
+        <h1 className="mt-3 font-serif text-4xl leading-tight text-galaxy-cream">{model.pageTitle}</h1>
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-galaxy-muted">
+          Build a governed campaign brief from audience pick, channel scope and matched-holdout read window.
+        </p>
+      </section>
+
+      <div className="grid gap-[18px] lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
+        <div className="space-y-[18px]">
+          <section className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+            <h2 className="text-lg font-semibold text-galaxy-cream">Audience</h2>
+            <p className="mt-2 text-sm leading-6 text-galaxy-muted">
+              Choose one of the top governed recapture audiences for this brief.
+            </p>
+            <div className="mt-4 grid gap-2">
+              {model.audiencePicks.map((audience) => (
+                <button
+                  key={audience.id}
+                  type="button"
+                  aria-pressed={audience.selected}
+                  aria-label={`Select ${audience.name}, index ${audience.idx}`}
+                  onClick={() => controls.onSelectSegment(audience.id)}
+                  className={clsx(
+                    'flex min-h-12 items-center justify-between gap-4 rounded-[12px] border px-4 text-left transition',
+                    audience.selected
+                      ? 'border-galaxy-gold/45 bg-galaxy-gold/12 text-galaxy-cream'
+                      : 'border-white/10 bg-galaxy-ink/35 text-galaxy-muted hover:border-galaxy-gold/45 hover:text-galaxy-cream',
+                  )}
+                >
+                  <span className="text-sm font-semibold">{audience.name}</span>
+                  <span className="font-mono text-xs font-semibold" style={{ color: audience.idxColor }}>
+                    Index {audience.idx}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+            <h2 className="text-lg font-semibold text-galaxy-cream">Channels</h2>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {model.channels.map((channel) => (
+                <button
+                  key={channel.name}
+                  type="button"
+                  aria-pressed={channel.enabled}
+                  onClick={() => controls.onToggleChannel(channel.name)}
+                  className={clsx(
+                    'min-h-10 rounded-full border px-4 text-xs font-semibold transition',
+                    channel.enabled
+                      ? 'border-galaxy-gold/55 bg-galaxy-gold/15 text-galaxy-cream'
+                      : 'border-white/10 bg-galaxy-ink/35 text-galaxy-muted hover:border-galaxy-gold/45',
+                  )}
+                >
+                  {channel.name}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+            <h2 className="text-lg font-semibold text-galaxy-cream">Measurement window</h2>
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              {model.windows.map((windowOption) => (
+                <button
+                  key={windowOption.weeks}
+                  type="button"
+                  aria-pressed={controls.windowWeeks === windowOption.weeks}
+                  onClick={() => controls.setWindowWeeks(windowOption.weeks)}
+                  className={clsx(
+                    'min-h-11 rounded-[12px] border px-3 text-xs font-semibold transition',
+                    controls.windowWeeks === windowOption.weeks
+                      ? 'border-galaxy-gold bg-galaxy-gold text-galaxy-ink'
+                      : 'border-white/10 bg-galaxy-ink/35 text-galaxy-muted hover:border-galaxy-gold/45',
+                  )}
+                >
+                  {windowOption.label}
+                </button>
+              ))}
+            </div>
+            <p className="mt-3 text-xs leading-5 text-galaxy-muted">
+              Lift is reported as a capture-index delta vs a matched holdout. {model.windowNote}
+            </p>
+          </section>
+        </div>
+
+        <aside className="galaxy-glass-panel h-fit rounded-[20px] border border-galaxy-gold/30 bg-galaxy-gold/10 p-5 lg:sticky lg:top-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
+                Campaign brief
+              </p>
+              <h2 className="mt-3 text-2xl font-semibold leading-tight text-galaxy-cream">
+                {model.selectedSegment.move}
+              </h2>
+            </div>
+            <span className="w-fit rounded-full border border-galaxy-positive/35 bg-galaxy-positive/10 px-3 py-1 text-xs font-semibold text-galaxy-positive">
+              CDE-safe
+            </span>
+          </div>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            {model.briefFacts.map((fact) => (
+              <div key={fact.label} className="rounded-[14px] border border-white/10 bg-galaxy-ink/35 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-galaxy-muted">
+                  {fact.label === 'Audience'
+                    ? 'Selected audience'
+                    : fact.label === 'Channels'
+                      ? 'Selected channels'
+                      : fact.label}
+                </p>
+                <p className="mt-2 text-sm font-semibold leading-6 text-galaxy-cream">
+                  {normalizeModelledWalletBands(
+                    fact.label === 'Audience' ? `${fact.value} cohort` : fact.value,
+                  )}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-5 rounded-[14px] border border-white/10 bg-galaxy-ink/35 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-gold">CDE-safe summary</p>
+            <p className="mt-3 text-sm leading-6 text-galaxy-cream">
+              {normalizeModelledWalletBands(model.briefCopy)}
+            </p>
+          </div>
+
+          <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={() => controls.setExported(true)}
+              className="min-h-11 flex-1 rounded-[12px] px-4 text-sm font-semibold text-galaxy-ink transition hover:brightness-110"
+              style={{ backgroundColor: model.exportBg, color: model.exportColor }}
+            >
+              {controls.exported ? model.exportLabel : 'Export campaign brief'}
+            </button>
+            <button
+              type="button"
+              onClick={askAiBrief}
+              className="min-h-11 rounded-[12px] border border-galaxy-gold/45 px-4 text-sm font-semibold text-galaxy-gold transition hover:bg-galaxy-gold/10"
+            >
+              Ask CDE AI
+            </button>
+          </div>
+        </aside>
+      </div>
+    </>
+  );
+}
+
+function renderSimulator(model: ConstellationRedesignModel, controls: SharedRouteControls) {
+  return (
+    <>
+      <section className="galaxy-glass-panel rounded-[24px] border border-white/10 p-5 md:p-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
+          {model.quarter.label} scenario lab
+        </p>
+        <h1 className="mt-3 font-serif text-4xl leading-tight text-galaxy-cream">{model.pageTitle}</h1>
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-galaxy-muted">
+          Tune reach, offer depth and read window to compare modelled planning bands before activation.
+        </p>
+      </section>
+
+      <div className="grid gap-[18px] lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
+        <div className="space-y-[18px]">
+          <section className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+            <h2 className="text-lg font-semibold text-galaxy-cream">Scenario audience</h2>
+            <div className="mt-4">
+              <SegmentChipBar chips={model.segmentChips} onSelectSegment={controls.onSelectSegment} />
+            </div>
+          </section>
+
+          <section className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+            <div className="space-y-5">
+              <label className="block text-sm font-semibold text-galaxy-cream">
+                Audience reach
+                <span className="float-right font-mono text-xs text-galaxy-gold">{controls.reachPct}% of cohort</span>
+                <input
+                  type="range"
+                  aria-label="Audience reach"
+                  min="10"
+                  max="90"
+                  step="5"
+                  value={controls.reachPct}
+                  onChange={(event) => controls.setReachPct(Number(event.target.value))}
+                  className="mt-3 block w-full accent-galaxy-gold"
+                />
+              </label>
+              <p className="text-xs leading-5 text-galaxy-muted">Share of the matched band receiving the offer.</p>
+
+              <label className="block text-sm font-semibold text-galaxy-cream">
+                Offer depth
+                <span className="float-right font-mono text-xs text-galaxy-gold">
+                  {controls.depthPct}% equivalent value
+                </span>
+                <input
+                  type="range"
+                  aria-label="Offer depth"
+                  min="5"
+                  max="30"
+                  step="1"
+                  value={controls.depthPct}
+                  onChange={(event) => controls.setDepthPct(Number(event.target.value))}
+                  className="mt-3 block w-full accent-galaxy-gold"
+                />
+              </label>
+              <p className="text-xs leading-5 text-galaxy-muted">Benefit value as a share of target basket.</p>
+
+              <div>
+                <h3 className="text-sm font-semibold text-galaxy-cream">Measurement window</h3>
+                <div className="mt-3 grid grid-cols-3 gap-2">
+                  {model.windows.map((windowOption) => (
+                    <button
+                      key={windowOption.weeks}
+                      type="button"
+                      aria-pressed={controls.windowWeeks === windowOption.weeks}
+                      onClick={() => controls.setWindowWeeks(windowOption.weeks)}
+                      className={clsx(
+                        'min-h-11 rounded-[12px] border px-3 text-xs font-semibold transition',
+                        controls.windowWeeks === windowOption.weeks
+                          ? 'border-galaxy-gold bg-galaxy-gold text-galaxy-ink'
+                          : 'border-white/10 bg-galaxy-ink/35 text-galaxy-muted hover:border-galaxy-gold/45',
+                      )}
+                    >
+                      {windowOption.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <aside className="galaxy-glass-panel h-fit rounded-[20px] border border-galaxy-gold/30 bg-galaxy-gold/10 p-5 lg:sticky lg:top-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Projected outcome</p>
+          <h2 className="mt-3 text-2xl font-semibold leading-tight text-galaxy-cream">
+            {model.selectedSegment.name}
+          </h2>
+          <div className="mt-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-muted">
+              Capture-index lift vs matched holdout
+            </p>
+            <p className="mt-2 font-serif text-5xl font-semibold leading-none text-galaxy-cream">
+              {model.simulation.liftBand}
+            </p>
+          </div>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <SelectedStat stat={{ label: 'Wallet recapture band', value: model.simulation.recaptureBand }} />
+            <SelectedStat
+              stat={{ label: 'Read window', value: `${model.simulation.windowLabel} vs matched holdout` }}
+            />
+          </div>
+          <div className="mt-5 rounded-[14px] border border-white/10 bg-galaxy-ink/35 p-4">
+            <p className="text-sm leading-6 text-galaxy-cream">{model.simulation.simNote}</p>
+          </div>
+          <p className="mt-4 text-xs leading-5 text-galaxy-muted">
+            Directional modelled bands for planning only. Validate against the next CDE refresh before scale.
+          </p>
+        </aside>
+      </div>
+    </>
+  );
+}
+
+function renderMeasurement(model: ConstellationRedesignModel) {
+  return (
+    <>
+      <section className="galaxy-glass-panel rounded-[24px] border border-white/10 p-5 md:p-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
+          {model.quarter.label} measurement
+        </p>
+        <h1 className="mt-3 font-serif text-4xl leading-tight text-galaxy-cream">{model.pageTitle}</h1>
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-galaxy-muted">
+          Every campaign reads as capture-index delta vs a matched holdout before scale.
+        </p>
+      </section>
+
+      <div className="grid gap-3 md:grid-cols-3">
+        {model.measureCounts.map((count) => (
+          <article key={count.label} className="galaxy-glass-panel rounded-[18px] border border-white/10 p-4">
+            <div className="flex items-center gap-4">
+              <p className="font-serif text-4xl font-semibold leading-none" style={{ color: count.color }}>
+                {count.v}
+              </p>
+              <div>
+                <h2 className="text-sm font-semibold text-galaxy-cream">{count.label}</h2>
+                <p className="mt-1 text-xs leading-5 text-galaxy-muted">{count.sub}</p>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <section className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Campaign readouts</p>
+        <h2 className="mt-3 text-2xl font-semibold leading-tight text-galaxy-cream">
+          Every campaign reads as capture-index delta vs a matched holdout
+        </h2>
+        <div className="mt-5 space-y-3">
+          {model.readouts.map((readout) => (
+            <article
+              key={readout.name}
+              className="grid gap-3 rounded-[14px] border border-white/10 bg-galaxy-ink/35 p-4 md:grid-cols-[minmax(0,1.5fr)_minmax(150px,1fr)_80px_90px_110px] md:items-center"
+            >
+              <div>
+                <h3 className="text-sm font-semibold text-galaxy-cream">{readout.name}</h3>
+                <p className="mt-1 text-xs leading-5 text-galaxy-muted">{readout.note}</p>
+              </div>
+              <p className="text-sm text-galaxy-muted">{readout.aud}</p>
+              <p className="font-mono text-xs font-semibold text-galaxy-muted">{readout.window}</p>
+              <p className="font-mono text-sm font-semibold" style={{ color: readout.liftColor }}>
+                {readout.lift}
+              </p>
+              <p
+                className="w-fit rounded-full border px-3 py-1 text-xs font-semibold"
+                style={{ borderColor: readout.sBorder, color: readout.sColor }}
+              >
+                {readout.status}
+              </p>
+            </article>
+          ))}
+        </div>
+        <p className="mt-4 text-xs leading-5 text-galaxy-muted">
+          Lift is expressed as a capture-index delta against the matched holdout band. Reads finalize at the CDE
+          refresh after each window closes.
+        </p>
+      </section>
+    </>
+  );
+}
+
+function renderMarketScan(model: ConstellationRedesignModel) {
+  return (
+    <>
+      <section className="galaxy-glass-panel rounded-[24px] border border-white/10 p-5 md:p-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
+          {model.quarter.label} market baseline
+        </p>
+        <h1 className="mt-3 font-serif text-4xl leading-tight text-galaxy-cream">{model.pageTitle}</h1>
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-galaxy-muted">
+          Compare Cotai category demand indices and corridor share bands against the governed market baseline.
+        </p>
+      </section>
+
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {model.demand.map((item) => (
+          <article key={item.name} className="galaxy-glass-panel rounded-[18px] border border-white/10 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-muted">{item.name}</p>
+            <div className="mt-3 flex items-baseline gap-3">
+              <p className="font-serif text-4xl font-semibold leading-none" style={{ color: item.color }}>
+                {item.v}
+              </p>
+              <p className="text-xs font-semibold" style={{ color: item.deltaColor }}>
+                {item.label}
+              </p>
+            </div>
+            <p className="mt-3 text-xs leading-5 text-galaxy-muted">{item.sub}</p>
+          </article>
+        ))}
+      </div>
+
+      <div className="grid gap-[18px] lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+        <section className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Corridor mix</p>
+          <h2 className="mt-3 text-2xl font-semibold leading-tight text-galaxy-cream">
+            Where matched visitation originates
+          </h2>
+          <div className="mt-5 space-y-4">
+            {model.corridors.map((corridor) => (
+              <div key={corridor.name}>
+                <div className="mb-2 flex items-center justify-between gap-3 text-sm">
+                  <span className="font-semibold text-galaxy-cream">{corridor.name}</span>
+                  <span className="font-mono text-xs font-semibold text-galaxy-gold">{corridor.band}</span>
+                </div>
+                <div className="h-3 overflow-hidden rounded-full bg-galaxy-ink/70">
+                  <div
+                    aria-label={`${corridor.name} share band ${corridor.band}`}
+                    className="h-full rounded-full bg-galaxy-gold"
+                    style={{ width: pctWidth(corridor.sharePct) }}
+                  />
+                </div>
+                <p className="mt-2 text-xs leading-5 text-galaxy-muted">{corridor.note}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <aside className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Competitive read</p>
+          <p className="mt-3 text-sm leading-6 text-galaxy-muted">
+            Retail/Luxury demand indexes highest against the market baseline while Galaxy category capture trails it.
+            Dining demand is broad across corridors; Greater Bay Area weekenders are the volume engine, Hong Kong the
+            premium one.
+          </p>
+          <div className="mt-5 rounded-[14px] border border-galaxy-gold/25 bg-galaxy-gold/10 p-4">
+            <p className="text-xs leading-5 text-galaxy-muted">
+              Market indices compare the Cotai competitive set against the matched CDE market baseline (100). Corridor
+              shares are banded per governance rules.
+            </p>
+          </div>
+        </aside>
+      </div>
+    </>
+  );
+}
+
+function renderGovernance(model: ConstellationRedesignModel) {
+  return (
+    <>
+      <section className="galaxy-glass-panel rounded-[24px] border border-white/10 p-5 md:p-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
+          {model.quarter.label} governed controls
+        </p>
+        <h1 className="mt-3 font-serif text-4xl leading-tight text-galaxy-cream">{model.pageTitle}</h1>
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-galaxy-muted">
+          CDE enrichment is shown as ranges, indices, percentages and banded cohort averages only.
+        </p>
+      </section>
+
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {model.rules.map((rule) => (
+          <article key={rule.t} className="galaxy-glass-panel rounded-[18px] border border-white/10 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <h2 className="text-sm font-semibold text-galaxy-cream">{rule.t}</h2>
+              <span className="rounded-full border border-galaxy-positive/35 bg-galaxy-positive/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-galaxy-positive">
+                Compliant
+              </span>
+            </div>
+            <p className="mt-3 text-xs leading-5 text-galaxy-muted">{rule.d}</p>
+          </article>
+        ))}
+      </div>
+
+      <div className="grid gap-[18px] lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+        <section className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Refresh log</p>
+          <div className="mt-5 overflow-x-auto">
+            <div className="min-w-[620px]">
+              <div className="grid grid-cols-[1fr_1.2fr_1fr_1fr] gap-3 px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-galaxy-muted">
+                <span>Quarter</span>
+                <span>Delivered</span>
+                <span>Coverage</span>
+                <span>Status</span>
+              </div>
+              <div className="space-y-2">
+                {model.refreshLog.map((entry) => (
+                  <div
+                    key={entry.q}
+                    className="grid grid-cols-[1fr_1.2fr_1fr_1fr] gap-3 rounded-[14px] border border-white/10 bg-galaxy-ink/35 px-3 py-3 text-sm"
+                  >
+                    <span className="font-semibold text-galaxy-cream">{entry.q}</span>
+                    <span className="text-galaxy-muted">{entry.date}</span>
+                    <span className="font-mono text-galaxy-muted">{entry.cov}</span>
+                    <span
+                      className="w-fit rounded-full border px-3 py-1 text-xs font-semibold"
+                      style={{ borderColor: entry.sBorder, color: entry.sColor }}
+                    >
+                      {entry.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <aside className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Data-sharing scope</p>
+          <p className="mt-3 text-sm leading-6 text-galaxy-muted">
+            Mastercard CDE enrichment reaches Galaxy as demi-decile averages over matched cohorts: governed metrics,
+            quarterly cadence and {model.quarter.coverage}% coverage. No individual, venue, or payment-event detail is
+            exposed.
+          </p>
+          <div className="mt-5 rounded-[14px] border border-galaxy-positive/35 bg-galaxy-positive/10 p-4">
+            <p className="text-xs leading-5 text-galaxy-muted">
+              Audit-ready briefs carry refresh stamp, cohort band and matched-holdout measurement design for compliance
+              review.
+            </p>
+          </div>
+        </aside>
+      </div>
+    </>
+  );
+}
+
 function ConstellationMap({
   nodes,
   segmentRows,
@@ -1013,25 +1526,13 @@ function CdeAiDock({
   onSelectSegment,
 }: {
   model: ConstellationRedesignModel;
-  windowWeeks: number;
-  setWindowWeeks: (weeks: number) => void;
-  reachPct: number;
-  setReachPct: (pct: number) => void;
-  depthPct: number;
-  setDepthPct: (pct: number) => void;
-  exported: boolean;
-  setExported: (exported: boolean) => void;
-  aiOpen: boolean;
-  setAiOpen: (open: boolean) => void;
-  aiAnswerKey: 'explain' | 'trust' | 'brief' | null;
-  setAiAnswerKey: (key: 'explain' | 'trust' | 'brief' | null) => void;
-  aiInput: string;
-  setAiInput: (input: string) => void;
-  onToggleChannel: (channel: string) => void;
-  onSelectSegment: (segmentId: string) => void;
-}) {
+} & SharedRouteControls) {
   const aiPanelId = 'constellation-redesign-ai-panel';
-  const aiAnswer = normalizeModelledWalletBands(aiAnswerKey ? model.aiAnswers[aiAnswerKey] : model.aiAnswer);
+  const aiAnswer = normalizeModelledWalletBands(
+    aiAnswerKey
+      ? model.aiAnswers[aiAnswerKey]
+      : 'Choose a guided chip or ask a question for a CDE-safe answer.',
+  );
 
   function submitAiQuestion(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -1061,7 +1562,11 @@ function CdeAiDock({
       </div>
 
       <div id={aiPanelId} hidden={!aiOpen} className="mt-5 space-y-5">
-          <SegmentChipBar chips={model.segmentChips} onSelectSegment={onSelectSegment} />
+          <SegmentChipBar
+            chips={model.segmentChips}
+            onSelectSegment={onSelectSegment}
+            buttonLabelPrefix="CDE AI "
+          />
 
           <div>
             <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-muted">Channels</p>
@@ -1110,11 +1615,12 @@ function CdeAiDock({
 
           <div className="space-y-4">
             <label className="block text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-muted">
-              Reach
+              Audience reach
               <input
                 type="range"
+                aria-label="Audience reach"
                 min="10"
-                max="80"
+                max="90"
                 step="5"
                 value={reachPct}
                 onChange={(event) => setReachPct(Number(event.target.value))}
@@ -1126,9 +1632,10 @@ function CdeAiDock({
               Offer depth
               <input
                 type="range"
+                aria-label="Offer depth"
                 min="5"
                 max="30"
-                step="5"
+                step="1"
                 value={depthPct}
                 onChange={(event) => setDepthPct(Number(event.target.value))}
                 className="mt-3 block w-full accent-galaxy-gold"

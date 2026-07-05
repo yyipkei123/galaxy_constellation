@@ -914,9 +914,9 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput): Cons
   ];
 
   const rules = [
-    { t: 'Ranges & indices only', d: 'Enriched figures never surface raw counts or spend amounts.' },
-    { t: 'Cohort minimums', d: 'No audience below the governed cohort floor is ever exported.' },
-    { t: 'No merchant-level data', d: 'Category demi-decile averages only; no merchant identifiers.' },
+    { t: 'Ranges & indices only', d: 'Enriched figures never surface raw counts or payment amounts.' },
+    { t: 'Cohort floors', d: 'No audience below the governed cohort floor is ever exported.' },
+    { t: 'Category averages only', d: 'Category demi-decile averages only; no venue identifiers.' },
     { t: 'Quarterly refresh', d: 'Signals expire at refresh; stale audiences auto-retire.' },
     { t: 'Holdout measurement', d: 'Every campaign reads as index lift vs a matched holdout.' },
     { t: 'Consent & channel scope', d: 'Activation is limited to consented, reachable guests.' },
@@ -977,7 +977,7 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput): Cons
     briefCopy,
     aiAnswers,
     aiChips,
-    aiAnswer: `Ask for an explanation, trust rationale, or a CDE-safe campaign brief for ${selectedSegment.name}.`,
+    aiAnswer: 'Choose a guided chip or ask a question for a CDE-safe answer.',
     segmentChips,
     journeyStages,
     weakName: weakStage.name,

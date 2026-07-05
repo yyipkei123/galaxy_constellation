@@ -226,7 +226,7 @@ describe('constellation redesign model', () => {
     expect(model.measureCounts[2].sub).toBe('Awaiting governance sign-off');
     expect(model.rules[0]).toEqual({
       t: 'Ranges & indices only',
-      d: 'Enriched figures never surface raw counts or spend amounts.',
+      d: 'Enriched figures never surface raw counts or payment amounts.',
     });
     expect(model.simulation.liftBand).toMatch(/^\+\d+ to \+\d+$/);
     expectDisplaySafe(model);

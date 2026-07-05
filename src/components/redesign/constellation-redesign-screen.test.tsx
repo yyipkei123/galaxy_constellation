@@ -3,8 +3,13 @@ import { describe, expect, it } from 'vitest';
 import { ConstellationRedesignScreen } from './constellation-redesign-screen';
 import type { RedesignPageId } from './constellation-redesign-model';
 
-const bannedCdePattern = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣|raw[-\s]?spend|exact\s+spend|NaN|Infinity/i;
-const rawWalletBandPattern = /\d+-\d+k \/mo/;
+const bannedCdePattern = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣|raw[-\s]?spend|exact\s+spend|\b(?:guest|member|merchant|transaction)-level\b|forecast|\b(?:NaN|Infinity)\b/i;
+const rawWalletBandPattern = /\d+(?:\.\d+)?-\d+(?:\.\d+)?k \/mo/;
+
+function expectCdeSafe(container: HTMLElement) {
+  expect(container.textContent).not.toMatch(bannedCdePattern);
+  expect(container.textContent).not.toMatch(rawWalletBandPattern);
+}
 
 function renderScreen(pageId: RedesignPageId = 'overview') {
   return render(
@@ -229,5 +234,133 @@ describe('ConstellationRedesignScreen', () => {
       expect(screen.getByText(text)).toBeInTheDocument();
       unmount();
     }
+  });
+
+  it('switches CDE AI chip answers deterministically', () => {
+    const { container } = renderScreen('overview');
+    const aiDock = screen.getByRole('complementary', { name: 'CDE AI' });
+    const trustChip = within(aiDock).getByRole('button', { name: 'Why trust it?' });
+    const briefChip = within(aiDock).getByRole('button', { name: 'Build a brief' });
+
+    fireEvent.click(trustChip);
+
+    expect(trustChip).toHaveAttribute('aria-pressed', 'true');
+    expect(within(aiDock).getByText(/matched Galaxy and Mastercard CDE cohort/i)).toBeInTheDocument();
+
+    fireEvent.click(briefChip);
+
+    expect(briefChip).toHaveAttribute('aria-pressed', 'true');
+    expect(trustChip).toHaveAttribute('aria-pressed', 'false');
+    expect(within(aiDock).getByText(/Draft brief for Cosmopolitan Connoisseurs/i)).toBeInTheDocument();
+    expectCdeSafe(container);
+  });
+
+  it('renders Activation with working audience, channel, window, export, and AI controls', () => {
+    const { container } = renderScreen('activation');
+    const route = screen.getByRole('region', { name: 'Activation' });
+
+    expect(within(route).getByRole('heading', { name: 'Campaign activation' })).toBeInTheDocument();
+    expect(within(route).getByText('Audience')).toBeInTheDocument();
+    expect(within(route).getByText('Channels')).toBeInTheDocument();
+    expect(within(route).getByText('Measurement window')).toBeInTheDocument();
+    expect(within(route).getByText('Campaign brief')).toBeInTheDocument();
+    expect(screen.queryByText(/Shared renderer placeholder/i)).not.toBeInTheDocument();
+
+    fireEvent.click(within(route).getByRole('button', { name: /Select Premium Mass Weekenders/i }));
+    expect(within(route).getByText('Premium Mass Weekenders')).toBeInTheDocument();
+
+    const paidSocial = within(route).getByRole('button', { name: 'Paid social' });
+    expect(paidSocial).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(paidSocial);
+    expect(paidSocial).toHaveAttribute('aria-pressed', 'true');
+    expect(within(route).getByText('App push / CRM email / Paid social')).toBeInTheDocument();
+
+    fireEvent.click(within(route).getByRole('button', { name: '8 weeks' }));
+    expect(within(route).getByText('8 weeks vs matched holdout')).toBeInTheDocument();
+
+    fireEvent.click(within(route).getByRole('button', { name: 'Export campaign brief' }));
+    expect(within(route).getByRole('button', { name: 'Brief handed to Marketing' })).toBeInTheDocument();
+
+    fireEvent.click(within(route).getByRole('button', { name: 'Ask CDE AI' }));
+    expect(screen.getAllByRole('complementary', { name: 'CDE AI' })).toHaveLength(1);
+    expect(screen.getByRole('button', { name: 'Collapse' })).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText(/Draft brief for Premium Mass Weekenders/i)).toBeInTheDocument();
+    expectCdeSafe(container);
+  });
+
+  it('renders Simulator with accessible sliders that update modelled bands', () => {
+    const { container } = renderScreen('simulate');
+    const route = screen.getByRole('region', { name: 'Simulator' });
+
+    expect(within(route).getByRole('heading', { name: 'Scenario simulator' })).toBeInTheDocument();
+    expect(within(route).getByText('Scenario audience')).toBeInTheDocument();
+    expect(within(route).getByText('Projected outcome')).toBeInTheDocument();
+    expect(within(route).getByText('Capture-index lift vs matched holdout')).toBeInTheDocument();
+    expect(within(route).getByText('+5 to +9')).toBeInTheDocument();
+
+    const reachSlider = within(route).getByRole('slider', { name: 'Audience reach' });
+    const depthSlider = within(route).getByRole('slider', { name: 'Offer depth' });
+    expect(reachSlider).toHaveAttribute('min', '10');
+    expect(reachSlider).toHaveAttribute('max', '90');
+    expect(reachSlider).toHaveAttribute('step', '5');
+    expect(depthSlider).toHaveAttribute('min', '5');
+    expect(depthSlider).toHaveAttribute('max', '30');
+    expect(depthSlider).toHaveAttribute('step', '1');
+
+    fireEvent.change(reachSlider, { target: { value: '80' } });
+    fireEvent.change(depthSlider, { target: { value: '25' } });
+
+    expect(within(route).getByText('+18 to +31')).toBeInTheDocument();
+    expect(within(route).getByText('11-26k equiv./mo')).toBeInTheDocument();
+    expect(within(route).getByText(/Directional modelled bands/i)).toBeInTheDocument();
+    expectCdeSafe(container);
+  });
+
+  it('renders Measurement readouts as capture-index deltas vs matched holdout', () => {
+    const { container } = renderScreen('measurement');
+    const route = screen.getByRole('region', { name: 'Measurement' });
+
+    expect(within(route).getByRole('heading', { name: 'Campaign measurement' })).toBeInTheDocument();
+    expect(within(route).getByText('Reads complete')).toBeInTheDocument();
+    expect(within(route).getByText('In flight')).toBeInTheDocument();
+    expect(within(route).getByText('Queued')).toBeInTheDocument();
+    expect(within(route).getByText('Campaign readouts')).toBeInTheDocument();
+    expect(within(route).getByText('Every campaign reads as capture-index delta vs a matched holdout')).toBeInTheDocument();
+    expect(within(route).getByText('Michelin retail cross-sell pilot')).toBeInTheDocument();
+    expect(within(route).getByText('+9 idx')).toBeInTheDocument();
+    expect(within(route).getByText(/Lift is expressed as a capture-index delta against the matched holdout band/i)).toBeInTheDocument();
+    expectCdeSafe(container);
+  });
+
+  it('renders Market Scan demand, corridor share bands, and governed baseline copy', () => {
+    const { container } = renderScreen('marketscan');
+    const route = screen.getByRole('region', { name: 'Market Scan' });
+
+    expect(within(route).getByRole('heading', { name: 'Market scan' })).toBeInTheDocument();
+    expect(within(route).getByText('Hospitality')).toBeInTheDocument();
+    expect(within(route).getByText('Retail/Luxury')).toBeInTheDocument();
+    expect(within(route).getByText('Corridor mix')).toBeInTheDocument();
+    expect(within(route).getByText('Competitive read')).toBeInTheDocument();
+    expect(within(route).getByText(/matched CDE market baseline \(100\)/i)).toBeInTheDocument();
+
+    expect(within(route).getByLabelText('Greater Bay Area share band 38-46%')).toHaveStyle({ width: '42%' });
+    expect(within(route).getByLabelText('Hong Kong share band 24-30%')).toHaveStyle({ width: '27%' });
+    expectCdeSafe(container);
+  });
+
+  it('renders Governance rules, refresh log, and CDE data-sharing scope', () => {
+    const { container } = renderScreen('governance');
+    const route = screen.getByRole('region', { name: 'Governance' });
+
+    expect(within(route).getByRole('heading', { name: 'Governance & CDE rules' })).toBeInTheDocument();
+    expect(within(route).getByText('Ranges & indices only')).toBeInTheDocument();
+    expect(within(route).getByText('Cohort floors')).toBeInTheDocument();
+    expect(within(route).getByText('Refresh log')).toBeInTheDocument();
+    expect(within(route).getByText('2026 Q2')).toBeInTheDocument();
+    expect(within(route).getByText('CURRENT')).toBeInTheDocument();
+    expect(within(route).getByText('Data-sharing scope')).toBeInTheDocument();
+    expect(within(route).getByText(/demi-decile averages over matched cohorts/i)).toBeInTheDocument();
+    expect(within(route).getByText(/No individual, venue, or payment-event detail/i)).toBeInTheDocument();
+    expectCdeSafe(container);
   });
 });
