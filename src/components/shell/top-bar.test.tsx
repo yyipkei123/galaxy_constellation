@@ -117,13 +117,33 @@ describe('TopBar', () => {
       </AppStateProvider>,
     );
 
-    expect(screen.getByRole('heading', { name: 'Wallet intelligence cockpit' })).toBeInTheDocument();
+    expect(screen.getByText('Wallet intelligence cockpit')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Wallet intelligence cockpit' })).not.toBeInTheDocument();
     expect(screen.getByRole('banner')).not.toHaveTextContent(/Galaxy first-party/i);
     expect(screen.getByText('7 CDE metrics - Modelled')).toBeInTheDocument();
     expect(screen.getByLabelText('Galaxy Macau and Mastercard data partnership')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Open CDE signal guide/i })).toBeInTheDocument();
     expect(screen.getByRole('group', { name: 'Quarter selector' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '2026 Q2' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it.each([
+    ['/', 'Wallet intelligence cockpit'],
+    ['/journey', 'Guest journey'],
+    ['/marketscan', 'Market scan'],
+    ['/corridors', 'Source-market corridors'],
+    ['/acquisition', 'Priority corridor acquisition'],
+  ])('maps %s to the prototype shell title %s', (pathname, expectedTitle) => {
+    mockPathname = pathname;
+
+    render(
+      <AppStateProvider>
+        <TopBar />
+      </AppStateProvider>,
+    );
+
+    expect(screen.getByRole('banner')).toHaveTextContent(expectedTitle);
+    expect(screen.getByText(expectedTitle)).toBeInTheDocument();
   });
 
   it('opens a global CDE signal guide from the top bar', () => {
@@ -434,7 +454,7 @@ describe('TopBar', () => {
     expect(container.textContent).not.toMatch(/HKD|MOP|\$|元|澳門幣/i);
   });
 
-  it('uses the prototype heading and toggles presenter mode', () => {
+  it('uses a non-heading prototype title and toggles presenter mode', () => {
     render(
       <AppStateProvider>
         <TopBar />
@@ -442,7 +462,8 @@ describe('TopBar', () => {
     );
 
     expect(screen.getByRole('banner')).toHaveTextContent('Wallet intelligence cockpit');
-    expect(screen.getByRole('heading', { name: 'Wallet intelligence cockpit' })).toBeInTheDocument();
+    expect(screen.getByText('Wallet intelligence cockpit')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Wallet intelligence cockpit' })).not.toBeInTheDocument();
 
     const presenterToggle = screen.getByRole('button', { name: 'Presenter mode' });
     expect(presenterToggle).toHaveAttribute('aria-pressed', 'false');

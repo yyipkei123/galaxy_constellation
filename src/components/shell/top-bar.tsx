@@ -109,9 +109,9 @@ export function TopBar() {
   return (
     <header className="flex min-h-[52px] flex-col gap-3 md:flex-row md:items-center md:justify-between">
       <div className="flex min-w-0 flex-wrap items-center gap-3">
-        <h1 className="m-0 min-w-0 text-[17px] font-semibold leading-tight text-galaxy-cream md:text-[19px]">
+        <p className="m-0 min-w-0 text-[17px] font-semibold leading-tight text-galaxy-cream md:text-[19px]">
           {pageTitle}
-        </h1>
+        </p>
         <div className="flex flex-wrap items-center gap-2">
           <span
             aria-label={`${methodology.activeMetricCount} active CDE metrics - Modelled`}
