@@ -54,6 +54,12 @@ describe('constellation redesign model', () => {
       'MICE & Business Blend',
       'Transit Samplers',
     ]);
+    redesignSegments.forEach((segment) => {
+      expect(Object.hasOwn(segment, 'prop')).toBe(false);
+      expect(segment).toHaveProperty('propensityBand');
+    });
+    expect(JSON.stringify(redesignSegments)).not.toMatch(/"prop"\s*:/);
+    expect(JSON.stringify(redesignSegments)).not.toMatch(/\b0\.(?:86|74|68|71|63|52)\b/);
   });
 
   it('builds the 2026 Q2 overview model from the prototype controller', () => {

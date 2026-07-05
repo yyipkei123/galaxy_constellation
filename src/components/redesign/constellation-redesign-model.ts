@@ -14,7 +14,7 @@ export type RedesignPageId =
 
 export type RedesignCategory = 'Hospitality' | 'Dining' | 'Entertainment' | 'Retail/Luxury';
 
-export interface RedesignSegment {
+interface RawRedesignSegment {
   id: string;
   name: string;
   short: string;
@@ -23,6 +23,25 @@ export interface RedesignSegment {
   cat: RedesignCategory;
   wallet: string;
   prop: string;
+  matched: string;
+  mobile: boolean;
+  move: string;
+  desc: string;
+  offer: string;
+  x: number;
+  y: number;
+  cats: Array<{ name: RedesignCategory; v: number }>;
+}
+
+export interface RedesignSegment {
+  id: string;
+  name: string;
+  short: string;
+  idx: number;
+  leak: number;
+  cat: RedesignCategory;
+  wallet: string;
+  propensityBand: string;
   matched: string;
   mobile: boolean;
   move: string;
@@ -80,7 +99,7 @@ export const redesignNavItems: RedesignNavItem[] = [
   { section: 'Govern', label: 'Governance', num: '12', pageId: 'governance', href: '/governance' },
 ];
 
-export const redesignSegments: RedesignSegment[] = [
+const rawRedesignSegments: RawRedesignSegment[] = [
   {
     id: 'cc',
     name: 'Cosmopolitan Connoisseurs',
@@ -230,9 +249,7 @@ export const redesignQuarterData = {
 
 export type RedesignQuarterLabel = keyof typeof redesignQuarterData;
 
-export interface RedesignModelSegment extends Omit<RedesignSegment, 'prop'> {
-  propensityBand: string;
-}
+export interface RedesignModelSegment extends RedesignSegment {}
 
 export interface ConstellationRedesignModel {
   pageId: RedesignPageId;
@@ -449,8 +466,8 @@ function delta(cur: number, previous: number | null | undefined, suffix = ''): D
   return { delta: 'flat', deltaColor: '#6A6478' };
 }
 
-function shiftedSegments(shift: number): RedesignSegment[] {
-  return redesignSegments.map((segment) => ({
+function shiftedSegments(shift: number): RawRedesignSegment[] {
+  return rawRedesignSegments.map((segment) => ({
     ...segment,
     idx: segment.idx + shift,
     cats: segment.cats.map((category) => ({ ...category })),
@@ -473,7 +490,7 @@ function decileOf(value: number): string {
   return 'Demi-deciles 5+';
 }
 
-function toModelSegment(segment: RedesignSegment): RedesignModelSegment {
+function toPublicSegment(segment: RawRedesignSegment): RedesignSegment {
   const { prop, ...displaySegment } = segment;
   const propensityScore = finiteNumber(Number.parseFloat(prop), 0);
 
@@ -482,6 +499,12 @@ function toModelSegment(segment: RedesignSegment): RedesignModelSegment {
     cats: segment.cats.map((category) => ({ ...category })),
     propensityBand: decileOf(propensityScore),
   };
+}
+
+export const redesignSegments: RedesignSegment[] = rawRedesignSegments.map(toPublicSegment);
+
+function toModelSegment(segment: RawRedesignSegment): RedesignModelSegment {
+  return toPublicSegment(segment);
 }
 
 function selectedChannels(channels: Record<string, boolean>): string[] {
@@ -693,7 +716,7 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput): Cons
     { key: 'brief', label: 'Build a brief' },
   ];
 
-  const segmentChips = redesignSegments.map((segment) => ({
+  const segmentChips = rawRedesignSegments.map((segment) => ({
     id: segment.id,
     label: segment.short,
     selected: segment.id === selectedSegmentId,
