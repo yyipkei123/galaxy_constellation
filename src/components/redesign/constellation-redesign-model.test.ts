@@ -115,10 +115,11 @@ describe('constellation redesign model', () => {
     expect(model.briefCopy).not.toContain('propensity 0.86');
     expect(JSON.stringify(model)).not.toMatch(/"(?:prop|selectedPropensity|selProp)"\s*:\s*"0\.\d+"/);
     expect(JSON.stringify(model)).not.toContain('propensityPct');
+    expect(JSON.stringify(model)).not.toContain('barWidthPct');
     expect(model.segmentRows[0]).toHaveProperty('propensityBand');
     expect(model.segmentRows[0]).not.toHaveProperty('propensityPct');
     expect(model.propensityRows[0]).toHaveProperty('propensityBand');
-    expect(model.propensityRows[0]).toHaveProperty('barWidthPct');
+    expect(model.propensityRows[0]).not.toHaveProperty('barWidthPct');
     expect(model.propensityRows[0]).not.toHaveProperty('propensityPct');
     expect(model.propensityRows[0]).not.toHaveProperty('w');
     expectDisplaySafe(model);

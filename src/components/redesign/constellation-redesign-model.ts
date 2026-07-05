@@ -249,7 +249,7 @@ export const redesignQuarterData = {
 
 export type RedesignQuarterLabel = keyof typeof redesignQuarterData;
 
-export interface RedesignModelSegment extends RedesignSegment {}
+export type RedesignModelSegment = RedesignSegment;
 
 export interface ConstellationRedesignModel {
   pageId: RedesignPageId;
@@ -346,7 +346,6 @@ export interface ConstellationRedesignModel {
     id: string;
     name: string;
     propensityBand: string;
-    barWidthPct: number;
     decile: string;
     reach: string;
     mColor: string;
@@ -788,7 +787,6 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput): Cons
         id: segment.id,
         name: segment.name,
         propensityBand: decileOf(propensityScore),
-        barWidthPct: Math.round(propensityScore * 100),
         decile: decileOf(propensityScore),
         reach: segment.mobile ? 'Mobile-ready' : 'CRM / desk',
         mColor: segment.mobile ? '#6FBF8F' : '#8B8598',
