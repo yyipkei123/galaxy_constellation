@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { ConstellationRedesignScreen } from './constellation-redesign-screen';
 
 const bannedCdePattern = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣|raw[-\s]?spend|exact\s+spend|NaN|Infinity/i;
+const rawWalletBandPattern = /\d+-\d+k \/mo/;
 
 function renderScreen(pageId = 'overview' as const) {
   return render(
@@ -25,16 +26,58 @@ describe('ConstellationRedesignScreen', () => {
     expect(screen.getByRole('button', { name: /Select Premium Mass Weekenders/i })).toBeInTheDocument();
     expect(screen.getByText('CDE index legend')).toBeInTheDocument();
     expect(container.textContent).not.toMatch(bannedCdePattern);
+    expect(container.textContent).not.toMatch(rawWalletBandPattern);
+    expect(container.textContent).toContain('14-22k equiv./mo');
   });
 
   it('updates selected finding when a constellation node is clicked', () => {
-    renderScreen('overview');
+    const { container } = renderScreen('overview');
 
     fireEvent.click(screen.getByRole('button', { name: /Select Premium Mass Weekenders/i }));
 
     const selectedFinding = screen.getByRole('region', { name: 'Selected finding' });
     expect(within(selectedFinding).getByText('Premium Mass Weekenders')).toBeInTheDocument();
     expect(within(selectedFinding).getByText('48% Dining')).toBeInTheDocument();
+    expect(container.textContent).not.toMatch(rawWalletBandPattern);
+    expect(container.textContent).toContain('8-14k equiv./mo');
+  });
+
+  it('labels the AI dock as a complementary landmark with collapse state', () => {
+    renderScreen('overview');
+
+    const aiDock = screen.getByRole('complementary', { name: 'CDE AI' });
+    const toggle = within(aiDock).getByRole('button', { name: 'Collapse' });
+    const controlledPanelId = toggle.getAttribute('aria-controls');
+
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(controlledPanelId).toBeTruthy();
+    expect(document.getElementById(controlledPanelId ?? '')).toBeInTheDocument();
+
+    fireEvent.click(toggle);
+
+    expect(within(aiDock).getByRole('button', { name: 'Open' })).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('exposes constellation node details in accessible names', () => {
+    renderScreen('overview');
+
+    expect(screen.getByRole('button', { name: /Select Premium Mass Weekenders/i })).toHaveAccessibleName(
+      /Select Premium Mass Weekenders.*index 102.*48% Dining leakage.*mobile-ready/i,
+    );
+  });
+
+  it('submits a deterministic CDE-safe AI question and clears the input', () => {
+    renderScreen('overview');
+
+    const aiDock = screen.getByRole('complementary', { name: 'CDE AI' });
+    const input = within(aiDock).getByRole('textbox', { name: /Ask a CDE-safe question/i });
+
+    fireEvent.change(input, { target: { value: 'Explain the ranking' } });
+    fireEvent.click(within(aiDock).getByRole('button', { name: 'Ask' }));
+
+    expect(input).toHaveValue('');
+    expect(within(aiDock).getByText(/Cosmopolitan Connoisseurs: opportunity index 118/i)).toBeInTheDocument();
+    expect(within(aiDock).getByText(/14-22k equiv\.\/mo/i)).toBeInTheDocument();
   });
 
   it('renders each route screen with the matching prototype label', () => {

@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
 import clsx from 'clsx';
+import { formatEnriched } from '@/lib/format';
 import {
   buildConstellationRedesignModel,
   type ConstellationRedesignModel,
@@ -18,6 +19,9 @@ interface ConstellationRedesignScreenProps {
 type Metric = ConstellationRedesignModel['kpis'][number];
 type Stat = ConstellationRedesignModel['selectedStats'][number];
 type Node = ConstellationRedesignModel['constellationNodes'][number];
+type SegmentRow = ConstellationRedesignModel['segmentRows'][number];
+
+const rawModelledWalletBandPattern = /(\d+(?:\.\d+)?-\d+(?:\.\d+)?)k \/mo/g;
 
 const defaultChannels = {
   'App push': true,
@@ -25,6 +29,12 @@ const defaultChannels = {
   'Paid social': false,
   'Concierge / VIP host': false,
 };
+
+function normalizeModelledWalletBands(value: string): string {
+  return value.replace(rawModelledWalletBandPattern, (_match, band: string) => (
+    formatEnriched(`${band}k equiv./mo`, 'band')
+  ));
+}
 
 export function ConstellationRedesignScreen({
   pageId,
@@ -165,6 +175,7 @@ function Overview({
           <div className="grid gap-[18px] lg:grid-cols-[minmax(0,1fr)_320px]">
             <ConstellationMap
               nodes={model.constellationNodes}
+              segmentRows={model.segmentRows}
               selectedSegmentName={model.selectedSegment.name}
               onSelectSegment={onSelectSegment}
             />
@@ -297,13 +308,23 @@ function ProgressBar({ value, label }: { value: number; label: string }) {
 
 function ConstellationMap({
   nodes,
+  segmentRows,
   selectedSegmentName,
   onSelectSegment,
 }: {
   nodes: Node[];
+  segmentRows: SegmentRow[];
   selectedSegmentName: string;
   onSelectSegment: (segmentId: string) => void;
 }) {
+  function accessibleNodeName(node: Node) {
+    const segmentRow = segmentRows.find((row) => row.id === node.id);
+    const category = segmentRow?.cat ?? 'category';
+    const reach = node.mobile ? 'mobile-ready' : 'CRM / desk';
+
+    return `Select ${node.name}, opportunity index ${node.idx}, ${node.leak}% ${category} leakage, ${reach}`;
+  }
+
   return (
     <section className="galaxy-glass-panel min-w-0 rounded-[20px] border border-white/10 p-5">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -331,7 +352,7 @@ function ConstellationMap({
           <button
             key={node.id}
             type="button"
-            aria-label={`Select ${node.name}`}
+            aria-label={accessibleNodeName(node)}
             aria-pressed={node.selected}
             onClick={() => onSelectSegment(node.id)}
             className="absolute z-10 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 text-center font-mono font-semibold shadow-[0_16px_38px_rgba(0,0,0,0.32)] transition hover:scale-105 focus-visible:scale-105"
@@ -391,7 +412,7 @@ function SelectedStat({ stat }: { stat: Stat }) {
   return (
     <div className="rounded-[14px] border border-white/10 bg-galaxy-ink/35 p-3">
       <p className="text-xs font-semibold uppercase tracking-[0.12em] text-galaxy-muted">{stat.label}</p>
-      <p className="mt-1 font-semibold text-galaxy-cream">{stat.value}</p>
+      <p className="mt-1 font-semibold text-galaxy-cream">{normalizeModelledWalletBands(stat.value)}</p>
     </div>
   );
 }
@@ -435,7 +456,8 @@ function CdeAiDock({
   setAiInput: (input: string) => void;
   onSelectSegment: (segmentId: string) => void;
 }) {
-  const aiAnswer = aiAnswerKey ? model.aiAnswers[aiAnswerKey] : model.aiAnswer;
+  const aiPanelId = 'constellation-redesign-ai-panel';
+  const aiAnswer = normalizeModelledWalletBands(aiAnswerKey ? model.aiAnswers[aiAnswerKey] : model.aiAnswer);
 
   function toggleChannel(channel: string) {
     setChannels({
@@ -444,8 +466,17 @@ function CdeAiDock({
     });
   }
 
+  function submitAiQuestion(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!aiInput.trim()) return;
+
+    setAiAnswerKey('explain');
+    setAiInput('');
+  }
+
   return (
-    <aside className="galaxy-glass-panel h-fit rounded-[20px] border border-white/10 p-5">
+    <aside aria-label="CDE AI" className="galaxy-glass-panel h-fit rounded-[20px] border border-white/10 p-5">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-gold">CDE AI dock</p>
@@ -453,6 +484,8 @@ function CdeAiDock({
         </div>
         <button
           type="button"
+          aria-controls={aiPanelId}
+          aria-expanded={aiOpen}
           onClick={() => setAiOpen(!aiOpen)}
           className="min-h-9 rounded-full border border-white/10 px-3 text-xs font-semibold text-galaxy-muted transition hover:border-galaxy-gold/50 hover:text-galaxy-cream"
         >
@@ -461,7 +494,7 @@ function CdeAiDock({
       </div>
 
       {aiOpen ? (
-        <div className="mt-5 space-y-5">
+        <div id={aiPanelId} className="mt-5 space-y-5">
           <SegmentChipBar chips={model.segmentChips} onSelectSegment={onSelectSegment} />
 
           <div>
@@ -560,16 +593,24 @@ function CdeAiDock({
             <p className="mt-4 text-sm leading-6 text-galaxy-cream">{aiAnswer}</p>
           </div>
 
-          <label className="block text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-muted">
-            Ask a CDE-safe question
-            <input
-              type="text"
-              value={aiInput}
-              onChange={(event) => setAiInput(event.target.value)}
-              placeholder="Compare the top two audiences"
-              className="mt-3 block min-h-11 w-full rounded-[12px] border border-white/10 bg-galaxy-ink/50 px-3 text-sm normal-case tracking-normal text-galaxy-cream placeholder:text-galaxy-muted/70"
-            />
-          </label>
+          <form className="space-y-3" onSubmit={submitAiQuestion}>
+            <label className="block text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-muted">
+              Ask a CDE-safe question
+              <input
+                type="text"
+                value={aiInput}
+                onChange={(event) => setAiInput(event.target.value)}
+                placeholder="Compare the top two audiences"
+                className="mt-3 block min-h-11 w-full rounded-[12px] border border-white/10 bg-galaxy-ink/50 px-3 text-sm normal-case tracking-normal text-galaxy-cream placeholder:text-galaxy-muted/70"
+              />
+            </label>
+            <button
+              type="submit"
+              className="min-h-10 w-full rounded-[12px] border border-white/10 bg-galaxy-ink/35 px-4 text-sm font-semibold text-galaxy-cream transition hover:border-galaxy-gold/50"
+            >
+              Ask
+            </button>
+          </form>
 
           <button
             type="button"
