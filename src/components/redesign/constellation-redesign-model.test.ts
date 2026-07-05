@@ -6,7 +6,7 @@ import {
   type RedesignPageId,
 } from './constellation-redesign-model';
 
-const bannedCdePattern = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣|raw[-\s]?spend|exact\s+spend|NaN|Infinity/i;
+const bannedCdePattern = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣|raw[-\s]?spend|exact\s+spend|\b(?:NaN|Infinity)\b/i;
 
 function expectDisplaySafe(value: unknown) {
   if (typeof value === 'number') {
@@ -31,19 +31,19 @@ function expectDisplaySafe(value: unknown) {
 
 describe('constellation redesign model', () => {
   it('ports the prototype navigation and segment universe', () => {
-    expect(redesignNavItems.map((item) => item.label)).toEqual([
-      'Overview',
-      'Journey',
-      'Wallet',
-      'Segments',
-      'Guests',
-      'Leakage',
-      'Propensity',
-      'Activation',
-      'Simulator',
-      'Measurement',
-      'Market Scan',
-      'Governance',
+    expect(redesignNavItems).toEqual([
+      { section: 'Plan', label: 'Overview', num: '01', pageId: 'overview', href: '/' },
+      { section: null, label: 'Journey', num: '02', pageId: 'journey', href: '/journey' },
+      { section: null, label: 'Wallet', num: '03', pageId: 'wallet', href: '/wallet' },
+      { section: 'Audience', label: 'Segments', num: '04', pageId: 'segments', href: '/segments' },
+      { section: null, label: 'Guests', num: '05', pageId: 'guests', href: '/guests' },
+      { section: null, label: 'Leakage', num: '06', pageId: 'leakage', href: '/leakage' },
+      { section: null, label: 'Propensity', num: '07', pageId: 'propensity', href: '/propensity' },
+      { section: 'Act', label: 'Activation', num: '08', pageId: 'activation', href: '/activation' },
+      { section: null, label: 'Simulator', num: '09', pageId: 'simulate', href: '/simulate' },
+      { section: 'Measure', label: 'Measurement', num: '10', pageId: 'measurement', href: '/measurement' },
+      { section: null, label: 'Market Scan', num: '11', pageId: 'marketscan', href: '/marketscan' },
+      { section: 'Govern', label: 'Governance', num: '12', pageId: 'governance', href: '/governance' },
     ]);
     expect(redesignSegments.map((segment) => segment.name)).toEqual([
       'Cosmopolitan Connoisseurs',
@@ -89,6 +89,10 @@ describe('constellation redesign model', () => {
     expect(model.kpis[3].value).toBe('118');
     expect(model.constellationNodes).toHaveLength(6);
     expect(model.legend.map((item) => item.band)).toEqual(['<90', '90-109', '110-129', '130+']);
+    expect(model.navItems.find((item) => item.pageId === 'governance')).toMatchObject({
+      label: 'Governance',
+      href: '/governance',
+    });
     expectDisplaySafe(model);
   });
 
@@ -120,6 +124,13 @@ describe('constellation redesign model', () => {
     ]);
     expect(model.exportLabel).toBe('Brief handed to Marketing');
     expect(model.windowNote).toBe('A 4-week window fits arrival-triggered offers.');
+    expect(model.walletTrend.map((item) => item.band)).toEqual(['8-14k', '8-14k', '8-14k', '8-14k']);
+    expect(model.readouts[3].note).toBe('Launches after governance sign-off.');
+    expect(model.measureCounts[2].sub).toBe('Awaiting governance sign-off');
+    expect(model.rules[0]).toEqual({
+      t: 'Ranges & indices only',
+      d: 'Enriched figures never surface raw counts or spend amounts.',
+    });
     expect(model.simulation.liftBand).toMatch(/^\+\d+ to \+\d+$/);
     expectDisplaySafe(model);
   });

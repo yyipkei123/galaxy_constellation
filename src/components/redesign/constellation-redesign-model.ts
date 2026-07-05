@@ -58,23 +58,24 @@ interface DeltaModel {
 }
 
 export const redesignNavItems: Array<{
-  section: string;
+  section: string | null;
   label: string;
   num: string;
-  page: RedesignPageId;
+  pageId: RedesignPageId;
+  href: string;
 }> = [
-  { section: 'Plan', label: 'Overview', num: '01', page: 'overview' },
-  { section: '', label: 'Journey', num: '02', page: 'journey' },
-  { section: '', label: 'Wallet', num: '03', page: 'wallet' },
-  { section: 'Audience', label: 'Segments', num: '04', page: 'segments' },
-  { section: '', label: 'Guests', num: '05', page: 'guests' },
-  { section: '', label: 'Leakage', num: '06', page: 'leakage' },
-  { section: '', label: 'Propensity', num: '07', page: 'propensity' },
-  { section: 'Act', label: 'Activation', num: '08', page: 'activation' },
-  { section: '', label: 'Simulator', num: '09', page: 'simulate' },
-  { section: 'Measure', label: 'Measurement', num: '10', page: 'measurement' },
-  { section: '', label: 'Market Scan', num: '11', page: 'marketscan' },
-  { section: 'Govern', label: 'Governance', num: '12', page: 'governance' },
+  { section: 'Plan', label: 'Overview', num: '01', pageId: 'overview', href: '/' },
+  { section: null, label: 'Journey', num: '02', pageId: 'journey', href: '/journey' },
+  { section: null, label: 'Wallet', num: '03', pageId: 'wallet', href: '/wallet' },
+  { section: 'Audience', label: 'Segments', num: '04', pageId: 'segments', href: '/segments' },
+  { section: null, label: 'Guests', num: '05', pageId: 'guests', href: '/guests' },
+  { section: null, label: 'Leakage', num: '06', pageId: 'leakage', href: '/leakage' },
+  { section: null, label: 'Propensity', num: '07', pageId: 'propensity', href: '/propensity' },
+  { section: 'Act', label: 'Activation', num: '08', pageId: 'activation', href: '/activation' },
+  { section: null, label: 'Simulator', num: '09', pageId: 'simulate', href: '/simulate' },
+  { section: 'Measure', label: 'Measurement', num: '10', pageId: 'measurement', href: '/measurement' },
+  { section: null, label: 'Market Scan', num: '11', pageId: 'marketscan', href: '/marketscan' },
+  { section: 'Govern', label: 'Governance', num: '12', pageId: 'governance', href: '/governance' },
 ];
 
 export const redesignSegments: RedesignSegment[] = [
@@ -252,7 +253,7 @@ const pageTitles: Record<RedesignPageId, string> = {
   simulate: 'Scenario simulator',
   measurement: 'Campaign measurement',
   marketscan: 'Market scan',
-  governance: 'CDE rules & controls',
+  governance: 'Governance & CDE rules',
 };
 
 function isQuarterLabel(value: string): value is RedesignQuarterLabel {
@@ -551,14 +552,10 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput) {
     on: 100 - category.v,
   }));
   const walletTrend = REDESIGN_QUARTER_KEYS.map((key) => {
-    const trendFactor = 1 + redesignQuarterData[key].shift * 0.02;
-    const low = Math.max(1, Math.round(walletLow * trendFactor));
-    const high = Math.max(2, Math.round(walletHigh * trendFactor));
-
     return {
       q: key,
-      band: `${low}-${high}k`,
-      h: Math.max(12, Math.round((high / walletHigh) * 88)),
+      band: `${walletLow}-${walletHigh}k`,
+      h: 88,
       selected: key === quarterLabel,
       qColor: key === quarterLabel ? '#EAD9A9' : '#6A6478',
     };
@@ -652,13 +649,13 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput) {
       status: 'QUEUED',
       sColor: '#8B8598',
       sBorder: 'rgba(139,133,152,0.4)',
-      note: 'Launches after compliance sign-off.',
+      note: 'Launches after governance sign-off.',
     },
   ];
   const measureCounts = [
     { v: '2', label: 'Reads complete', sub: 'Both above or within the holdout band', color: '#6FBF8F' },
     { v: '1', label: 'In flight', sub: 'Read lands at next refresh', color: '#EAD9A9' },
-    { v: '1', label: 'Queued', sub: 'Awaiting compliance sign-off', color: '#8B8598' },
+    { v: '1', label: 'Queued', sub: 'Awaiting governance sign-off', color: '#8B8598' },
   ];
 
   const liftLo = Math.max(1, Math.round(selectedSegment.leak * (reachPct / 100) * (depthPct / 100) * 1.6));
@@ -710,7 +707,7 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput) {
   ];
 
   const rules = [
-    { t: 'Ranges & indices only', d: 'Enriched figures never surface identifiable counts or unbanded amounts.' },
+    { t: 'Ranges & indices only', d: 'Enriched figures never surface raw counts or spend amounts.' },
     { t: 'Cohort minimums', d: 'No audience below the governed cohort floor is ever exported.' },
     { t: 'No merchant-level data', d: 'Category demi-decile averages only; no merchant identifiers.' },
     { t: 'Quarterly refresh', d: 'Signals expire at refresh; stale audiences auto-retire.' },
@@ -743,10 +740,11 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput) {
     previousQuarterLabel: prevLabel,
     navItems: redesignNavItems.map((item) => ({
       section: item.section,
-      label: item.page === 'governance' ? 'CDE Rules' : item.label,
+      label: item.label,
       num: item.num,
-      pageKey: item.page === 'governance' ? 'cde-rules' : item.page,
-      active: item.page === pageId,
+      pageId: item.pageId,
+      href: item.href,
+      active: item.pageId === pageId,
       headerDisplay: item.section ? 'block' : 'none',
     })),
     quarterPills: REDESIGN_QUARTER_KEYS.map((label) => ({
