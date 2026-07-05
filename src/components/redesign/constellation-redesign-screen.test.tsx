@@ -174,6 +174,47 @@ describe('ConstellationRedesignScreen', () => {
     expect(container.textContent).not.toMatch(rawWalletBandPattern);
   });
 
+  it('selects a Journey segment chip and updates the weakest-link context', () => {
+    const { container } = renderScreen('journey');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Weekenders' }));
+
+    expect(screen.getByRole('button', { name: 'Weekenders' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText(/for Premium Mass Weekenders/i)).toBeInTheDocument();
+    expect(container.textContent).not.toMatch(bannedCdePattern);
+    expect(container.textContent).not.toMatch(rawWalletBandPattern);
+  });
+
+  it('selects a Wallet segment and renders varied normalized quarterly bands', () => {
+    const { container } = renderScreen('wallet');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Weekenders' }));
+
+    expect(screen.getByRole('button', { name: 'Weekenders' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText('Selected segment: Premium Mass Weekenders')).toBeInTheDocument();
+    expect(screen.getAllByText('8-14k equiv./mo').length).toBeGreaterThan(0);
+    expect(screen.getByText('9-15k equiv./mo')).toBeInTheDocument();
+    expect(screen.getByText('10-16k equiv./mo')).toBeInTheDocument();
+    expect(screen.getByText('11-17k equiv./mo')).toBeInTheDocument();
+    expect(container.textContent).not.toMatch(bannedCdePattern);
+    expect(container.textContent).not.toMatch(rawWalletBandPattern);
+  });
+
+  it('selects a Propensity row and updates the audience readiness context', () => {
+    const { container } = renderScreen('propensity');
+
+    fireEvent.click(screen.getByRole('button', { name: /Select Regional Gaming Regulars/i }));
+
+    expect(screen.getByRole('button', { name: /Select Regional Gaming Regulars/i })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getByRole('heading', { name: 'Regional Gaming Regulars' })).toBeInTheDocument();
+    expect(screen.getByText(/CRM email first with concierge follow-up/i)).toBeInTheDocument();
+    expect(container.textContent).not.toMatch(bannedCdePattern);
+    expect(container.textContent).not.toMatch(rawWalletBandPattern);
+  });
+
   it('renders Journey, Wallet, Guests, and Propensity screens from the model', () => {
     const expectations = [
       ['journey', 'Weakest link'],

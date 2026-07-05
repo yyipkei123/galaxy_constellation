@@ -659,6 +659,9 @@ function renderWallet(model: ConstellationRedesignModel, onSelectSegment: (segme
           <p className="mt-2 text-sm leading-6 text-galaxy-muted">
             Each category is expressed as governed share bands for the selected segment.
           </p>
+          <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-gold">
+            Selected segment: {model.selectedSegment.name}
+          </p>
           <div className="mt-5 space-y-5">
             {model.walletSplit.map((split) => (
               <div key={split.name}>

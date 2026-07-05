@@ -219,7 +219,9 @@ describe('constellation redesign model', () => {
     ]);
     expect(model.exportLabel).toBe('Brief handed to Marketing');
     expect(model.windowNote).toBe('A 4-week window fits arrival-triggered offers.');
-    expect(model.walletTrend.map((item) => item.band)).toEqual(['8-14k', '8-14k', '8-14k', '8-14k']);
+    expect(model.walletTrend.map((item) => item.band)).toEqual(['8-14k', '9-15k', '10-16k', '11-17k']);
+    expect(model.walletTrend.map((item) => item.h)).toEqual([58, 62, 66, 73]);
+    expect(model.walletTrend.map((item) => item.selected)).toEqual([true, false, false, false]);
     expect(model.readouts[3].note).toBe('Launches after governance sign-off.');
     expect(model.measureCounts[2].sub).toBe('Awaiting governance sign-off');
     expect(model.rules[0]).toEqual({
