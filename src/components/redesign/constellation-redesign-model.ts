@@ -330,7 +330,7 @@ export interface ConstellationRedesignModel {
   walletSplit: Array<{ name: RedesignCategory; off: number; on: number }>;
   walletTrend: Array<{ q: RedesignQuarterLabel; band: string; h: number; selected: boolean; qColor: string }>;
   walletCards: Array<{ label: string; value: string; sub: string }>;
-  funnel: Array<{ name: string; band: string; w: number; note: string }>;
+  funnel: Array<{ name: string; band: string; widthPct: number; note: string }>;
   guestRows: Array<{
     id: string;
     name: string;
@@ -346,13 +346,11 @@ export interface ConstellationRedesignModel {
     id: string;
     name: string;
     propensityBand: string;
-    decile: string;
     reach: string;
     mColor: string;
     selected: boolean;
   }>;
   selectedPropensityBand: string;
-  selectedDecile: string;
   selectedChannelRecommendation: string;
   readouts: Array<{
     name: string;
@@ -381,7 +379,7 @@ export interface ConstellationRedesignModel {
     simNote: string;
   };
   demand: Array<{ name: RedesignCategory; v: number; sub: string; color: string; label: string; deltaColor: string }>;
-  corridors: Array<{ name: string; band: string; w: number; note: string }>;
+  corridors: Array<{ name: string; band: string; sharePct: number; note: string }>;
   rules: Array<{ t: string; d: string }>;
   refreshLog: Array<{ q: RedesignQuarterLabel; date: string; cov: string; status: string; sColor: string; sBorder: string }>;
   exportLabel: string;
@@ -760,10 +758,10 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput): Cons
   ];
 
   const funnel = [
-    { name: 'Active resort guests', band: '380-520k', w: 100, note: 'Rolling 12-month stay, dining or rewards activity.' },
-    { name: 'Card-active matched universe', band: '240-330k', w: 64, note: 'Guests with modelled card activity inside the CDE window.' },
-    { name: 'CDE matched cohorts', band: qd.matched, w: 43, note: `${qd.coverage}% matched coverage; 7 active CDE metrics.` },
-    { name: 'Activation-ready', band: '96-140k', w: 27, note: 'Consented, channel-reachable, above governed cohort minimums.' },
+    { name: 'Active resort guests', band: '380-520k', widthPct: 100, note: 'Rolling 12-month stay, dining or rewards activity.' },
+    { name: 'Card-active matched universe', band: '240-330k', widthPct: 64, note: 'Guests with modelled card activity inside the CDE window.' },
+    { name: 'CDE matched cohorts', band: qd.matched, widthPct: 43, note: `${qd.coverage}% matched coverage; 7 active CDE metrics.` },
+    { name: 'Activation-ready', band: '96-140k', widthPct: 27, note: 'Consented, channel-reachable, above governed cohort minimums.' },
   ];
   const coverageOffsets: Record<string, number> = { cc: 3, pm: 1, fr: -2, rg: -1, mb: 2, ts: -4 };
   const guestRows = segs.map((segment) => ({
@@ -787,7 +785,6 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput): Cons
         id: segment.id,
         name: segment.name,
         propensityBand: decileOf(propensityScore),
-        decile: decileOf(propensityScore),
         reach: segment.mobile ? 'Mobile-ready' : 'CRM / desk',
         mColor: segment.mobile ? '#6FBF8F' : '#8B8598',
         selected: segment.id === selectedSegmentId,
@@ -891,10 +888,10 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput): Cons
     };
   });
   const corridors = [
-    { name: 'Greater Bay Area', band: '38-46%', w: 42, note: 'Volume engine; weekend-skewed visitation.' },
-    { name: 'Hong Kong', band: '24-30%', w: 27, note: 'Premium corridor; highest retail/luxury wallet.' },
-    { name: 'Southeast Asia', band: '12-16%', w: 14, note: 'Growing; entertainment-led trips.' },
-    { name: 'International long-haul', band: '8-12%', w: 10, note: 'Longest stays; MICE and connoisseur mix.' },
+    { name: 'Greater Bay Area', band: '38-46%', sharePct: 42, note: 'Volume engine; weekend-skewed visitation.' },
+    { name: 'Hong Kong', band: '24-30%', sharePct: 27, note: 'Premium corridor; highest retail/luxury wallet.' },
+    { name: 'Southeast Asia', band: '12-16%', sharePct: 14, note: 'Growing; entertainment-led trips.' },
+    { name: 'International long-haul', band: '8-12%', sharePct: 10, note: 'Longest stays; MICE and connoisseur mix.' },
   ];
 
   const rules = [
@@ -973,7 +970,6 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput): Cons
     guestRows,
     propensityRows,
     selectedPropensityBand,
-    selectedDecile: selectedPropensityBand,
     selectedChannelRecommendation,
     readouts,
     measureCounts,

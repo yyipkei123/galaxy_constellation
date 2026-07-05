@@ -30,6 +30,22 @@ function expectDisplaySafe(value: unknown) {
   }
 }
 
+function collectModelKeys(value: unknown, keys: string[] = []): string[] {
+  if (Array.isArray(value)) {
+    value.forEach((item) => collectModelKeys(item, keys));
+    return keys;
+  }
+
+  if (value && typeof value === 'object') {
+    Object.entries(value as Record<string, unknown>).forEach(([key, item]) => {
+      keys.push(key);
+      collectModelKeys(item, keys);
+    });
+  }
+
+  return keys;
+}
+
 describe('constellation redesign model', () => {
   it('ports the prototype navigation and segment universe', () => {
     expect(redesignNavItems).toEqual([
@@ -122,6 +138,11 @@ describe('constellation redesign model', () => {
     expect(model.propensityRows[0]).not.toHaveProperty('barWidthPct');
     expect(model.propensityRows[0]).not.toHaveProperty('propensityPct');
     expect(model.propensityRows[0]).not.toHaveProperty('w');
+    expect(model.funnel[0]).toHaveProperty('widthPct');
+    expect(model.funnel[0]).not.toHaveProperty('w');
+    expect(model.corridors[0]).toHaveProperty('sharePct');
+    expect(model.corridors[0]).not.toHaveProperty('w');
+    expect(collectModelKeys(model).filter((key) => ['w', 'propensityPct', 'barWidthPct', 'prop', 'selProp', 'selectedDecile', 'decile'].includes(key))).toEqual([]);
     expectDisplaySafe(model);
   });
 
