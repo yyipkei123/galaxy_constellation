@@ -120,6 +120,23 @@ describe('ConstellationRedesignScreen', () => {
     expect(screen.getByText('Leakage by category')).toBeInTheDocument();
   });
 
+  it('builds a CDE-safe audience brief draft for the selected segment', () => {
+    const { container } = renderScreen('segments');
+
+    expect(screen.queryByRole('status', { name: 'Audience brief draft' })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Select Premium Mass Weekenders/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'Build audience brief' }));
+
+    const draftStatus = screen.getByRole('status', { name: 'Audience brief draft' });
+    expect(within(draftStatus).getByText('Audience brief draft generated')).toBeInTheDocument();
+    expect(within(draftStatus).getByText(/Premium Mass Weekenders/i)).toBeInTheDocument();
+    expect(within(draftStatus).getByText(/Progressive dining credit unlocking show tickets/i)).toBeInTheDocument();
+    expect(within(draftStatus).getByText(/governed matched bands, indices and category percentages only/i)).toBeInTheDocument();
+    expect(container.textContent).not.toMatch(bannedCdePattern);
+    expect(container.textContent).not.toMatch(rawWalletBandPattern);
+  });
+
   it('renders the Leakage matrix with category governance copy', () => {
     renderScreen('leakage');
 

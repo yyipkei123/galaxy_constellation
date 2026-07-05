@@ -52,6 +52,7 @@ export function ConstellationRedesignScreen({
   const [aiOpen, setAiOpen] = useState(true);
   const [aiAnswerKey, setAiAnswerKey] = useState<'explain' | 'trust' | 'brief' | null>(null);
   const [aiInput, setAiInput] = useState('');
+  const [audienceBriefDrafted, setAudienceBriefDrafted] = useState(false);
 
   const model = useMemo(
     () => buildConstellationRedesignModel({
@@ -72,6 +73,15 @@ export function ConstellationRedesignScreen({
       ...current,
       [channel]: !current[channel],
     }));
+  }
+
+  function selectSegment(segmentId: string) {
+    setSelectedSegmentId(segmentId);
+    setAudienceBriefDrafted(false);
+  }
+
+  function buildAudienceBriefDraft() {
+    setAudienceBriefDrafted(true);
   }
 
   return (
@@ -96,19 +106,24 @@ export function ConstellationRedesignScreen({
           aiInput={aiInput}
           setAiInput={setAiInput}
           onToggleChannel={toggleChannel}
-          onSelectSegment={setSelectedSegmentId}
+          onSelectSegment={selectSegment}
         />
       ) : (
-        renderRouteBody(model, setSelectedSegmentId)
+        renderRouteBody(model, selectSegment, audienceBriefDrafted, buildAudienceBriefDraft)
       )}
     </section>
   );
 }
 
-function renderRouteBody(model: ConstellationRedesignModel, onSelectSegment: (segmentId: string) => void) {
+function renderRouteBody(
+  model: ConstellationRedesignModel,
+  onSelectSegment: (segmentId: string) => void,
+  audienceBriefDrafted: boolean,
+  onBuildAudienceBrief: () => void,
+) {
   switch (model.pageId) {
     case 'segments':
-      return renderSegments(model, onSelectSegment);
+      return renderSegments(model, onSelectSegment, audienceBriefDrafted, onBuildAudienceBrief);
     case 'leakage':
       return renderLeakage(model);
     case 'journey':
@@ -337,7 +352,12 @@ function walletBandPerMonth(value: string): string {
   return normalizeModelledWalletBands(value.includes('/mo') ? value : `${value} /mo`);
 }
 
-function renderSegments(model: ConstellationRedesignModel, onSelectSegment: (segmentId: string) => void) {
+function renderSegments(
+  model: ConstellationRedesignModel,
+  onSelectSegment: (segmentId: string) => void,
+  audienceBriefDrafted: boolean,
+  onBuildAudienceBrief: () => void,
+) {
   return (
     <div className="grid gap-[18px] xl:grid-cols-[minmax(0,1fr)_360px]">
       <section className="galaxy-glass-panel min-w-0 rounded-[24px] border border-white/10 p-5 md:p-6">
@@ -417,10 +437,29 @@ function renderSegments(model: ConstellationRedesignModel, onSelectSegment: (seg
 
         <button
           type="button"
+          onClick={onBuildAudienceBrief}
           className="mt-5 min-h-11 w-full rounded-[12px] border border-galaxy-gold/45 px-4 text-sm font-semibold text-galaxy-gold transition hover:bg-galaxy-gold/10"
         >
           Build audience brief
         </button>
+
+        {audienceBriefDrafted ? (
+          <div
+            role="status"
+            aria-label="Audience brief draft"
+            className="mt-4 rounded-[14px] border border-galaxy-positive/35 bg-galaxy-positive/10 p-4"
+          >
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-positive">
+              Audience brief draft generated
+            </p>
+            <p className="mt-2 text-sm font-semibold leading-6 text-galaxy-cream">{model.selectedSegment.name}</p>
+            <p className="mt-1 text-sm leading-6 text-galaxy-cream">{model.selectedSegment.offer}</p>
+            <p className="mt-3 text-xs leading-5 text-galaxy-muted">
+              CDE-safe brief uses governed matched bands, indices and category percentages only. Validate against a
+              matched holdout before scale.
+            </p>
+          </div>
+        ) : null}
       </aside>
     </div>
   );
