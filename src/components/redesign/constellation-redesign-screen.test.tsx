@@ -146,6 +146,34 @@ describe('ConstellationRedesignScreen', () => {
     expect(screen.getByText(/demi-decile averages from matched CDE cohorts/i)).toBeInTheDocument();
   });
 
+  it('selects a Leakage matrix row and updates the visible segment context', () => {
+    const { container } = renderScreen('leakage');
+
+    fireEvent.click(screen.getByRole('button', { name: /Select Regional Gaming Regulars/i }));
+
+    expect(screen.getByText('Selected segment: Regional Gaming Regulars')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Select Regional Gaming Regulars/i })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(container.textContent).not.toMatch(bannedCdePattern);
+    expect(container.textContent).not.toMatch(rawWalletBandPattern);
+  });
+
+  it('selects a Guests cohort row and updates the visible cohort context', () => {
+    const { container } = renderScreen('guests');
+
+    fireEvent.click(screen.getByRole('button', { name: /Select Family Resort Loyalists/i }));
+
+    expect(screen.getByText('Selected cohort: Family Resort Loyalists')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Select Family Resort Loyalists/i })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(container.textContent).not.toMatch(bannedCdePattern);
+    expect(container.textContent).not.toMatch(rawWalletBandPattern);
+  });
+
   it('renders Journey, Wallet, Guests, and Propensity screens from the model', () => {
     const expectations = [
       ['journey', 'Weakest link'],

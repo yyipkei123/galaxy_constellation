@@ -125,13 +125,13 @@ function renderRouteBody(
     case 'segments':
       return renderSegments(model, onSelectSegment, audienceBriefDrafted, onBuildAudienceBrief);
     case 'leakage':
-      return renderLeakage(model);
+      return renderLeakage(model, onSelectSegment);
     case 'journey':
       return renderJourney(model, onSelectSegment);
     case 'wallet':
       return renderWallet(model, onSelectSegment);
     case 'guests':
-      return renderGuests(model);
+      return renderGuests(model, onSelectSegment);
     case 'propensity':
       return renderPropensity(model, onSelectSegment);
     default:
@@ -465,12 +465,12 @@ function renderSegments(
   );
 }
 
-function renderLeakage(model: ConstellationRedesignModel) {
+function renderLeakage(model: ConstellationRedesignModel, onSelectSegment: (segmentId: string) => void) {
   return (
     <>
       <section className="galaxy-glass-panel rounded-[24px] border border-white/10 p-5 md:p-6">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
-          {model.quarter.label} category governance
+          {model.quarter.label} category controls
         </p>
         <h1 className="mt-3 font-serif text-4xl leading-tight text-galaxy-cream">{model.pageTitle}</h1>
         <h2 className="mt-4 text-2xl font-semibold leading-tight text-galaxy-cream">
@@ -503,9 +503,12 @@ function renderLeakage(model: ConstellationRedesignModel) {
             <p className="mt-2 text-sm leading-6 text-galaxy-muted">
               Hot cells mark the largest category escape lanes by segment.
             </p>
+            <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-gold">
+              Selected segment: {model.selectedSegment.name}
+            </p>
           </div>
           <p className="rounded-full border border-galaxy-positive/35 bg-galaxy-positive/10 px-3 py-1 text-xs font-semibold text-galaxy-positive">
-            Governed category view
+            Controlled category view
           </p>
         </div>
 
@@ -521,10 +524,14 @@ function renderLeakage(model: ConstellationRedesignModel) {
             </div>
             <div className="space-y-2">
               {model.matrixRows.map((row) => (
-                <div
+                <button
                   key={row.id}
+                  type="button"
+                  aria-pressed={row.selected}
+                  aria-label={`Select ${row.name}, ${row.cells.map((cell) => `${cell.category} ${cell.v}%`).join(', ')}`}
+                  onClick={() => onSelectSegment(row.id)}
                   className={clsx(
-                    'grid grid-cols-[220px_repeat(4,minmax(110px,1fr))] gap-2 rounded-[14px] border p-2',
+                    'grid w-full grid-cols-[220px_repeat(4,minmax(110px,1fr))] gap-2 rounded-[14px] border p-2 text-left transition',
                     row.selected ? 'border-galaxy-gold/35 bg-galaxy-gold/10' : 'border-white/10 bg-galaxy-ink/25',
                   )}
                 >
@@ -538,7 +545,7 @@ function renderLeakage(model: ConstellationRedesignModel) {
                       {cell.v}%
                     </span>
                   ))}
-                </div>
+                </button>
               ))}
             </div>
           </div>
@@ -556,10 +563,10 @@ function renderLeakage(model: ConstellationRedesignModel) {
           </p>
         </article>
         <article className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Governance note</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Controls note</p>
           <p className="mt-3 text-sm leading-6 text-galaxy-muted">
-            Values are demi-decile averages from matched CDE cohorts. This view never exposes member-level,
-            merchant-level or transaction-level records.
+            Values are demi-decile averages from matched CDE cohorts. This view exposes aggregated category
+            percentages only and excludes identifiers or record-level detail.
           </p>
         </article>
       </div>
@@ -711,7 +718,7 @@ function renderWallet(model: ConstellationRedesignModel, onSelectSegment: (segme
   );
 }
 
-function renderGuests(model: ConstellationRedesignModel) {
+function renderGuests(model: ConstellationRedesignModel, onSelectSegment: (segmentId: string) => void) {
   return (
     <>
       <section className="galaxy-glass-panel rounded-[24px] border border-white/10 p-5 md:p-6">
@@ -752,29 +759,48 @@ function renderGuests(model: ConstellationRedesignModel) {
 
       <section className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
         <h2 className="text-2xl font-semibold leading-tight text-galaxy-cream">Cohort coverage</h2>
+        <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-gold">
+          Selected cohort: {model.selectedSegment.name}
+        </p>
         <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {model.guestRows.map((row) => (
-            <article
+            <button
               key={row.id}
+              type="button"
+              aria-pressed={row.selected}
+              aria-label={`Select ${row.name}, matched band ${row.matched}, coverage ${row.cov}, ${row.quality} quality, ${row.reach}`}
+              onClick={() => onSelectSegment(row.id)}
               className={clsx(
-                'rounded-[16px] border p-4',
+                'rounded-[16px] border p-4 text-left transition',
                 row.selected ? 'border-galaxy-gold/40 bg-galaxy-gold/10' : 'border-white/10 bg-galaxy-ink/35',
               )}
             >
-              <h3 className="text-base font-semibold leading-tight text-galaxy-cream">{row.name}</h3>
-              <div className="mt-4 grid gap-3 text-xs">
-                <StatTile label="Matched band" value={row.matched} sub="Governed cohort range" />
-                <StatTile label="Coverage" value={row.cov} sub="CDE match rate" />
-              </div>
-              <div className="mt-4 flex flex-wrap gap-2">
+              <span className="block text-base font-semibold leading-tight text-galaxy-cream">{row.name}</span>
+              <span className="mt-4 grid gap-3 text-xs">
+                <span className="rounded-[14px] border border-white/10 bg-galaxy-ink/35 p-4">
+                  <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-muted">
+                    Matched band
+                  </span>
+                  <span className="mt-2 block text-lg font-semibold leading-tight text-galaxy-cream">{row.matched}</span>
+                  <span className="mt-2 block text-xs leading-5 text-galaxy-muted">Governed cohort range</span>
+                </span>
+                <span className="rounded-[14px] border border-white/10 bg-galaxy-ink/35 p-4">
+                  <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-muted">
+                    Coverage
+                  </span>
+                  <span className="mt-2 block text-lg font-semibold leading-tight text-galaxy-cream">{row.cov}</span>
+                  <span className="mt-2 block text-xs leading-5 text-galaxy-muted">CDE match rate</span>
+                </span>
+              </span>
+              <span className="mt-4 flex flex-wrap gap-2">
                 <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold" style={{ color: row.qColor }}>
                   {row.quality}
                 </span>
                 <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold" style={{ color: row.mColor }}>
                   {row.reach}
                 </span>
-              </div>
-            </article>
+              </span>
+            </button>
           ))}
         </div>
       </section>
