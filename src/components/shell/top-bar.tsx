@@ -11,16 +11,16 @@ import { LensSwitch } from './lens-switch';
 
 const prototypePageTitles: Record<RedesignPageId, string> = {
   overview: 'Wallet intelligence cockpit',
-  journey: 'Guest journey',
-  wallet: 'Wallet split',
+  journey: 'Segment journey',
+  wallet: 'Wallet intelligence',
   segments: 'Segment rankings',
-  guests: 'Matched guests',
-  leakage: 'Wallet leakage',
-  propensity: 'Propensity & audiences',
-  activation: 'Campaign activation',
+  guests: 'Matched guest universe',
+  leakage: 'Leakage control tower',
+  propensity: 'Propensity ladder',
+  activation: 'Activation planning',
   simulate: 'Scenario simulator',
   measurement: 'Campaign measurement',
-  marketscan: 'Market scan',
+  marketscan: 'Market context',
   governance: 'Governance & CDE rules',
 };
 

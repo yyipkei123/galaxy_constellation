@@ -129,8 +129,8 @@ describe('TopBar', () => {
 
   it.each([
     ['/', 'Wallet intelligence cockpit'],
-    ['/journey', 'Guest journey'],
-    ['/marketscan', 'Market scan'],
+    ['/journey', 'Segment journey'],
+    ['/marketscan', 'Market context'],
     ['/corridors', 'Source-market corridors'],
     ['/acquisition', 'Priority corridor acquisition'],
   ])('maps %s to the prototype shell title %s', (pathname, expectedTitle) => {

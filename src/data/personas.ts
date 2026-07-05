@@ -65,7 +65,7 @@ export const personaRecords: SegmentPersona[] = [
     sellingPoints: [
       'Open with the guest history: Galaxy already knows their preferred premium stay pattern.',
       'Anchor the offer on convenience and recognition, not a discount.',
-      'Use CDE leakage as a prioritization signal, not a raw spend claim.',
+      'Use CDE leakage as a prioritization signal, not an unbanded amount claim.',
     ],
     tags: ['VIP', 'Host', 'Hospitality'],
   },

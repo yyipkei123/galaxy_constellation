@@ -185,7 +185,7 @@ export const presentationSteps: PresentationStep[] = [
     match: 'exact',
     presentationRole: 'Trust close',
     observation: 'Governance explains modelled, aggregate, indexed, and auditable CDE controls.',
-    recommendedAction: 'Close with three plain rules: no raw spend, masked records only, every answer traceable.',
+    recommendedAction: 'Close with three plain rules: no unbanded amounts, masked records only, every answer traceable.',
     nextHref: '/corridors',
     nextLabel: 'Optional: open Lens B',
     tourSummary: 'End the main story by proving the experience is governed and CDE-safe.',

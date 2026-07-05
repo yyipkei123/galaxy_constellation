@@ -153,7 +153,7 @@ export function ConstellationRedesignScreen({
           />
         </section>
       ) : (
-        <div className="grid gap-[18px] xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="grid min-w-0 gap-[18px] xl:grid-cols-[minmax(0,1fr)_360px]">
           <section aria-label={model.screenLabel} className="min-w-0 space-y-[18px]">
             {renderRouteBody(model, sharedControls, audienceBriefDrafted, buildAudienceBriefDraft)}
           </section>
@@ -212,17 +212,18 @@ function Overview({
   return (
     <>
       <section className="galaxy-glass-panel overflow-hidden rounded-[24px] border border-white/10 p-5 md:p-6">
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
           <div className="min-w-0">
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
               {model.quarter.label} constellation cockpit
             </p>
             <h1 className="mt-3 max-w-4xl font-serif text-4xl leading-[1.02] text-galaxy-cream md:text-5xl">
-              Pitch {model.topSegment.name} first.
+              {model.pageTitle}
             </h1>
             <p className="mt-4 max-w-3xl text-sm leading-6 text-galaxy-muted md:text-base md:leading-7">
-              The current quarter points to {model.topSegment.short} as the strongest governed recapture play.
-              Use the constellation to compare opportunity index, category leakage and reach readiness before briefing Marketing.
+              Pitch {model.topSegment.name} first. The current quarter points to {model.topSegment.short} as the
+              strongest governed recapture play. Use the constellation to compare opportunity index, category leakage
+              and reach readiness before briefing Marketing.
             </p>
           </div>
           <div className="grid gap-3 rounded-[18px] border border-galaxy-gold/25 bg-galaxy-gold/10 p-4 sm:grid-cols-2 xl:grid-cols-1">
@@ -232,7 +233,7 @@ function Overview({
         </div>
       </section>
 
-      <div className="grid gap-[18px] xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid min-w-0 gap-[18px] xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="min-w-0 space-y-[18px]">
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             {model.kpis.map((metric) => (
@@ -240,7 +241,7 @@ function Overview({
             ))}
           </div>
 
-          <div className="grid gap-[18px] lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="grid min-w-0 gap-[18px] lg:grid-cols-[minmax(0,1fr)_320px]">
             <ConstellationMap
               nodes={model.constellationNodes}
               segmentRows={model.segmentRows}
@@ -376,7 +377,7 @@ function renderSegments(
   onBuildAudienceBrief: () => void,
 ) {
   return (
-    <div className="grid gap-[18px] xl:grid-cols-[minmax(0,1fr)_360px]">
+    <div className="grid min-w-0 gap-[18px] xl:grid-cols-[minmax(0,1fr)_360px]">
       <section className="galaxy-glass-panel min-w-0 rounded-[24px] border border-white/10 p-5 md:p-6">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
           {model.quarter.label} governed audience rank
@@ -569,7 +570,7 @@ function renderLeakage(model: ConstellationRedesignModel, onSelectSegment: (segm
         </div>
       </section>
 
-      <div className="grid gap-[18px] lg:grid-cols-2">
+      <div className="grid min-w-0 gap-[18px] lg:grid-cols-2">
         <article className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
             What this means for {model.quarter.label}
@@ -633,7 +634,7 @@ function renderJourney(model: ConstellationRedesignModel, onSelectSegment: (segm
         ))}
       </div>
 
-      <div className="grid gap-[18px] lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+      <div className="grid min-w-0 gap-[18px] lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
         <article className="galaxy-glass-panel rounded-[20px] border border-galaxy-gold/30 bg-galaxy-gold/10 p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Weakest link</p>
           <h2 className="mt-3 text-2xl font-semibold leading-tight text-galaxy-cream">{model.weakName}</h2>
@@ -668,8 +669,8 @@ function renderWallet(model: ConstellationRedesignModel, onSelectSegment: (segme
         </div>
       </section>
 
-      <div className="grid gap-[18px] xl:grid-cols-[minmax(0,1fr)_360px]">
-        <section className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+      <div className="grid min-w-0 gap-[18px] xl:grid-cols-[minmax(0,1fr)_360px]">
+        <section className="galaxy-glass-panel min-w-0 rounded-[20px] border border-white/10 p-5">
           <h2 className="text-2xl font-semibold leading-tight text-galaxy-cream">
             On-property vs modelled off-property
           </h2>
@@ -838,7 +839,7 @@ function renderGuests(model: ConstellationRedesignModel, onSelectSegment: (segme
 
 function renderPropensity(model: ConstellationRedesignModel, onSelectSegment: (segmentId: string) => void) {
   return (
-    <div className="grid gap-[18px] xl:grid-cols-[minmax(0,1fr)_360px]">
+    <div className="grid min-w-0 gap-[18px] xl:grid-cols-[minmax(0,1fr)_360px]">
       <section className="galaxy-glass-panel min-w-0 rounded-[24px] border border-white/10 p-5 md:p-6">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
           {model.quarter.label} propensity bands
@@ -917,8 +918,8 @@ function renderActivation(model: ConstellationRedesignModel, controls: SharedRou
         </p>
       </section>
 
-      <div className="grid gap-[18px] lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
-        <div className="space-y-[18px]">
+      <div className="grid min-w-0 gap-[18px] lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
+        <div className="min-w-0 space-y-[18px]">
           <section className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
             <h2 className="text-lg font-semibold text-galaxy-cream">Audience</h2>
             <p className="mt-2 text-sm leading-6 text-galaxy-muted">
@@ -996,7 +997,7 @@ function renderActivation(model: ConstellationRedesignModel, controls: SharedRou
           </section>
         </div>
 
-        <aside className="galaxy-glass-panel h-fit rounded-[20px] border border-galaxy-gold/30 bg-galaxy-gold/10 p-5 lg:sticky lg:top-4">
+        <aside className="galaxy-glass-panel h-fit min-w-0 max-w-full rounded-[20px] border border-galaxy-gold/30 bg-galaxy-gold/10 p-5 lg:sticky lg:top-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
@@ -1073,8 +1074,8 @@ function renderSimulator(model: ConstellationRedesignModel, controls: SharedRout
         </p>
       </section>
 
-      <div className="grid gap-[18px] lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
-        <div className="space-y-[18px]">
+      <div className="grid min-w-0 gap-[18px] lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
+        <div className="min-w-0 space-y-[18px]">
           <section className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
             <h2 className="text-lg font-semibold text-galaxy-cream">Scenario audience</h2>
             <div className="mt-4">
@@ -1143,7 +1144,7 @@ function renderSimulator(model: ConstellationRedesignModel, controls: SharedRout
           </section>
         </div>
 
-        <aside className="galaxy-glass-panel h-fit rounded-[20px] border border-galaxy-gold/30 bg-galaxy-gold/10 p-5 lg:sticky lg:top-4">
+        <aside className="galaxy-glass-panel h-fit min-w-0 max-w-full rounded-[20px] border border-galaxy-gold/30 bg-galaxy-gold/10 p-5 lg:sticky lg:top-4">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Projected outcome</p>
           <h2 className="mt-3 text-2xl font-semibold leading-tight text-galaxy-cream">
             {model.selectedSegment.name}
@@ -1271,8 +1272,8 @@ function renderMarketScan(model: ConstellationRedesignModel) {
         ))}
       </div>
 
-      <div className="grid gap-[18px] lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
-        <section className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+      <div className="grid min-w-0 gap-[18px] lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+        <section className="galaxy-glass-panel min-w-0 rounded-[20px] border border-white/10 p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Corridor mix</p>
           <h2 className="mt-3 text-2xl font-semibold leading-tight text-galaxy-cream">
             Where matched visitation originates
@@ -1297,7 +1298,7 @@ function renderMarketScan(model: ConstellationRedesignModel) {
           </div>
         </section>
 
-        <aside className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+        <aside className="galaxy-glass-panel min-w-0 rounded-[20px] border border-white/10 p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Competitive read</p>
           <p className="mt-3 text-sm leading-6 text-galaxy-muted">
             Retail/Luxury demand indexes highest against the market baseline while Galaxy category capture trails it.
@@ -1343,8 +1344,8 @@ function renderGovernance(model: ConstellationRedesignModel) {
         ))}
       </div>
 
-      <div className="grid gap-[18px] lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
-        <section className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+      <div className="grid min-w-0 gap-[18px] lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+        <section className="galaxy-glass-panel min-w-0 rounded-[20px] border border-white/10 p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Refresh log</p>
           <div className="mt-5 overflow-x-auto">
             <div className="min-w-[620px]">
@@ -1376,7 +1377,7 @@ function renderGovernance(model: ConstellationRedesignModel) {
           </div>
         </section>
 
-        <aside className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+        <aside className="galaxy-glass-panel min-w-0 rounded-[20px] border border-white/10 p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Data-sharing scope</p>
           <p className="mt-3 text-sm leading-6 text-galaxy-muted">
             Mastercard CDE enrichment reaches Galaxy as demi-decile averages over matched cohorts: governed metrics,
@@ -1544,7 +1545,7 @@ function CdeAiDock({
   }
 
   return (
-    <aside aria-label="CDE AI" className="galaxy-glass-panel h-fit rounded-[20px] border border-white/10 p-5">
+    <aside aria-label="CDE AI" className="galaxy-glass-panel h-fit min-w-0 max-w-full rounded-[20px] border border-white/10 p-5">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-gold">CDE AI dock</p>

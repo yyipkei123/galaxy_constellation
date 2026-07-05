@@ -14,7 +14,7 @@ export type MeasurementReadyAcquisitionDraft = Omit<AcquisitionDraft, 'languages
 
 const measurementLanguages = ['EN', '繁中', '한국어'] satisfies CampaignCreativeLanguage[];
 const cdeUnsafePattern = /HKD|MOP|\$|元|澳門幣|NaN|Infinity/i;
-const guardrail = 'Brand voice and compliance guardrail: no raw spend, no PII, CDE-safe indexed or banded signals only.';
+const guardrail = 'Brand voice and compliance guardrail: no unbanded amounts, no PII, CDE-safe indexed or banded signals only.';
 
 function findPersona(corridor: Corridor, personaKey: string | null | undefined) {
   return corridor.personas.find((persona) => persona.persona === personaKey) ?? corridor.personas[0];

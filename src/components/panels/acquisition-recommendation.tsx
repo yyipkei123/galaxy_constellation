@@ -63,7 +63,7 @@ export function AcquisitionRecommendation({ corridor }: { corridor: Corridor }) 
               title="Projected value band"
               lines={[
                 'Metric meaning: modelled opportunity band expressed as an equivalent monthly range.',
-                'Action hint: use the band for prioritization without exposing raw spend.',
+                'Action hint: use the band for prioritization without exposing unbanded amounts.',
                 'Aggregate CDE signal, no PII.',
               ]}
             >

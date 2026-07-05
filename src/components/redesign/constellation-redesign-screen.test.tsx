@@ -27,7 +27,8 @@ describe('ConstellationRedesignScreen', () => {
     const { container } = renderScreen('overview');
 
     expect(screen.getByRole('region', { name: 'Overview' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Pitch Cosmopolitan Connoisseurs first.' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Wallet intelligence cockpit' })).toBeInTheDocument();
+    expect(screen.getByText(/Pitch Cosmopolitan Connoisseurs first/i)).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Wallet headroom constellation' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Select Premium Mass Weekenders/i })).toBeInTheDocument();
     expect(screen.getByText('CDE index legend')).toBeInTheDocument();
@@ -259,7 +260,7 @@ describe('ConstellationRedesignScreen', () => {
     const { container } = renderScreen('activation');
     const route = screen.getByRole('region', { name: 'Activation' });
 
-    expect(within(route).getByRole('heading', { name: 'Campaign activation' })).toBeInTheDocument();
+    expect(within(route).getByRole('heading', { name: 'Activation planning' })).toBeInTheDocument();
     expect(within(route).getByText('Audience')).toBeInTheDocument();
     expect(within(route).getByText('Channels')).toBeInTheDocument();
     expect(within(route).getByText('Measurement window')).toBeInTheDocument();
@@ -336,7 +337,7 @@ describe('ConstellationRedesignScreen', () => {
     const { container } = renderScreen('marketscan');
     const route = screen.getByRole('region', { name: 'Market Scan' });
 
-    expect(within(route).getByRole('heading', { name: 'Market scan' })).toBeInTheDocument();
+    expect(within(route).getByRole('heading', { name: 'Market context' })).toBeInTheDocument();
     expect(within(route).getByText('Hospitality')).toBeInTheDocument();
     expect(within(route).getByText('Retail/Luxury')).toBeInTheDocument();
     expect(within(route).getByText('Corridor mix')).toBeInTheDocument();

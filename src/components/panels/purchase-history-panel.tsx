@@ -110,7 +110,7 @@ export function PurchaseHistoryPanel({ guest }: { guest: Guest }) {
             Galaxy purchase and stay history
           </h2>
           <p className="mt-2 break-words text-sm leading-6 text-galaxy-muted">
-            Internal Galaxy history is shown as categories, bands, service signals, and dates without exact spend.
+            Internal Galaxy history is shown as categories, bands, service signals, and dates without itemized amounts.
           </p>
         </div>
         <span className="rounded border border-galaxy-border px-2 py-1 text-xs font-semibold text-galaxy-muted">

@@ -31,7 +31,7 @@ describe('buildAcquisitionDraft', () => {
         expect(variant.body).toEqual(expect.any(String));
         expect(variant.guardrail).toMatch(/brand voice/i);
         expect(variant.guardrail).toMatch(/compliance/i);
-        expect(variant.guardrail).toMatch(/no raw spend/i);
+        expect(variant.guardrail).toMatch(/no unbanded amounts/i);
         expect(variant.guardrail).toMatch(/PII/i);
         expect(variant.guardrail).toMatch(/CDE-safe/i);
       }
