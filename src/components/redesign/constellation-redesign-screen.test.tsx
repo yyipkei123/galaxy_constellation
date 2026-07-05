@@ -192,10 +192,11 @@ describe('ConstellationRedesignScreen', () => {
 
     expect(screen.getByRole('button', { name: 'Weekenders' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByText('Selected segment: Premium Mass Weekenders')).toBeInTheDocument();
+    expect(screen.getByLabelText('Wallet trend bar area')).toHaveClass('h-40');
+    expect(screen.getByText('5-11k equiv./mo')).toBeInTheDocument();
+    expect(screen.getByText('6-12k equiv./mo')).toBeInTheDocument();
+    expect(screen.getByText('7-13k equiv./mo')).toBeInTheDocument();
     expect(screen.getAllByText('8-14k equiv./mo').length).toBeGreaterThan(0);
-    expect(screen.getByText('9-15k equiv./mo')).toBeInTheDocument();
-    expect(screen.getByText('10-16k equiv./mo')).toBeInTheDocument();
-    expect(screen.getByText('11-17k equiv./mo')).toBeInTheDocument();
     expect(container.textContent).not.toMatch(bannedCdePattern);
     expect(container.textContent).not.toMatch(rawWalletBandPattern);
   });

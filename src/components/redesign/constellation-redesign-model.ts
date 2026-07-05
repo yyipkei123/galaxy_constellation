@@ -388,7 +388,6 @@ export interface ConstellationRedesignModel {
 }
 
 const REDESIGN_QUARTER_KEYS = Object.keys(redesignQuarterData) as RedesignQuarterLabel[];
-const MIN_QUARTER_SHIFT = Math.min(...REDESIGN_QUARTER_KEYS.map((key) => redesignQuarterData[key].shift));
 const ACCENT = '#D4AF5E';
 const CATEGORY_ORDER: RedesignCategory[] = ['Hospitality', 'Dining', 'Entertainment', 'Retail/Luxury'];
 const CHANNEL_ORDER = ['App push', 'CRM email', 'Paid social', 'Concierge / VIP host'];
@@ -481,11 +480,13 @@ function parseBand(wallet: string): [number, number] {
   return [finiteNumber(low, 8), finiteNumber(high, 14)];
 }
 
-function shiftedWalletBand(wallet: string, quarterShift: number): string {
+function shiftedWalletBand(wallet: string, quarterShift: number, anchorShift: number): string {
   const [low, high] = parseBand(wallet);
-  const shiftOffset = Math.max(0, Math.round((quarterShift - MIN_QUARTER_SHIFT) / 2));
+  const shiftOffset = Math.round((quarterShift - anchorShift) / 2);
+  const shiftedLow = Math.max(0, low + shiftOffset);
+  const shiftedHigh = Math.max(shiftedLow, high + shiftOffset);
 
-  return `${low + shiftOffset}-${high + shiftOffset}k`;
+  return `${shiftedLow}-${shiftedHigh}k`;
 }
 
 function walletTrendHeight(segment: RawRedesignSegment, quarter: RedesignQuarterData): number {
@@ -762,7 +763,7 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput): Cons
 
     return {
       q: key,
-      band: shiftedWalletBand(trendSegment.wallet, trendQuarter.shift),
+      band: shiftedWalletBand(trendSegment.wallet, trendQuarter.shift, qd.shift),
       h: walletTrendHeight(trendSegment, trendQuarter),
       selected: key === quarterLabel,
       qColor: key === quarterLabel ? '#EAD9A9' : '#6A6478',

@@ -683,25 +683,33 @@ function renderWallet(model: ConstellationRedesignModel, onSelectSegment: (segme
         <section className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
           <h2 className="text-2xl font-semibold leading-tight text-galaxy-cream">Wallet trend</h2>
           <p className="mt-2 text-sm leading-6 text-galaxy-muted">Quarterly modelled wallet bands for the selection.</p>
-          <div className="mt-5 flex h-56 items-end gap-3">
-            {model.walletTrend.map((trend) => (
-              <div key={trend.q} className="flex min-w-0 flex-1 flex-col items-center gap-2">
-                <div
-                  className={clsx(
-                    'w-full rounded-t-[12px] border',
-                    trend.selected ? 'border-galaxy-gold bg-galaxy-gold/45' : 'border-white/10 bg-galaxy-ink/55',
-                  )}
-                  style={{ height: pctWidth(trend.h) }}
-                  aria-label={`${trend.q} ${walletBandPerMonth(trend.band)}`}
-                />
-                <span className="font-mono text-[11px] font-semibold" style={{ color: trend.qColor }}>
-                  {trend.q}
-                </span>
-                <span className="text-center font-mono text-[10px] text-galaxy-muted">
-                  {walletBandPerMonth(trend.band)}
-                </span>
-              </div>
-            ))}
+          <div className="mt-5">
+            <div className="flex h-40 items-end gap-3" aria-label="Wallet trend bar area">
+              {model.walletTrend.map((trend) => (
+                <div key={`${trend.q}-bar`} className="flex min-w-0 flex-1 items-end self-stretch">
+                  <div
+                    className={clsx(
+                      'w-full rounded-t-[12px] border',
+                      trend.selected ? 'border-galaxy-gold bg-galaxy-gold/45' : 'border-white/10 bg-galaxy-ink/55',
+                    )}
+                    style={{ height: pctWidth(trend.h) }}
+                    aria-label={`${trend.q} ${walletBandPerMonth(trend.band)}`}
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="mt-2 grid grid-cols-4 gap-3">
+              {model.walletTrend.map((trend) => (
+                <div key={`${trend.q}-label`} className="min-w-0 text-center">
+                  <span className="block font-mono text-[11px] font-semibold" style={{ color: trend.qColor }}>
+                    {trend.q}
+                  </span>
+                  <span className="mt-1 block text-center font-mono text-[10px] text-galaxy-muted">
+                    {walletBandPerMonth(trend.band)}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       </div>

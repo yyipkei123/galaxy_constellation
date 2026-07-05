@@ -232,6 +232,31 @@ describe('constellation redesign model', () => {
     expectDisplaySafe(model);
   });
 
+  it('keeps the selected wallet trend band aligned with the current wallet card', () => {
+    const model = buildConstellationRedesignModel({
+      pageId: 'wallet',
+      quarterLabel: '2026 Q2',
+      selectedSegmentId: 'pm',
+      channels: {
+        'App push': true,
+        'CRM email': true,
+        'Paid social': false,
+        'Concierge / VIP host': false,
+      },
+      windowWeeks: 6,
+      reachPct: 40,
+      depthPct: 15,
+      exported: false,
+    });
+
+    const selectedTrend = model.walletTrend.find((item) => item.selected);
+
+    expect(selectedTrend?.band).toBe(model.selectedSegment.wallet);
+    expect(model.walletCards[0].value).toBe(`${selectedTrend?.band} /mo`);
+    expect(new Set(model.walletTrend.map((item) => item.band)).size).toBeGreaterThan(1);
+    expectDisplaySafe(model.walletTrend);
+  });
+
   it.each<RedesignPageId>([
     'overview',
     'journey',
