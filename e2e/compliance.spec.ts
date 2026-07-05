@@ -3,9 +3,8 @@ import { expect, test, type Page } from '@playwright/test';
 const routes = ['/', '/journey', '/wallet', '/segments', '/guests', '/guests/MEM-••••3421', '/leakage', '/propensity', '/activation', '/measurement', '/simulate', '/marketscan', '/governance', '/corridors', '/corridors/korea', '/acquisition'];
 const interruptedNavigationMessage = 'is interrupted by another navigation';
 const fallbackBaseUrl = 'http://127.0.0.1:3000';
-const globalUnsafeCdePattern = /\bHKD(?=\b|[\s\d$.,:;/-])|\$|raw[-\s]?spend|exact\s+spend|\b(?:NaN|Infinity)\b/i;
-const redesignedUnsafeCurrencyPattern = /\bMOP(?=\b|[\s\d$.,:;/-])|元|澳門幣/i;
-const bannedCdeTokenPattern = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣|raw[-\s]?spend|exact\s+spend|\b(?:NaN|Infinity)\b/i;
+const globalUnsafeCdePattern = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣|raw[-\s]?spend|exact\s+spend|\b(?:NaN|Infinity)\b/i;
+const bannedCdeTokenPattern = globalUnsafeCdePattern;
 const bannedCdeTokenOrUnsafeAmountPattern = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣|raw[-\s]?spend|exact\s+spend|\b(?:NaN|Infinity)\b|5000/i;
 
 type RedesignedRouteExpectation = {
@@ -178,7 +177,6 @@ test.describe('Galaxy Constellation rendered compliance', () => {
           await expect(page.getByRole('complementary', { name: redesignedExpectation.complementary })).toBeVisible();
         }
 
-        await expect(body).not.toContainText(redesignedUnsafeCurrencyPattern);
       } else if (route.startsWith('/guests/')) {
         const hostActionSummary = page.getByRole('region', { name: 'Host action summary' });
 

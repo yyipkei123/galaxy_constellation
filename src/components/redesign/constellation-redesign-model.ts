@@ -400,7 +400,7 @@ const catBase: Record<RedesignCategory, number> = {
   'Retail/Luxury': 57,
 };
 
-const pageTitles: Record<RedesignPageId, string> = {
+export const redesignPageTitles = {
   overview: 'Wallet intelligence cockpit',
   journey: 'Segment journey',
   wallet: 'Wallet intelligence',
@@ -413,7 +413,11 @@ const pageTitles: Record<RedesignPageId, string> = {
   measurement: 'Campaign measurement',
   marketscan: 'Market context',
   governance: 'Governance & CDE rules',
-};
+} satisfies Record<RedesignPageId, string>;
+
+export function getRedesignPageTitle(pageId: RedesignPageId) {
+  return redesignPageTitles[pageId];
+}
 
 const screenLabels: Record<RedesignPageId, string> = {
   overview: 'Overview',
@@ -939,7 +943,7 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput): Cons
   return {
     pageId,
     screenLabel: screenLabels[pageId],
-    pageTitle: pageTitles[pageId],
+    pageTitle: getRedesignPageTitle(pageId),
     quarter: { label: quarterLabel, ...qd },
     quarterKeys: [...REDESIGN_QUARTER_KEYS],
     previousQuarterLabel: prevLabel,

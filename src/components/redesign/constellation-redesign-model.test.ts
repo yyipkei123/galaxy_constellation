@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildConstellationRedesignModel,
+  getRedesignPageTitle,
   redesignNavItems,
   redesignSegments,
   type ConstellationRedesignModel,
@@ -76,6 +77,12 @@ describe('constellation redesign model', () => {
     });
     expect(JSON.stringify(redesignSegments)).not.toMatch(/"prop"\s*:/);
     expect(JSON.stringify(redesignSegments)).not.toMatch(/\b0\.(?:86|74|68|71|63|52)\b/);
+  });
+
+  it('exposes a shared page-title lookup for shell chrome', () => {
+    expect(getRedesignPageTitle('overview')).toBe('Wallet intelligence cockpit');
+    expect(getRedesignPageTitle('journey')).toBe('Segment journey');
+    expect(getRedesignPageTitle('marketscan')).toBe('Market context');
   });
 
   it('builds the 2026 Q2 overview model from the prototype controller', () => {

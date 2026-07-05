@@ -3,26 +3,11 @@
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { PresenterModeToggle } from '@/components/presentation/presenter-mode-toggle';
-import { redesignNavItems, type RedesignPageId } from '@/components/redesign/constellation-redesign-model';
+import { getRedesignPageTitle, redesignNavItems } from '@/components/redesign/constellation-redesign-model';
 import { useAppState } from '@/store/app-store';
 import { BrandPartnershipBadge } from './brand-partnership-badge';
 import { CdeSignalGuide } from './cde-signal-guide';
 import { LensSwitch } from './lens-switch';
-
-const prototypePageTitles: Record<RedesignPageId, string> = {
-  overview: 'Wallet intelligence cockpit',
-  journey: 'Segment journey',
-  wallet: 'Wallet intelligence',
-  segments: 'Segment rankings',
-  guests: 'Matched guest universe',
-  leakage: 'Leakage control tower',
-  propensity: 'Propensity ladder',
-  activation: 'Activation planning',
-  simulate: 'Scenario simulator',
-  measurement: 'Campaign measurement',
-  marketscan: 'Market context',
-  governance: 'Governance & CDE rules',
-};
 
 function titleForPathname(pathname: string) {
   if (pathname.startsWith('/corridors')) return 'Source-market corridors';
@@ -34,7 +19,7 @@ function titleForPathname(pathname: string) {
       : pathname === item.href || pathname.startsWith(`${item.href}/`)
   ));
 
-  return navItem ? prototypePageTitles[navItem.pageId] : prototypePageTitles.overview;
+  return getRedesignPageTitle(navItem?.pageId ?? 'overview');
 }
 
 function segmentNarrative(
