@@ -110,4 +110,37 @@ describe('ConstellationRedesignScreen', () => {
       unmount();
     }
   });
+
+  it('renders the Segments ranking and sticky detail panel', () => {
+    renderScreen('segments');
+
+    expect(screen.getByRole('region', { name: 'Segments' })).toBeInTheDocument();
+    expect(screen.getByText('Segment detail')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Cosmopolitan Connoisseurs/i })).toBeInTheDocument();
+    expect(screen.getByText('Leakage by category')).toBeInTheDocument();
+  });
+
+  it('renders the Leakage matrix with category governance copy', () => {
+    renderScreen('leakage');
+
+    expect(screen.getByRole('region', { name: 'Leakage' })).toBeInTheDocument();
+    expect(screen.getByText('Leakage matrix')).toBeInTheDocument();
+    expect(screen.getByText("Where each segment's wallet escapes")).toBeInTheDocument();
+    expect(screen.getByText(/demi-decile averages from matched CDE cohorts/i)).toBeInTheDocument();
+  });
+
+  it('renders Journey, Wallet, Guests, and Propensity screens from the model', () => {
+    const expectations = [
+      ['journey', 'Weakest link'],
+      ['wallet', 'On-property vs modelled off-property'],
+      ['guests', 'From resort universe to activation-ready cohorts'],
+      ['propensity', 'Audience readiness'],
+    ] as const;
+
+    for (const [pageId, text] of expectations) {
+      const { unmount } = renderScreen(pageId);
+      expect(screen.getByText(text)).toBeInTheDocument();
+      unmount();
+    }
+  });
 });
