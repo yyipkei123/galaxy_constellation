@@ -108,7 +108,59 @@ describe('constellation redesign model', () => {
     });
     expect(model.briefCopy).not.toContain('propensity 0.86');
     expect(JSON.stringify(model)).not.toMatch(/"(?:prop|selectedPropensity|selProp)"\s*:\s*"0\.\d+"/);
+    expect(JSON.stringify(model)).not.toContain('propensityPct');
+    expect(model.segmentRows[0]).toHaveProperty('propensityBand');
+    expect(model.segmentRows[0]).not.toHaveProperty('propensityPct');
+    expect(model.propensityRows[0]).toHaveProperty('propensityBand');
+    expect(model.propensityRows[0]).toHaveProperty('barWidthPct');
+    expect(model.propensityRows[0]).not.toHaveProperty('propensityPct');
+    expect(model.propensityRows[0]).not.toHaveProperty('w');
     expectDisplaySafe(model);
+  });
+
+  it('isolates returned mutable collections between builds', () => {
+    const first = buildConstellationRedesignModel({
+      pageId: 'overview',
+      quarterLabel: '2026 Q2',
+      selectedSegmentId: 'cc',
+      channels: {
+        'App push': true,
+        'CRM email': true,
+        'Paid social': false,
+        'Concierge / VIP host': false,
+      },
+      windowWeeks: 6,
+      reachPct: 40,
+      depthPct: 15,
+      exported: false,
+    });
+
+    (first.quarterKeys as string[]).push('2099 Q4');
+    (first.categoryBase as Record<string, number>).Dining = 999;
+
+    const second = buildConstellationRedesignModel({
+      pageId: 'overview',
+      quarterLabel: '2026 Q2',
+      selectedSegmentId: 'cc',
+      channels: {
+        'App push': true,
+        'CRM email': true,
+        'Paid social': false,
+        'Concierge / VIP host': false,
+      },
+      windowWeeks: 6,
+      reachPct: 40,
+      depthPct: 15,
+      exported: false,
+    });
+
+    expect(second.quarterKeys).toEqual(['2025 Q3', '2025 Q4', '2026 Q1', '2026 Q2']);
+    expect(second.categoryBase).toEqual({
+      Hospitality: 50,
+      Dining: 53,
+      Entertainment: 52,
+      'Retail/Luxury': 57,
+    });
   });
 
   it('derives quarter deltas and selected segment state deterministically', () => {

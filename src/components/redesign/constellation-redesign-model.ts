@@ -232,7 +232,6 @@ export type RedesignQuarterLabel = keyof typeof redesignQuarterData;
 
 export interface RedesignModelSegment extends Omit<RedesignSegment, 'prop'> {
   propensityBand: string;
-  propensityPct: number;
 }
 
 export interface ConstellationRedesignModel {
@@ -274,7 +273,6 @@ export interface ConstellationRedesignModel {
     name: string;
     matched: string;
     propensityBand: string;
-    propensityPct: number;
     idx: number;
     idxColor: string;
     leak: number;
@@ -331,8 +329,7 @@ export interface ConstellationRedesignModel {
     id: string;
     name: string;
     propensityBand: string;
-    propensityPct: number;
-    w: number;
+    barWidthPct: number;
     decile: string;
     reach: string;
     mColor: string;
@@ -484,7 +481,6 @@ function toModelSegment(segment: RedesignSegment): RedesignModelSegment {
     ...displaySegment,
     cats: segment.cats.map((category) => ({ ...category })),
     propensityBand: decileOf(propensityScore),
-    propensityPct: Math.round(propensityScore * 100),
   };
 }
 
@@ -578,7 +574,6 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput): Cons
       name: segment.name,
       matched: segment.matched,
       propensityBand: decileOf(propensityScore),
-      propensityPct: Math.round(propensityScore * 100),
       idx: segment.idx,
       idxColor: idxColor(segment.idx),
       leak: segment.leak,
@@ -770,8 +765,7 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput): Cons
         id: segment.id,
         name: segment.name,
         propensityBand: decileOf(propensityScore),
-        propensityPct: Math.round(propensityScore * 100),
-        w: Math.round(propensityScore * 100),
+        barWidthPct: Math.round(propensityScore * 100),
         decile: decileOf(propensityScore),
         reach: segment.mobile ? 'Mobile-ready' : 'CRM / desk',
         mColor: segment.mobile ? '#6FBF8F' : '#8B8598',
@@ -910,7 +904,7 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput): Cons
     screenLabel: screenLabels[pageId],
     pageTitle: pageTitles[pageId],
     quarter: { label: quarterLabel, ...qd },
-    quarterKeys: REDESIGN_QUARTER_KEYS,
+    quarterKeys: [...REDESIGN_QUARTER_KEYS],
     previousQuarterLabel: prevLabel,
     navItems: redesignNavItems.map((item) => ({
       section: item.section,
@@ -933,7 +927,7 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput): Cons
     legend,
     selectedStats,
     segmentRows,
-    categoryBase: catBase,
+    categoryBase: { ...catBase },
     leakageCategories: leakCats,
     matrixRows,
     audiencePicks,
