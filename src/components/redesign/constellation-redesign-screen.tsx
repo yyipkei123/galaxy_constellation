@@ -20,10 +20,11 @@ type Metric = ConstellationRedesignModel['kpis'][number];
 type Stat = ConstellationRedesignModel['selectedStats'][number];
 type Node = ConstellationRedesignModel['constellationNodes'][number];
 type SegmentRow = ConstellationRedesignModel['segmentRows'][number];
+type ChannelState = Record<string, boolean>;
 
 const rawModelledWalletBandPattern = /(\d+(?:\.\d+)?-\d+(?:\.\d+)?)k \/mo/g;
 
-const defaultChannels = {
+const defaultChannels: ChannelState = {
   'App push': true,
   'CRM email': true,
   'Paid social': false,
@@ -43,7 +44,7 @@ export function ConstellationRedesignScreen({
   activeMetricCount,
 }: ConstellationRedesignScreenProps) {
   const [selectedSegmentId, setSelectedSegmentId] = useState('cc');
-  const [channels, setChannels] = useState(defaultChannels);
+  const [channels, setChannels] = useState<ChannelState>(defaultChannels);
   const [windowWeeks, setWindowWeeks] = useState(6);
   const [reachPct, setReachPct] = useState(40);
   const [depthPct, setDepthPct] = useState(15);
@@ -66,6 +67,13 @@ export function ConstellationRedesignScreen({
     [channels, depthPct, exported, pageId, quarterLabel, reachPct, selectedSegmentId, windowWeeks],
   );
 
+  function toggleChannel(channel: string) {
+    setChannels((current) => ({
+      ...current,
+      [channel]: !current[channel],
+    }));
+  }
+
   return (
     <section aria-label={model.screenLabel} className="space-y-[18px] text-galaxy-cream">
       {pageId === 'overview' ? (
@@ -73,8 +81,6 @@ export function ConstellationRedesignScreen({
           model={model}
           coveragePct={coveragePct}
           activeMetricCount={activeMetricCount}
-          channels={channels}
-          setChannels={setChannels}
           windowWeeks={windowWeeks}
           setWindowWeeks={setWindowWeeks}
           reachPct={reachPct}
@@ -89,6 +95,7 @@ export function ConstellationRedesignScreen({
           setAiAnswerKey={setAiAnswerKey}
           aiInput={aiInput}
           setAiInput={setAiInput}
+          onToggleChannel={toggleChannel}
           onSelectSegment={setSelectedSegmentId}
         />
       ) : (
@@ -102,8 +109,6 @@ function Overview({
   model,
   coveragePct,
   activeMetricCount,
-  channels,
-  setChannels,
   windowWeeks,
   setWindowWeeks,
   reachPct,
@@ -118,13 +123,12 @@ function Overview({
   setAiAnswerKey,
   aiInput,
   setAiInput,
+  onToggleChannel,
   onSelectSegment,
 }: {
   model: ConstellationRedesignModel;
   coveragePct: number;
   activeMetricCount: number;
-  channels: Record<string, boolean>;
-  setChannels: (channels: Record<string, boolean>) => void;
   windowWeeks: number;
   setWindowWeeks: (weeks: number) => void;
   reachPct: number;
@@ -139,6 +143,7 @@ function Overview({
   setAiAnswerKey: (key: 'explain' | 'trust' | 'brief' | null) => void;
   aiInput: string;
   setAiInput: (input: string) => void;
+  onToggleChannel: (channel: string) => void;
   onSelectSegment: (segmentId: string) => void;
 }) {
   return (
@@ -215,8 +220,6 @@ function Overview({
 
         <CdeAiDock
           model={model}
-          channels={channels}
-          setChannels={setChannels}
           windowWeeks={windowWeeks}
           setWindowWeeks={setWindowWeeks}
           reachPct={reachPct}
@@ -231,6 +234,7 @@ function Overview({
           setAiAnswerKey={setAiAnswerKey}
           aiInput={aiInput}
           setAiInput={setAiInput}
+          onToggleChannel={onToggleChannel}
           onSelectSegment={onSelectSegment}
         />
       </div>
@@ -269,7 +273,7 @@ function SegmentChipBar({
   onSelectSegment: (segmentId: string) => void;
 }) {
   return (
-    <div className="flex min-w-0 gap-2 overflow-x-auto pb-1" aria-label="Segment shortcuts">
+    <div role="group" className="flex min-w-0 gap-2 overflow-x-auto pb-1" aria-label="Segment shortcuts">
       {chips.map((chip) => (
         <button
           key={chip.id}
@@ -419,8 +423,6 @@ function SelectedStat({ stat }: { stat: Stat }) {
 
 function CdeAiDock({
   model,
-  channels,
-  setChannels,
   windowWeeks,
   setWindowWeeks,
   reachPct,
@@ -435,11 +437,10 @@ function CdeAiDock({
   setAiAnswerKey,
   aiInput,
   setAiInput,
+  onToggleChannel,
   onSelectSegment,
 }: {
   model: ConstellationRedesignModel;
-  channels: Record<string, boolean>;
-  setChannels: (channels: Record<string, boolean>) => void;
   windowWeeks: number;
   setWindowWeeks: (weeks: number) => void;
   reachPct: number;
@@ -454,17 +455,11 @@ function CdeAiDock({
   setAiAnswerKey: (key: 'explain' | 'trust' | 'brief' | null) => void;
   aiInput: string;
   setAiInput: (input: string) => void;
+  onToggleChannel: (channel: string) => void;
   onSelectSegment: (segmentId: string) => void;
 }) {
   const aiPanelId = 'constellation-redesign-ai-panel';
   const aiAnswer = normalizeModelledWalletBands(aiAnswerKey ? model.aiAnswers[aiAnswerKey] : model.aiAnswer);
-
-  function toggleChannel(channel: string) {
-    setChannels({
-      ...channels,
-      [channel]: !channels[channel],
-    });
-  }
 
   function submitAiQuestion(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -493,8 +488,7 @@ function CdeAiDock({
         </button>
       </div>
 
-      {aiOpen ? (
-        <div id={aiPanelId} className="mt-5 space-y-5">
+      <div id={aiPanelId} hidden={!aiOpen} className="mt-5 space-y-5">
           <SegmentChipBar chips={model.segmentChips} onSelectSegment={onSelectSegment} />
 
           <div>
@@ -505,7 +499,7 @@ function CdeAiDock({
                   key={channel.name}
                   type="button"
                   aria-pressed={channel.enabled}
-                  onClick={() => toggleChannel(channel.name)}
+                  onClick={() => onToggleChannel(channel.name)}
                   className={clsx(
                     'min-h-10 rounded-[12px] border px-3 text-left text-sm font-semibold transition',
                     channel.enabled
@@ -620,7 +614,6 @@ function CdeAiDock({
             {exported ? model.exportLabel : 'Export campaign brief'}
           </button>
         </div>
-      ) : null}
     </aside>
   );
 }

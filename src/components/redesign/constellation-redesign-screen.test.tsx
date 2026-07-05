@@ -1,11 +1,12 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { ConstellationRedesignScreen } from './constellation-redesign-screen';
+import type { RedesignPageId } from './constellation-redesign-model';
 
 const bannedCdePattern = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣|raw[-\s]?spend|exact\s+spend|NaN|Infinity/i;
 const rawWalletBandPattern = /\d+-\d+k \/mo/;
 
-function renderScreen(pageId = 'overview' as const) {
+function renderScreen(pageId: RedesignPageId = 'overview') {
   return render(
     <ConstellationRedesignScreen
       pageId={pageId}
@@ -56,6 +57,8 @@ describe('ConstellationRedesignScreen', () => {
     fireEvent.click(toggle);
 
     expect(within(aiDock).getByRole('button', { name: 'Open' })).toHaveAttribute('aria-expanded', 'false');
+    expect(document.getElementById(controlledPanelId ?? '')).toBeInTheDocument();
+    expect(document.getElementById(controlledPanelId ?? '')).toHaveAttribute('hidden');
   });
 
   it('exposes constellation node details in accessible names', () => {
@@ -64,6 +67,12 @@ describe('ConstellationRedesignScreen', () => {
     expect(screen.getByRole('button', { name: /Select Premium Mass Weekenders/i })).toHaveAccessibleName(
       /Select Premium Mass Weekenders.*index 102.*48% Dining leakage.*mobile-ready/i,
     );
+  });
+
+  it('groups the segment shortcuts with an accessible label', () => {
+    renderScreen('overview');
+
+    expect(screen.getByRole('group', { name: 'Segment shortcuts' })).toBeInTheDocument();
   });
 
   it('submits a deterministic CDE-safe AI question and clears the input', () => {
