@@ -3,6 +3,7 @@ import {
   buildConstellationRedesignModel,
   redesignNavItems,
   redesignSegments,
+  type ConstellationRedesignModel,
   type RedesignPageId,
 } from './constellation-redesign-model';
 
@@ -73,6 +74,9 @@ describe('constellation redesign model', () => {
     });
 
     expect(model.pageTitle).toBe('Wallet intelligence cockpit');
+    const typedModel: ConstellationRedesignModel = model;
+    expect(typedModel.pageId).toBe('overview');
+    expect(typedModel.screenLabel).toBe('Overview');
     expect(model.quarter.label).toBe('2026 Q2');
     expect(model.quarter.coverage).toBe(63);
     expect(model.selectedSegment.name).toBe('Cosmopolitan Connoisseurs');
@@ -97,6 +101,13 @@ describe('constellation redesign model', () => {
       expect(answer).not.toMatch(/\b0\.\d+\b/);
       expect(answer).not.toMatch(/\b\d+\s+active metrics\b/i);
     });
+    expect(model.leakageCategories).toHaveLength(4);
+    expect(model.propensityRows).toHaveLength(6);
+    ['segRows', 'segChips', 'selName', 'selProp', 'propRows', 'selectedPropensity', 'liftBand'].forEach((aliasKey) => {
+      expect(Object.hasOwn(model, aliasKey)).toBe(false);
+    });
+    expect(model.briefCopy).not.toContain('propensity 0.86');
+    expect(JSON.stringify(model)).not.toMatch(/"(?:prop|selectedPropensity|selProp)"\s*:\s*"0\.\d+"/);
     expectDisplaySafe(model);
   });
 

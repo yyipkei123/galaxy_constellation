@@ -52,18 +52,20 @@ export interface RedesignBuildInput {
   exported: boolean;
 }
 
-interface DeltaModel {
-  delta: string;
-  deltaColor: string;
-}
-
-export const redesignNavItems: Array<{
+export interface RedesignNavItem {
   section: string | null;
   label: string;
   num: string;
   pageId: RedesignPageId;
   href: string;
-}> = [
+}
+
+export interface DeltaModel {
+  delta: string;
+  deltaColor: string;
+}
+
+export const redesignNavItems: RedesignNavItem[] = [
   { section: 'Plan', label: 'Overview', num: '01', pageId: 'overview', href: '/' },
   { section: null, label: 'Journey', num: '02', pageId: 'journey', href: '/journey' },
   { section: null, label: 'Wallet', num: '03', pageId: 'wallet', href: '/wallet' },
@@ -226,7 +228,153 @@ export const redesignQuarterData = {
   '2026 Q2': { headroom: 53, matched: '150-222k', capture: 52, coverage: 63, shift: 0 },
 } satisfies Record<string, RedesignQuarterData>;
 
-type RedesignQuarterLabel = keyof typeof redesignQuarterData;
+export type RedesignQuarterLabel = keyof typeof redesignQuarterData;
+
+export interface RedesignModelSegment extends Omit<RedesignSegment, 'prop'> {
+  propensityBand: string;
+  propensityPct: number;
+}
+
+export interface ConstellationRedesignModel {
+  pageId: RedesignPageId;
+  screenLabel: string;
+  pageTitle: string;
+  quarter: RedesignQuarterData & { label: RedesignQuarterLabel };
+  quarterKeys: RedesignQuarterLabel[];
+  previousQuarterLabel: RedesignQuarterLabel | null;
+  navItems: Array<RedesignNavItem & { active: boolean; headerDisplay: 'block' | 'none' }>;
+  quarterPills: Array<{ label: RedesignQuarterLabel; selected: boolean; color: string }>;
+  selectedSegment: RedesignModelSegment;
+  topSegment: RedesignModelSegment;
+  kpis: Array<DeltaModel & { label: string; value: string; sub: string }>;
+  constellationNodes: Array<{
+    id: string;
+    idx: number;
+    leak: number;
+    mobile: boolean;
+    name: string;
+    shortName: string;
+    x: number;
+    y: number;
+    size: number;
+    fontSize: number;
+    orbit: number;
+    selected: boolean;
+    isSelected: boolean;
+    pulse: number;
+    border: string;
+    color: string;
+    labelColor: string;
+  }>;
+  legend: Array<{ band: string; label: string; sub: string; color: string }>;
+  selectedStats: Array<{ label: string; value: string }>;
+  segmentRows: Array<{
+    rank: string;
+    id: string;
+    name: string;
+    matched: string;
+    propensityBand: string;
+    propensityPct: number;
+    idx: number;
+    idxColor: string;
+    leak: number;
+    cat: RedesignCategory;
+    wallet: string;
+    selected: boolean;
+  }>;
+  categoryBase: Record<RedesignCategory, number>;
+  leakageCategories: Array<{ name: RedesignCategory; v: number; sub: string }>;
+  matrixRows: Array<{
+    id: string;
+    name: string;
+    selected: boolean;
+    cells: Array<{ category: RedesignCategory; v: number; hot: boolean; bg: string; color: string }>;
+  }>;
+  audiencePicks: Array<{ id: string; name: string; idx: number; idxColor: string; selected: boolean }>;
+  channels: Array<{ label: string; name: string; enabled: boolean; color: string }>;
+  activeChannels: string[];
+  windows: Array<{ label: string; weeks: number; selected: boolean; color: string }>;
+  windowWeeks: number;
+  windowNote: string;
+  briefFacts: Array<{ label: string; value: string }>;
+  briefCopy: string;
+  aiAnswers: Record<'explain' | 'trust' | 'brief', string>;
+  aiChips: Array<{ key: 'explain' | 'trust' | 'brief'; label: string }>;
+  aiAnswer: string;
+  segmentChips: Array<{ id: string; label: string; selected: boolean }>;
+  journeyStages: Array<{
+    num: string;
+    name: string;
+    cap: number;
+    note: string;
+    weakDisplay: 'inline-flex' | 'none';
+    isWeak: boolean;
+  }>;
+  weakName: string;
+  weakCap: number;
+  walletSplit: Array<{ name: RedesignCategory; off: number; on: number }>;
+  walletTrend: Array<{ q: RedesignQuarterLabel; band: string; h: number; selected: boolean; qColor: string }>;
+  walletCards: Array<{ label: string; value: string; sub: string }>;
+  funnel: Array<{ name: string; band: string; w: number; note: string }>;
+  guestRows: Array<{
+    id: string;
+    name: string;
+    matched: string;
+    cov: string;
+    quality: string;
+    qColor: string;
+    reach: string;
+    mColor: string;
+    selected: boolean;
+  }>;
+  propensityRows: Array<{
+    id: string;
+    name: string;
+    propensityBand: string;
+    propensityPct: number;
+    w: number;
+    decile: string;
+    reach: string;
+    mColor: string;
+    selected: boolean;
+  }>;
+  selectedPropensityBand: string;
+  selectedDecile: string;
+  selectedChannelRecommendation: string;
+  readouts: Array<{
+    name: string;
+    aud: string;
+    window: string;
+    lift: string;
+    liftColor: string;
+    status: string;
+    sColor: string;
+    sBorder: string;
+    note: string;
+  }>;
+  measureCounts: Array<{ v: string; label: string; sub: string; color: string }>;
+  reach: number;
+  depth: number;
+  simulation: {
+    liftBand: string;
+    recaptureBand: string;
+    liftLo: number;
+    liftHi: number;
+    recLo: number;
+    recHi: number;
+    reachPct: number;
+    depthPct: number;
+    windowLabel: string;
+    simNote: string;
+  };
+  demand: Array<{ name: RedesignCategory; v: number; sub: string; color: string; label: string; deltaColor: string }>;
+  corridors: Array<{ name: string; band: string; w: number; note: string }>;
+  rules: Array<{ t: string; d: string }>;
+  refreshLog: Array<{ q: RedesignQuarterLabel; date: string; cov: string; status: string; sColor: string; sBorder: string }>;
+  exportLabel: string;
+  exportBg: string;
+  exportColor: string;
+}
 
 const REDESIGN_QUARTER_KEYS = Object.keys(redesignQuarterData) as RedesignQuarterLabel[];
 const ACCENT = '#D4AF5E';
@@ -254,6 +402,21 @@ const pageTitles: Record<RedesignPageId, string> = {
   measurement: 'Campaign measurement',
   marketscan: 'Market scan',
   governance: 'Governance & CDE rules',
+};
+
+const screenLabels: Record<RedesignPageId, string> = {
+  overview: 'Overview',
+  journey: 'Journey',
+  wallet: 'Wallet',
+  segments: 'Segments',
+  guests: 'Guests',
+  leakage: 'Leakage',
+  propensity: 'Propensity',
+  activation: 'Activation',
+  simulate: 'Simulator',
+  measurement: 'Measurement',
+  marketscan: 'Market Scan',
+  governance: 'Governance',
 };
 
 function isQuarterLabel(value: string): value is RedesignQuarterLabel {
@@ -313,17 +476,23 @@ function decileOf(value: number): string {
   return 'Demi-deciles 5+';
 }
 
+function toModelSegment(segment: RedesignSegment): RedesignModelSegment {
+  const { prop, ...displaySegment } = segment;
+  const propensityScore = finiteNumber(Number.parseFloat(prop), 0);
+
+  return {
+    ...displaySegment,
+    cats: segment.cats.map((category) => ({ ...category })),
+    propensityBand: decileOf(propensityScore),
+    propensityPct: Math.round(propensityScore * 100),
+  };
+}
+
 function selectedChannels(channels: Record<string, boolean>): string[] {
   return CHANNEL_ORDER.filter((channel) => channels[channel]);
 }
 
-function pageFlagName(pageId: RedesignPageId): string {
-  if (pageId === 'simulate') return 'isSimulate';
-  if (pageId === 'marketscan') return 'isMarketscan';
-  return `is${pageId.charAt(0).toUpperCase()}${pageId.slice(1)}`;
-}
-
-export function buildConstellationRedesignModel(input: RedesignBuildInput) {
+export function buildConstellationRedesignModel(input: RedesignBuildInput): ConstellationRedesignModel {
   const quarterLabel = selectedQuarterLabel(input.quarterLabel);
   const qd = redesignQuarterData[quarterLabel];
   const qi = REDESIGN_QUARTER_KEYS.indexOf(quarterLabel);
@@ -400,19 +569,24 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput) {
     { label: 'Matched guests', value: selectedSegment.matched },
   ];
 
-  const segmentRows = segs.map((segment, index) => ({
-    rank: `0${index + 1}`,
-    id: segment.id,
-    name: segment.name,
-    matched: segment.matched,
-    prop: segment.prop,
-    idx: segment.idx,
-    idxColor: idxColor(segment.idx),
-    leak: segment.leak,
-    cat: segment.cat,
-    wallet: segment.wallet,
-    selected: segment.id === selectedSegmentId,
-  }));
+  const segmentRows = segs.map((segment, index) => {
+    const propensityScore = finiteNumber(Number.parseFloat(segment.prop), 0);
+
+    return {
+      rank: `0${index + 1}`,
+      id: segment.id,
+      name: segment.name,
+      matched: segment.matched,
+      propensityBand: decileOf(propensityScore),
+      propensityPct: Math.round(propensityScore * 100),
+      idx: segment.idx,
+      idxColor: idxColor(segment.idx),
+      leak: segment.leak,
+      cat: segment.cat,
+      wallet: segment.wallet,
+      selected: segment.id === selectedSegmentId,
+    };
+  });
 
   const legend = [
     { band: '<90', label: 'Low signal', sub: 'Below matched-cohort baseline', color: '#7A7488' },
@@ -486,7 +660,8 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput) {
         : 'An 8-week window suits stay-cycle offers with slower repeat rates.';
 
   const channelSummary = activeChannels.length ? activeChannels.join(' and ') : 'selected channels';
-  const selectedPropensityBand = decileOf(finiteNumber(Number.parseFloat(selectedSegment.prop), 0));
+  const selectedPropensityScore = finiteNumber(Number.parseFloat(selectedSegment.prop), 0);
+  const selectedPropensityBand = decileOf(selectedPropensityScore);
   const briefFacts = [
     { label: 'Audience', value: selectedSegment.name },
     { label: 'Cohort band', value: `${selectedSegment.matched} matched guests` },
@@ -499,7 +674,7 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput) {
     `Target the ${selectedSegment.matched} matched ${selectedSegment.name} cohort with a ` +
     `${selectedSegment.offer.toLowerCase()}, delivered via ${channelSummary}. Success is a capture-index lift vs ` +
     `holdout over ${windowWeeks} weeks, reported as banded ranges and indices only. Modelled wallet band: ` +
-    `${selectedSegment.wallet} /mo; propensity ${selectedSegment.prop}.`;
+    `${selectedSegment.wallet} /mo; propensity band ${selectedPropensityBand}.`;
 
   const aiAnswers = {
     explain:
@@ -517,7 +692,7 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput) {
       'leakage. Validate against the next CDE refresh before scaling.',
   };
 
-  const aiChips = [
+  const aiChips: ConstellationRedesignModel['aiChips'] = [
     { key: 'explain', label: 'Explain the ranking' },
     { key: 'trust', label: 'Why trust it?' },
     { key: 'brief', label: 'Build a brief' },
@@ -529,8 +704,7 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput) {
     selected: segment.id === selectedSegmentId,
   }));
 
-  const selectedPropensity = Number.parseFloat(selectedSegment.prop);
-  const pv = finiteNumber(selectedPropensity, 0);
+  const pv = selectedPropensityScore;
   const hospLeak = selectedSegment.cats.find((category) => category.name === 'Hospitality')?.v ?? 20;
   const stagesRaw = [
     { num: '01', name: 'Discover & Book', cap: Math.round(50 + pv * 20), note: 'Direct booking vs OTA and pre-trip travel retail.' },
@@ -542,7 +716,7 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput) {
   const minCap = Math.min(...stagesRaw.map((stage) => stage.cap));
   const journeyStages = stagesRaw.map((stage) => ({
     ...stage,
-    weakDisplay: stage.cap === minCap ? 'inline-flex' : 'none',
+    weakDisplay: stage.cap === minCap ? 'inline-flex' as const : 'none' as const,
     isWeak: stage.cap === minCap,
   }));
   const weakStage = stagesRaw.find((stage) => stage.cap === minCap) ?? stagesRaw[0];
@@ -587,17 +761,18 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput) {
     selected: segment.id === selectedSegmentId,
   }));
 
-  const propRows = [...segs]
+  const propensityRows = [...segs]
     .sort((first, second) => Number.parseFloat(second.prop) - Number.parseFloat(first.prop))
     .map((segment) => {
-      const prop = Number.parseFloat(segment.prop);
+      const propensityScore = finiteNumber(Number.parseFloat(segment.prop), 0);
 
       return {
         id: segment.id,
         name: segment.name,
-        prop: segment.prop,
-        w: Math.round(prop * 100),
-        decile: decileOf(prop),
+        propensityBand: decileOf(propensityScore),
+        propensityPct: Math.round(propensityScore * 100),
+        w: Math.round(propensityScore * 100),
+        decile: decileOf(propensityScore),
         reach: segment.mobile ? 'Mobile-ready' : 'CRM / desk',
         mColor: segment.mobile ? '#6FBF8F' : '#8B8598',
         selected: segment.id === selectedSegmentId,
@@ -730,11 +905,9 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput) {
     sBorder: key === '2026 Q2' ? 'rgba(111,191,143,0.4)' : 'rgba(139,133,152,0.3)',
   }));
 
-  const pageFlags = Object.fromEntries(
-    (Object.keys(pageTitles) as RedesignPageId[]).map((id) => [pageFlagName(id), id === pageId]),
-  ) as Record<string, boolean>;
-
   return {
+    pageId,
+    screenLabel: screenLabels[pageId],
     pageTitle: pageTitles[pageId],
     quarter: { label: quarterLabel, ...qd },
     quarterKeys: REDESIGN_QUARTER_KEYS,
@@ -753,16 +926,15 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput) {
       selected: label === quarterLabel,
       color: label === quarterLabel ? '#EAD9A9' : '#8B8598',
     })),
-    selectedSegment,
-    topSegment,
+    selectedSegment: toModelSegment(selectedSegment),
+    topSegment: toModelSegment(topSegment),
     kpis,
     constellationNodes,
     legend,
     selectedStats,
     segmentRows,
-    segRows: segmentRows,
     categoryBase: catBase,
-    leakCats,
+    leakageCategories: leakCats,
     matrixRows,
     audiencePicks,
     channels: channelStates,
@@ -776,7 +948,6 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput) {
     aiChips,
     aiAnswer: `Ask for an explanation, trust rationale, or a CDE-safe campaign brief for ${selectedSegment.name}.`,
     segmentChips,
-    segChips: segmentChips,
     journeyStages,
     weakName: weakStage.name,
     weakCap: weakStage.cap,
@@ -785,43 +956,21 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput) {
     walletCards,
     funnel,
     guestRows,
-    propRows,
-    selectedPropensity: selectedSegment.prop,
-    selProp: selectedSegment.prop,
-    selectedDecile: decileOf(pv),
-    selDecile: decileOf(pv),
+    propensityRows,
+    selectedPropensityBand,
+    selectedDecile: selectedPropensityBand,
     selectedChannelRecommendation,
-    selChannelRec: selectedChannelRecommendation,
     readouts,
     measureCounts,
     reach: reachPct,
     depth: depthPct,
     simulation,
-    liftBand: simulation.liftBand,
-    recaptureBand: simulation.recaptureBand,
-    windowLabel: simulation.windowLabel,
-    simNote: simulation.simNote,
     demand,
     corridors,
     rules,
     refreshLog,
-    topName: topSegment.name,
-    topIdx: topSegment.idx,
-    topLeak: topSegment.leak,
-    topCat: topSegment.cat,
-    topWallet: topSegment.wallet,
-    topMove: topSegment.move,
-    selectedName: selectedSegment.name,
-    selName: selectedSegment.name,
-    selectedDescription: selectedSegment.desc,
-    selDesc: selectedSegment.desc,
-    selectedMove: selectedSegment.move,
-    selMove: selectedSegment.move,
-    selectedCategories: selectedSegment.cats,
-    selCats: selectedSegment.cats,
     exportLabel: input.exported ? 'Brief handed to Marketing' : 'Export campaign brief',
     exportBg: input.exported ? '#6FBF8F' : ACCENT,
     exportColor: '#14101F',
-    ...pageFlags,
   };
 }
