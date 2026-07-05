@@ -1,85 +1,17 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
-import { latestSegments } from '@/data';
-import { AppStateProvider, useAppState } from '@/store/app-store';
+import { render, screen } from '@testing-library/react';
+import { vi } from 'vitest';
 import PropensityPage from './page';
 
-function StoreProbe() {
-  const { filters, savedAudiences } = useAppState();
-
-  return (
-    <div>
-      <output aria-label="active filters">
-        {`${filters.channel}|${filters.minPropensity}|${filters.segmentIds.join(',')}`}
-      </output>
-      <output aria-label="saved audience segment ids">
-        {savedAudiences.map((audience) => audience.segmentIds.join(',')).join('|')}
-      </output>
-    </div>
-  );
-}
-
-function renderPropensity() {
-  return render(
-    <AppStateProvider>
-      <PropensityPage />
-      <StoreProbe />
-    </AppStateProvider>,
-  );
-}
+vi.mock('@/components/redesign/constellation-redesign-route', () => ({
+  ConstellationRedesignRoute: ({ pageId }: { pageId: string }) => (
+    <section aria-label="Redesign route" data-page-id={pageId} />
+  ),
+}));
 
 describe('propensity route', () => {
-  it('renders the audience builder and saves a named audience', () => {
-    renderPropensity();
+  it('wires the propensity page into the redesign renderer', () => {
+    render(<PropensityPage />);
 
-    expect(screen.getByText('Audience build')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Propensity & Audience Builder', level: 1 })).toHaveClass('font-sans');
-    expect(screen.getByText(
-      /Build a CDE-compliant target audience from segment-level luxury hotel, rewards, look-alike, and leakage signals, then save it for Galaxy activation without exposing raw customer-level currency\./,
-    )).toBeInTheDocument();
-    expect(screen.getByLabelText(/Luxury-hotel spender/i)).toBeInTheDocument();
-    expect(screen.getByText('Live audience size')).toBeInTheDocument();
-    expect(screen.getByText('Estimated recapturable wallet signal')).toBeInTheDocument();
-    expect(screen.getByRole('group', { name: /Segment membership/i })).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: /Channel preference/i })).toHaveValue('all');
-    expect(screen.getByText('Estimated wallet band')).toBeInTheDocument();
-    expect(screen.getByText(/equiv\.\/mo/)).toBeInTheDocument();
-    expect(screen.getByText('Dominant leakage')).toBeInTheDocument();
-    expect(screen.getByText('Channel preference composition')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('checkbox', { name: new RegExp(latestSegments[0].name) }));
-    fireEvent.change(screen.getByRole('combobox', { name: /Channel preference/i }), {
-      target: { value: 'online' },
-    });
-    const audienceName = screen.getByLabelText(/Audience name/i);
-    fireEvent.change(audienceName, { target: { value: 'Luxury win-back Q2' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save audience' }));
-
-    expect(screen.getByText('Saved: Luxury win-back Q2')).toBeInTheDocument();
-    expect(screen.getByLabelText('active filters')).toHaveTextContent('online');
-    expect(screen.getByLabelText('saved audience segment ids')).not.toHaveTextContent(latestSegments[0].id);
-    expect(screen.queryByText(/NaN|Infinity/)).not.toBeInTheDocument();
-    expect(screen.queryByRole('main')).not.toBeInTheDocument();
-  });
-
-  it('keeps an empty segment selection empty instead of reverting to all segments', () => {
-    renderPropensity();
-
-    latestSegments.forEach((segment) => {
-      fireEvent.click(screen.getByRole('checkbox', { name: new RegExp(segment.name) }));
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Save audience' }));
-
-    expect(screen.getByText('No segments match the current audience controls.')).toBeInTheDocument();
-    expect(screen.getByLabelText('active filters')).toHaveTextContent('all|0|');
-    expect(screen.getByLabelText('saved audience segment ids')).toHaveTextContent('');
-  });
-
-  it('aggregates dominant leakage across the matched audience', () => {
-    renderPropensity();
-
-    const dominantLeakageCard = screen.getByText('Dominant leakage').closest('div');
-
-    expect(dominantLeakageCard).not.toBeNull();
-    expect(within(dominantLeakageCard as HTMLElement).getByText('Entertainment')).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Redesign route' })).toHaveAttribute('data-page-id', 'propensity');
   });
 });
