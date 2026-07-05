@@ -486,6 +486,7 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput) {
         : 'An 8-week window suits stay-cycle offers with slower repeat rates.';
 
   const channelSummary = activeChannels.length ? activeChannels.join(' and ') : 'selected channels';
+  const selectedPropensityBand = decileOf(finiteNumber(Number.parseFloat(selectedSegment.prop), 0));
   const briefFacts = [
     { label: 'Audience', value: selectedSegment.name },
     { label: 'Cohort band', value: `${selectedSegment.matched} matched guests` },
@@ -504,15 +505,15 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput) {
     explain:
       `The ${quarterLabel} ranking leads with ${selectedSegment.name}: opportunity index ${selectedSegment.idx} ` +
       `vs the matched-cohort baseline of 100, ${selectedSegment.leak}% ${selectedSegment.cat} leakage, ` +
-      `propensity ${selectedSegment.prop} and a ${selectedSegment.wallet} /mo wallet band. Ring width shows ` +
+      `${selectedPropensityBand.toLowerCase()} propensity and a ${selectedSegment.wallet} /mo wallet band. Ring width shows ` +
       'leakage; point size shows the index.',
     trust:
-      `Figures come from the matched Galaxy and Mastercard CDE cohort (${qd.coverage}% coverage, 7 active metrics, ` +
-      'demi-decile averages), refreshed quarterly. Every readout is expressed as indices, ranges and percentages.',
+      `Figures come from the matched Galaxy and Mastercard CDE cohort (${qd.coverage}% coverage and demi-decile ` +
+      'metric bands), refreshed quarterly. Every readout is expressed as indices, ranges and percentages.',
     brief:
       `Draft brief for ${selectedSegment.name}: ${selectedSegment.offer.toLowerCase()} to the ${selectedSegment.matched} ` +
-      `matched cohort via ${activeChannels.join(' and ') || 'CRM'}, measured as capture-index lift vs holdout over ` +
-      `${windowWeeks} weeks. Proof points: index ${selectedSegment.idx}, ${selectedSegment.leak}% ${selectedSegment.cat} ` +
+      `matched cohort via ${activeChannels.join(' and ') || 'CRM'}, measured as capture-index lift vs holdout in ` +
+      `the selected window. Proof points: index ${selectedSegment.idx}, ${selectedSegment.leak}% ${selectedSegment.cat} ` +
       'leakage. Validate against the next CDE refresh before scaling.',
   };
 

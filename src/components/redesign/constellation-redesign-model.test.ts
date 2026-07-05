@@ -93,6 +93,10 @@ describe('constellation redesign model', () => {
       label: 'Governance',
       href: '/governance',
     });
+    Object.values(model.aiAnswers).forEach((answer) => {
+      expect(answer).not.toMatch(/\b0\.\d+\b/);
+      expect(answer).not.toMatch(/\b\d+\s+active metrics\b/i);
+    });
     expectDisplaySafe(model);
   });
 
