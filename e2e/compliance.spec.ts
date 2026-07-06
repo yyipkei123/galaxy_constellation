@@ -349,7 +349,7 @@ test.describe('Galaxy Constellation rendered compliance', () => {
     await page.goto('/');
 
     await hideCompactCdeAiDock(page);
-    await page.getByRole('button', { name: 'Open presenter tour' }).dispatchEvent('click');
+    await page.getByRole('button', { name: 'Open presenter tour' }).click({ position: { x: 22, y: 42 } });
 
     const dialog = page.getByRole('dialog', { name: 'Presenter tour' });
     const presenterStops = [
