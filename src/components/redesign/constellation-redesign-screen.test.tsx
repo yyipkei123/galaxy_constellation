@@ -77,7 +77,9 @@ describe('ConstellationRedesignScreen', () => {
 
     fireEvent.click(closeButton);
 
-    expect(within(aiDock).getByRole('button', { name: 'Ask CDE AI' })).toHaveAttribute('aria-expanded', 'false');
+    const collapsedToggle = within(aiDock).getByRole('button', { name: 'Ask CDE AI' });
+    expect(collapsedToggle).toHaveAttribute('aria-expanded', 'false');
+    expect(collapsedToggle).toHaveFocus();
     expect(document.getElementById(controlledPanelId ?? '')).toHaveAttribute('hidden');
   });
 

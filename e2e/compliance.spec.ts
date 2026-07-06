@@ -12,7 +12,6 @@ type RedesignedRouteExpectation = {
   heading: string;
   texts?: string[];
   sliders?: string[];
-  complementary?: string;
 };
 
 const redesignedRouteExpectations = new Map<string, RedesignedRouteExpectation>([
@@ -20,7 +19,6 @@ const redesignedRouteExpectations = new Map<string, RedesignedRouteExpectation>(
     region: 'Overview',
     heading: 'Wallet intelligence cockpit',
     texts: ['Wallet headroom constellation'],
-    complementary: 'CDE AI',
   }],
   ['/journey', {
     region: 'Journey',
@@ -151,6 +149,12 @@ async function hideCompactCdeAiDock(page: Page) {
   }
 }
 
+async function expectCompactCdeAiDockOnly(page: Page) {
+  await expect(page.getByRole('complementary', { name: 'CDE AI' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Open presenter tour' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Open AI insight assistant' })).toHaveCount(0);
+}
+
 test.describe('Galaxy Constellation rendered compliance', () => {
   for (const route of routes) {
     test(`${route} shows CDE methodology and avoids banned CDE currency patterns`, async ({ page }) => {
@@ -183,13 +187,14 @@ test.describe('Galaxy Constellation rendered compliance', () => {
           await expect(routeRegion.getByRole('slider', { name: slider })).toBeVisible();
         }
 
-        if (redesignedExpectation.complementary) {
-          await expect(page.getByRole('complementary', { name: redesignedExpectation.complementary })).toBeVisible();
-        }
+        await expectCompactCdeAiDockOnly(page);
 
       } else if (route.startsWith('/guests/')) {
         const hostActionSummary = page.getByRole('region', { name: 'Host action summary' });
 
+        await expect(page.getByRole('complementary', { name: 'CDE AI' })).toHaveCount(0);
+        await expect(page.getByRole('button', { name: 'Open presenter tour' })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Open AI insight assistant' })).toBeVisible();
         await expect(page.getByRole('heading', { name: 'Customer 360', level: 1 })).toBeVisible();
         await expect(hostActionSummary).toBeVisible();
         await expect(hostActionSummary.getByText('What to offer')).toBeVisible();
@@ -348,7 +353,7 @@ test.describe('Galaxy Constellation rendered compliance', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/guests/MEM-••••3421');
 
-    await page.getByRole('button', { name: 'Open presenter tour' }).click({ position: { x: 22, y: 42 } });
+    await page.getByRole('button', { name: 'Open presenter tour' }).click();
 
     const dialog = page.getByRole('dialog', { name: 'Presenter tour' });
     const presenterStops = [
@@ -378,9 +383,7 @@ test.describe('Galaxy Constellation rendered compliance', () => {
   test('presenter mode hides floating controls while keeping guidance visible', async ({ page }) => {
     await page.goto('/');
 
-    await expect(page.getByRole('complementary', { name: 'CDE AI' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Open presenter tour' })).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Open AI insight assistant' })).toHaveCount(0);
+    await expectCompactCdeAiDockOnly(page);
 
     await page.getByRole('button', { name: 'Presenter mode' }).click();
 
@@ -460,9 +463,7 @@ test.describe('Galaxy Constellation rendered compliance', () => {
         await gotoStableRoute(page, route);
         await expect(page.getByRole('banner')).toContainText(/CDE metrics/i);
         await expect(page.getByRole('banner').getByLabel('Galaxy Macau and Mastercard data partnership')).toBeVisible();
-        await expect(page.getByRole('complementary', { name: 'CDE AI' })).toBeVisible();
-        await expect(page.getByRole('button', { name: /Open presenter tour/i })).toHaveCount(0);
-        await expect(page.getByRole('button', { name: /Open AI insight assistant/i })).toHaveCount(0);
+        await expectCompactCdeAiDockOnly(page);
 
         const primaryNav = page.getByRole('navigation', { name: /Primary navigation/i });
         const activeNav = await primaryNav.locator('a[aria-current="page"]').boundingBox();

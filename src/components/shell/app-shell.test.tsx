@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
+import { hasCompactCdeAiDock } from '@/components/presentation/presentation-floating-controls';
 import { AppStateProvider } from '@/store/app-store';
 import { AppShell } from './app-shell';
 
@@ -33,6 +34,32 @@ describe('AppShell', () => {
     expect(screen.getByText('Constellation')).toBeInTheDocument();
     expect(screen.getByText('Galaxy x Mastercard CDE')).toBeInTheDocument();
     expect(screen.getByText(/Enriched figures are modelled estimates/i)).toBeInTheDocument();
+  });
+
+  it('identifies compact CDE AI dock routes without matching Customer 360 detail pages', () => {
+    const compactDockRoutes = [
+      '/',
+      '/journey',
+      '/wallet',
+      '/segments',
+      '/guests',
+      '/leakage',
+      '/propensity',
+      '/activation',
+      '/simulate',
+      '/measurement',
+      '/marketscan',
+      '/governance',
+    ];
+
+    for (const route of compactDockRoutes) {
+      expect(hasCompactCdeAiDock(route)).toBe(true);
+      expect(hasCompactCdeAiDock(`${route === '/' ? '' : route}/`)).toBe(true);
+    }
+
+    expect(hasCompactCdeAiDock('/guests/MEM-••••3421')).toBe(false);
+    expect(hasCompactCdeAiDock('/corridors')).toBe(false);
+    expect(hasCompactCdeAiDock('/acquisition')).toBe(false);
   });
 
   it('keeps legacy floating controls on routes without the compact CDE AI dock', () => {

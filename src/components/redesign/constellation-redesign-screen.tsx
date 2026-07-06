@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, type FormEvent } from 'react';
+import { useMemo, useRef, useState, type FormEvent } from 'react';
 import clsx from 'clsx';
 import { formatEnriched } from '@/lib/format';
 import {
@@ -1510,6 +1510,7 @@ function CdeAiDock({
   setAiInput: (input: string) => void;
 }) {
   const aiPanelId = 'constellation-redesign-ai-panel';
+  const toggleButtonRef = useRef<HTMLButtonElement>(null);
   const defaultAiAnswer =
     `Ask for an explanation, trust rationale, or a CDE-safe campaign brief for ${model.selectedSegment.name}.`;
   const aiAnswer = normalizeModelledWalletBands(
@@ -1523,6 +1524,11 @@ function CdeAiDock({
 
     setAiAnswerKey('explain');
     setAiInput('');
+  }
+
+  function closeAiPanel() {
+    setAiOpen(false);
+    toggleButtonRef.current?.focus();
   }
 
   return (
@@ -1555,7 +1561,7 @@ function CdeAiDock({
             aria-label="Close CDE AI"
             aria-controls={aiPanelId}
             aria-expanded={aiOpen}
-            onClick={() => setAiOpen(false)}
+            onClick={closeAiPanel}
             className="flex h-8 w-8 items-center justify-center rounded-full text-base text-galaxy-muted transition hover:bg-white/5 hover:text-galaxy-cream"
           >
             ×
@@ -1613,6 +1619,7 @@ function CdeAiDock({
       </div>
 
       <button
+        ref={toggleButtonRef}
         type="button"
         aria-controls={aiPanelId}
         aria-expanded={aiOpen}
