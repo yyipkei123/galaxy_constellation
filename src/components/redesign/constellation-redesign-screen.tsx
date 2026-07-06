@@ -1558,7 +1558,7 @@ function CdeAiDock({
         </button>
       </div>
 
-      <div id={aiPanelId} data-cde-ai-panel="floating" hidden={!aiOpen} className="mt-5 space-y-5">
+      <div id={aiPanelId} hidden={!aiOpen} className="mt-5 space-y-5">
           <SegmentChipBar
             chips={model.segmentChips}
             onSelectSegment={onSelectSegment}
