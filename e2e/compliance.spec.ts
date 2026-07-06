@@ -380,7 +380,8 @@ test.describe('Galaxy Constellation rendered compliance', () => {
     await page.goto('/');
 
     await expect(page.getByRole('button', { name: 'Open presenter tour' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Open AI insight assistant' })).toBeVisible();
+    await expect(page.getByRole('complementary', { name: 'CDE AI' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Open AI insight assistant' })).toHaveCount(0);
 
     await page.getByRole('button', { name: 'Presenter mode' }).click();
 
@@ -461,17 +462,13 @@ test.describe('Galaxy Constellation rendered compliance', () => {
         await expect(page.getByRole('banner')).toContainText(/CDE metrics/i);
         await expect(page.getByRole('banner').getByLabel('Galaxy Macau and Mastercard data partnership')).toBeVisible();
         await expect(page.getByRole('complementary', { name: 'CDE AI' })).toBeVisible();
-        await expect(page.getByRole('button', { name: /Open AI insight assistant/i })).toBeVisible();
+        await expect(page.getByRole('button', { name: /Open AI insight assistant/i })).toHaveCount(0);
 
         const primaryNav = page.getByRole('navigation', { name: /Primary navigation/i });
         const activeNav = await primaryNav.locator('a[aria-current="page"]').boundingBox();
         expect(activeNav).not.toBeNull();
         expect(activeNav!.x).toBeGreaterThanOrEqual(-1);
         expect(activeNav!.x + activeNav!.width).toBeLessThanOrEqual(viewport.width + 1);
-
-        const launcher = await page.getByRole('button', { name: /Open AI insight assistant/i }).boundingBox();
-        expect(launcher).not.toBeNull();
-        expect(launcher!.y + launcher!.height).toBeLessThanOrEqual(viewport.height);
 
         const scrollWidth = await documentScrollWidth(page);
         expect(scrollWidth).toBeLessThanOrEqual(viewport.width);
