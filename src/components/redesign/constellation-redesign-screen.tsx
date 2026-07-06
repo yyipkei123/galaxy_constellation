@@ -1510,10 +1510,10 @@ function CdeAiDock({
   setAiInput: (input: string) => void;
 }) {
   const aiPanelId = 'constellation-redesign-ai-panel';
+  const defaultAiAnswer =
+    `Ask for an explanation, trust rationale, or a CDE-safe campaign brief for ${model.selectedSegment.name}.`;
   const aiAnswer = normalizeModelledWalletBands(
-    aiAnswerKey
-      ? model.aiAnswers[aiAnswerKey]
-      : 'Ask for an explanation, trust rationale, or a campaign-ready brief.',
+    aiAnswerKey ? model.aiAnswers[aiAnswerKey] : defaultAiAnswer,
   );
 
   function submitAiQuestion(event: FormEvent<HTMLFormElement>) {

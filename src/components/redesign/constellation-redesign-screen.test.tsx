@@ -65,6 +65,11 @@ describe('ConstellationRedesignScreen', () => {
     expect(within(panel).getByText('Why trust it?')).toBeInTheDocument();
     expect(within(panel).getByText('Build a brief')).toBeInTheDocument();
     expect(within(panel).getByText(/Ask for an explanation, trust rationale/i)).toBeInTheDocument();
+    expect(
+      within(panel).getByText(
+        'Ask for an explanation, trust rationale, or a CDE-safe campaign brief for Cosmopolitan Connoisseurs.',
+      ),
+    ).toBeInTheDocument();
     expect(within(panel).getByPlaceholderText('Ask about Cosmopolitan Connoisseurs...')).toBeInTheDocument();
     expect(within(panel).getByText(/Answers use modelled CDE ranges/i)).toBeInTheDocument();
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
@@ -74,6 +79,25 @@ describe('ConstellationRedesignScreen', () => {
 
     expect(within(aiDock).getByRole('button', { name: 'Ask CDE AI' })).toHaveAttribute('aria-expanded', 'false');
     expect(document.getElementById(controlledPanelId ?? '')).toHaveAttribute('hidden');
+  });
+
+  it('resets the CDE AI dock to a segment-aware default answer when overview selection changes', () => {
+    renderScreen('overview');
+
+    const aiDock = screen.getByRole('complementary', { name: 'CDE AI' });
+    const briefChip = within(aiDock).getByRole('button', { name: 'Build a brief' });
+
+    fireEvent.click(briefChip);
+    expect(within(aiDock).getByText(/Draft brief for Cosmopolitan Connoisseurs/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Select Premium Mass Weekenders/i }));
+
+    expect(within(aiDock).getByPlaceholderText('Ask about Premium Mass Weekenders...')).toBeInTheDocument();
+    expect(
+      within(aiDock).getByText(
+        'Ask for an explanation, trust rationale, or a CDE-safe campaign brief for Premium Mass Weekenders.',
+      ),
+    ).toBeInTheDocument();
   });
 
   it('renders the CDE AI dock as a fixed floating chatbot outside route layout columns', () => {
@@ -203,11 +227,12 @@ describe('ConstellationRedesignScreen', () => {
 
   it('selects a Journey segment chip and updates the weakest-link context', () => {
     const { container } = renderScreen('journey');
+    const route = screen.getByRole('region', { name: 'Journey' });
 
     fireEvent.click(screen.getByRole('button', { name: 'Weekenders' }));
 
     expect(screen.getByRole('button', { name: 'Weekenders' })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByText(/for Premium Mass Weekenders/i)).toBeInTheDocument();
+    expect(within(route).getByText(/for Premium Mass Weekenders/i)).toBeInTheDocument();
     expect(container.textContent).not.toMatch(bannedCdePattern);
     expect(container.textContent).not.toMatch(rawWalletBandPattern);
   });
