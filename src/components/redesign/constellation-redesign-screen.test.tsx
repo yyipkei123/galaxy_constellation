@@ -67,6 +67,20 @@ describe('ConstellationRedesignScreen', () => {
     expect(document.getElementById(controlledPanelId ?? '')).toHaveAttribute('hidden');
   });
 
+  it('renders the CDE AI dock as a fixed floating chatbot outside route layout columns', () => {
+    const { container } = renderScreen('overview');
+
+    const aiDock = screen.getByRole('complementary', { name: 'CDE AI' });
+
+    expect(aiDock).toHaveClass('fixed');
+    expect(aiDock).toHaveClass('bottom-4');
+    expect(aiDock).toHaveClass('right-4');
+    expect(aiDock).toHaveClass('z-[60]');
+    expect(aiDock).not.toHaveClass('galaxy-glass-panel');
+    expect(screen.getAllByRole('complementary', { name: 'CDE AI' })).toHaveLength(1);
+    expect(container.querySelector('[data-cde-ai-panel="floating"]')).toBeInTheDocument();
+  });
+
   it('exposes constellation node details in accessible names', () => {
     renderScreen('overview');
 

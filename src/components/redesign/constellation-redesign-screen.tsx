@@ -142,25 +142,24 @@ export function ConstellationRedesignScreen({
   };
 
   return (
-    <div className="space-y-[18px] text-galaxy-cream">
-      {pageId === 'overview' ? (
-        <section aria-label={model.screenLabel} className="space-y-[18px]">
+    <>
+      <section aria-label={model.screenLabel} className="space-y-[18px] pb-28 text-galaxy-cream">
+        {pageId === 'overview' ? (
           <Overview
             model={model}
             coveragePct={coveragePct}
             activeMetricCount={activeMetricCount}
-            controls={sharedControls}
+            onSelectSegment={selectSegment}
           />
-        </section>
-      ) : (
-        <div className="grid min-w-0 gap-[18px] xl:grid-cols-[minmax(0,1fr)_360px]">
-          <section aria-label={model.screenLabel} className="min-w-0 space-y-[18px]">
+        ) : (
+          <div className="min-w-0 space-y-[18px]">
             {renderRouteBody(model, sharedControls, audienceBriefDrafted, buildAudienceBriefDraft)}
-          </section>
-          <CdeAiDock model={model} {...sharedControls} />
-        </div>
-      )}
-    </div>
+          </div>
+        )}
+      </section>
+
+      <CdeAiDock model={model} {...sharedControls} />
+    </>
   );
 }
 
@@ -202,12 +201,12 @@ function Overview({
   model,
   coveragePct,
   activeMetricCount,
-  controls,
+  onSelectSegment,
 }: {
   model: ConstellationRedesignModel;
   coveragePct: number;
   activeMetricCount: number;
-  controls: SharedRouteControls;
+  onSelectSegment: (segmentId: string) => void;
 }) {
   return (
     <>
@@ -233,7 +232,7 @@ function Overview({
         </div>
       </section>
 
-      <div className="grid min-w-0 gap-[18px] xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid min-w-0 gap-[18px] xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0 space-y-[18px]">
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             {model.kpis.map((metric) => (
@@ -241,15 +240,12 @@ function Overview({
             ))}
           </div>
 
-          <div className="grid min-w-0 gap-[18px] lg:grid-cols-[minmax(0,1fr)_320px]">
-            <ConstellationMap
-              nodes={model.constellationNodes}
-              segmentRows={model.segmentRows}
-              selectedSegmentName={model.selectedSegment.name}
-              onSelectSegment={controls.onSelectSegment}
-            />
-            <SelectedFinding model={model} />
-          </div>
+          <ConstellationMap
+            nodes={model.constellationNodes}
+            segmentRows={model.segmentRows}
+            selectedSegmentName={model.selectedSegment.name}
+            onSelectSegment={onSelectSegment}
+          />
 
           <section className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -282,10 +278,7 @@ function Overview({
           </section>
         </div>
 
-        <CdeAiDock
-          model={model}
-          {...controls}
-        />
+        <SelectedFinding model={model} />
       </div>
     </>
   );
@@ -1545,7 +1538,10 @@ function CdeAiDock({
   }
 
   return (
-    <aside aria-label="CDE AI" className="galaxy-glass-panel h-fit min-w-0 max-w-full rounded-[20px] border border-white/10 p-5">
+    <aside
+      aria-label="CDE AI"
+      className="fixed bottom-4 right-4 z-[60] h-fit min-w-0 max-w-full rounded-[20px] border border-white/10 bg-galaxy-ink/95 p-5 shadow-2xl"
+    >
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-gold">CDE AI dock</p>
@@ -1562,7 +1558,7 @@ function CdeAiDock({
         </button>
       </div>
 
-      <div id={aiPanelId} hidden={!aiOpen} className="mt-5 space-y-5">
+      <div id={aiPanelId} data-cde-ai-panel="floating" hidden={!aiOpen} className="mt-5 space-y-5">
           <SegmentChipBar
             chips={model.segmentChips}
             onSelectSegment={onSelectSegment}
