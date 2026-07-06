@@ -83,7 +83,7 @@ export function FusionPanel({ guest }: { guest: Guest }) {
 
   return (
     <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem_minmax(0,1fr)]">
-      <div className="rounded-2xl border border-galaxy-border bg-galaxy-charcoal/65 p-5">
+      <div className="galaxy-panel p-5">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-galaxy-gold">What Galaxy sees</p>
         <h2 className="mt-2 text-2xl font-semibold text-galaxy-cream">First-party behavior</h2>
         <dl className="mt-5 grid gap-3 text-sm">
@@ -106,7 +106,7 @@ export function FusionPanel({ guest }: { guest: Guest }) {
         </dl>
       </div>
 
-      <div className="rounded-2xl border border-galaxy-gold/40 bg-galaxy-gold/10 p-5 text-center">
+      <div className="galaxy-panel-accent p-5 text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-galaxy-gold">Fused opportunity</p>
         <p className="mt-4 font-mono text-4xl font-semibold text-galaxy-cream">{leadScore}</p>
         <p className="mt-3 text-sm text-galaxy-muted">Lead Score</p>
@@ -115,7 +115,7 @@ export function FusionPanel({ guest }: { guest: Guest }) {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-galaxy-border bg-galaxy-charcoal/65 p-5">
+      <div className="galaxy-panel p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-galaxy-gold">
             What Mastercard CDE adds

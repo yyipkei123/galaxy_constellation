@@ -17,7 +17,7 @@ export function PriorityCorridorTile({ corridor }: { corridor: Corridor }) {
           <h2 className="font-sans text-3xl font-semibold text-galaxy-cream">{corridor.name}</h2>
           <p className="mt-2 text-sm leading-6 text-galaxy-muted">{corridor.note ?? 'Acquisition priority'}</p>
           {tag ? (
-            <p className="mt-3 inline-flex rounded border border-galaxy-gold/40 bg-galaxy-gold/10 px-2 py-1 text-xs font-semibold text-galaxy-gold">
+            <p className="mt-3 inline-flex rounded-[7px] border border-galaxy-gold/35 bg-galaxy-gold/10 px-2 py-1 text-xs font-semibold text-galaxy-gold">
               {tag}
             </p>
           ) : null}
@@ -41,7 +41,7 @@ export function PriorityCorridorTile({ corridor }: { corridor: Corridor }) {
       <CorridorIndexBaseline className="mt-4" />
       <Link
         href={`/acquisition?corridor=${corridor.id}`}
-        className="mt-5 inline-flex rounded-md bg-galaxy-gold px-4 py-2 text-sm font-semibold text-galaxy-ink hover:bg-galaxy-gold-lite"
+        className="galaxy-cta-primary mt-5"
       >
         Open acquisition recommendation
       </Link>

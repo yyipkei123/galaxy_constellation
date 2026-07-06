@@ -85,7 +85,7 @@ export function PresenterTour() {
             aria-modal="true"
             aria-label="Presenter tour"
             onKeyDown={handleDialogKeyDown}
-            className="w-full max-w-lg rounded-lg border border-galaxy-gold/35 bg-galaxy-ink p-5 text-galaxy-cream shadow-2xl shadow-black/50"
+            className="galaxy-panel w-full max-w-lg p-5 text-galaxy-cream"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
@@ -106,7 +106,7 @@ export function PresenterTour() {
             </div>
 
             <p className="mt-4 text-sm leading-6 text-galaxy-muted">{activeStop.summary}</p>
-            <p className="mt-4 rounded-lg border border-galaxy-border bg-galaxy-charcoal/70 px-3 py-2 text-sm font-semibold text-galaxy-gold">
+            <p className="galaxy-tile mt-4 px-3 py-2 text-sm font-semibold text-galaxy-gold">
               Route: {activeStop.route}
             </p>
 
@@ -114,7 +114,7 @@ export function PresenterTour() {
               <button
                 type="button"
                 onClick={closeTour}
-                className="rounded-md border border-galaxy-border px-4 py-2 text-sm font-semibold text-galaxy-muted transition hover:border-galaxy-gold hover:text-galaxy-gold focus:outline-none focus:ring-2 focus:ring-galaxy-gold"
+                className="galaxy-cta-secondary"
               >
                 Close
               </button>
@@ -122,7 +122,7 @@ export function PresenterTour() {
                 type="button"
                 onClick={showNextStop}
                 disabled={activeIndex === stopCount - 1}
-                className="inline-flex items-center gap-2 rounded-md bg-galaxy-gold px-4 py-2 text-sm font-semibold text-galaxy-ink transition hover:bg-galaxy-gold-lite focus:outline-none focus:ring-2 focus:ring-galaxy-gold focus:ring-offset-2 focus:ring-offset-galaxy-ink disabled:cursor-not-allowed disabled:opacity-55"
+                className="galaxy-cta-primary disabled:cursor-not-allowed disabled:opacity-55"
               >
                 Next stop
                 <ChevronRight aria-hidden="true" className="h-4 w-4" />
@@ -138,7 +138,7 @@ export function PresenterTour() {
         aria-label="Open presenter tour"
         aria-expanded={isOpen}
         onClick={openTour}
-        className="fixed bottom-[calc(env(safe-area-inset-bottom)_+_0.875rem)] right-[4.25rem] z-50 inline-flex h-11 w-11 items-center justify-center rounded-full border border-galaxy-border bg-galaxy-charcoal text-galaxy-gold shadow-xl shadow-black/40 transition hover:border-galaxy-gold hover:bg-galaxy-slate focus-visible:ring-2 focus-visible:ring-galaxy-gold focus-visible:ring-offset-2 focus-visible:ring-offset-galaxy-ink sm:right-20 lg:bottom-[calc(env(safe-area-inset-bottom)_+_1rem)] lg:right-[10.25rem] lg:w-auto lg:gap-2 lg:px-4"
+        className="galaxy-cta-secondary fixed bottom-[calc(env(safe-area-inset-bottom)_+_0.875rem)] right-[4.25rem] z-50 h-11 w-11 px-0 shadow-xl shadow-black/40 sm:right-20 lg:bottom-[calc(env(safe-area-inset-bottom)_+_1rem)] lg:right-[10.25rem] lg:w-auto lg:px-4"
       >
         <Presentation aria-hidden="true" className="h-5 w-5" />
         <span className="hidden text-sm font-semibold lg:inline">Tour</span>

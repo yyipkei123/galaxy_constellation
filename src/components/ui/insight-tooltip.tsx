@@ -44,7 +44,7 @@ export function InsightTooltip({
       </Trigger>
       <span
         role="tooltip"
-        className="absolute left-0 top-full z-50 mt-2 hidden w-72 max-w-[calc(100vw-2rem)] rounded-md border border-galaxy-gold/40 bg-galaxy-charcoal p-3 text-left text-xs leading-5 text-galaxy-muted shadow-xl shadow-black/35 group-focus-within:block group-hover:block"
+        className="absolute left-0 top-full z-50 mt-2 hidden w-72 max-w-[calc(100vw-2rem)] rounded-[9px] border border-galaxy-gold/35 bg-[#120d22]/95 p-3 text-left text-xs leading-5 text-galaxy-muted shadow-xl shadow-black/35 backdrop-blur group-focus-within:block group-hover:block"
       >
         <span className="block font-semibold text-galaxy-cream">{title}</span>
         {lines.map((line) => (

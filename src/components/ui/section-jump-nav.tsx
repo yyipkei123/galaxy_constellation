@@ -24,7 +24,7 @@ export function SectionJumpNav({
     <nav
       aria-label={label}
       className={clsx(
-        'sticky top-0 z-30 -mx-3 border-y border-galaxy-border bg-galaxy-ink/95 px-3 py-2 backdrop-blur sm:-mx-5 sm:px-5 md:top-0 md:-mx-[26px] md:px-[26px] lg:static lg:mx-0 lg:rounded-lg lg:border lg:bg-galaxy-charcoal/60 lg:px-3',
+        'sticky top-0 z-30 -mx-3 border-y border-galaxy-gold/15 bg-galaxy-ink/95 px-3 py-2 backdrop-blur sm:-mx-5 sm:px-5 md:top-0 md:-mx-[26px] md:px-[26px] lg:static lg:mx-0 lg:rounded-[9px] lg:border lg:bg-white/[0.025] lg:px-3',
         className,
       )}
     >
@@ -38,10 +38,10 @@ export function SectionJumpNav({
               href={`#${item.id}`}
               aria-current={isCurrent ? 'true' : undefined}
               className={clsx(
-                'shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold transition focus:outline-none focus:ring-2 focus:ring-galaxy-gold',
+                'shrink-0 rounded-[8px] border px-3 py-1.5 text-xs font-semibold transition focus:outline-none focus:ring-2 focus:ring-galaxy-gold',
                 isCurrent
                   ? 'border-galaxy-gold bg-galaxy-gold text-galaxy-ink'
-                  : 'border-galaxy-border bg-galaxy-charcoal/80 text-galaxy-muted hover:border-galaxy-gold/70 hover:text-galaxy-cream',
+                  : 'border-galaxy-gold/20 bg-white/[0.025] text-galaxy-muted hover:border-galaxy-gold/70 hover:text-galaxy-cream',
               )}
             >
               {item.label}

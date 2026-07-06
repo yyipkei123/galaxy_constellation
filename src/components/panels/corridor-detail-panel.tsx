@@ -31,18 +31,18 @@ export function CorridorDetailPanel({ corridor }: { corridor: Corridor }) {
             title="Recommended offer + KV brief"
             description={dominantPersona.kvBrief}
           />
-          <p className="mt-5 rounded-lg border border-galaxy-gold/30 bg-galaxy-gold/10 p-4 text-sm font-semibold leading-6 text-galaxy-cream">
+          <p className="galaxy-panel-accent mt-5 p-4 text-sm font-semibold leading-6 text-galaxy-cream">
             {dominantPersona.recommendedOffer}
           </p>
           <Link
             href={`/acquisition?corridor=${corridor.id}&persona=${dominantPersona.persona}`}
-            className="mt-5 inline-flex rounded-md bg-galaxy-gold px-4 py-2 text-sm font-semibold text-galaxy-ink hover:bg-galaxy-gold-lite"
+            className="galaxy-cta-primary mt-5"
           >
             Generate campaign content
           </Link>
           <Link
             href="/segments"
-            className="mt-3 inline-flex rounded-md border border-galaxy-border px-4 py-2 text-sm font-semibold text-galaxy-cream hover:border-galaxy-gold"
+            className="galaxy-cta-secondary mt-3"
           >
             View on-property segments
           </Link>
@@ -58,7 +58,7 @@ export function CorridorDetailPanel({ corridor }: { corridor: Corridor }) {
         <div className="mt-5 grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-[20rem_minmax(0,1fr)]">
           <div className="space-y-5">
             <GamingSplitBar corridor={corridor} />
-            <div className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">
+            <div className="galaxy-tile p-4">
               <p className="text-xs uppercase tracking-[0.16em] text-galaxy-muted">Same-card visit frequency index</p>
               <div className="mt-3 text-2xl font-semibold text-galaxy-cream">
                 <InsightTooltip

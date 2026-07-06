@@ -37,7 +37,7 @@ export function GuestProfileHeader({ guest }: { guest: Guest }) {
   const leadScore = safeScore(guest?.leadScore);
 
   return (
-    <section className="rounded-2xl border border-galaxy-gold/30 bg-galaxy-charcoal/65 p-5 shadow-[0_0_44px_rgba(201,164,92,0.13)] sm:p-6">
+    <section className="galaxy-hero-panel p-5 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-6">
         <div className="min-w-0">
           <p className="break-words font-mono text-sm text-galaxy-gold">{guestId}</p>
@@ -48,7 +48,7 @@ export function GuestProfileHeader({ guest }: { guest: Guest }) {
           <div className="mt-4 flex flex-wrap gap-2">
             <TierBadge tier={tier} />
             <CdeChip />
-            <span className="rounded-full border border-galaxy-border px-2.5 py-1 text-xs text-galaxy-muted">
+            <span className="rounded-[7px] border border-galaxy-gold/20 bg-white/[0.025] px-2.5 py-1 text-xs text-galaxy-muted">
               matched via CDE
             </span>
           </div>

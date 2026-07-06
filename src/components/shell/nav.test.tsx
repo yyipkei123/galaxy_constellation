@@ -64,7 +64,7 @@ describe('Nav', () => {
     render(<Nav />);
 
     expect(screen.getByRole('link', { name: /Guests/i })).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByText('Cotai wallet view')).toBeInTheDocument();
+    expect(screen.queryByText('Cotai wallet view')).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /Source Markets/i })).not.toBeInTheDocument();
   });
 
@@ -83,6 +83,6 @@ describe('Nav', () => {
 
     expect(screen.getByRole('link', { name: 'Overview' })).toHaveTextContent('01');
     expect(screen.getByRole('link', { name: 'Wallet' })).toHaveTextContent('03');
-    expect(screen.getByText('Cotai wallet view')).toBeInTheDocument();
+    expect(screen.queryByText('Cotai wallet view')).not.toBeInTheDocument();
   });
 });

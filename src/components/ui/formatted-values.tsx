@@ -26,7 +26,7 @@ export const indexSignalBands: IndexSignalBand[] = [
     range: '<90',
     label: 'Low signal',
     description: 'Below matched-cohort baseline',
-    className: 'border-galaxy-border bg-galaxy-ink/65 text-galaxy-muted',
+    className: 'border-galaxy-gold/20 bg-white/[0.025] text-galaxy-muted',
   },
   {
     range: '90-109',
@@ -118,14 +118,14 @@ export function BandValue({ value }: { value: string }) {
 
 export function IndexSignalLegend() {
   return (
-    <div className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">
+    <div className="galaxy-tile p-4">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">CDE index legend</p>
       <p className="mt-2 text-sm leading-6 text-galaxy-muted">
         100 = matched-cohort baseline. Indices compare modelled CDE signals; they are not customer counts.
       </p>
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
         {indexSignalBands.map((band) => (
-          <div key={band.range} className={`rounded-lg border px-3 py-2 ${band.className}`}>
+          <div key={band.range} className={`rounded-[9px] border px-3 py-2 ${band.className}`}>
             <p className="text-sm font-semibold">{band.range}</p>
             <p className="mt-1 text-xs font-semibold">{band.label}</p>
             <p className="mt-1 text-xs opacity-80">{band.description}</p>

@@ -27,10 +27,10 @@ export function PageHeader({
       aria-labelledby={titleId}
       data-variant={variant}
       className={clsx(
-        'galaxy-glass-panel border border-white/10',
+        isHero ? 'galaxy-hero-panel' : 'galaxy-panel',
         isHero
-          ? 'rounded-[20px] border-galaxy-gold/25 px-5 py-7 sm:px-6 md:px-8 md:py-8'
-          : 'rounded-[18px] px-4 py-5 sm:px-5 md:px-6',
+          ? 'px-5 py-7 sm:px-6 md:px-8 md:py-8'
+          : 'px-4 py-5 sm:px-5 md:px-6',
         className,
       )}
     >
@@ -58,7 +58,7 @@ export function PageHeader({
           </div>
         </div>
         {aside ? (
-          <div className="rounded-[14px] border border-galaxy-gold/25 bg-galaxy-ink/45 p-4 text-sm leading-6 text-galaxy-muted">
+          <div className="galaxy-tile p-4 text-sm leading-6 text-galaxy-muted">
             {aside}
           </div>
         ) : null}

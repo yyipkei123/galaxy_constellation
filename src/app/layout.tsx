@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Cormorant_Garamond, Geist, Geist_Mono } from 'next/font/google';
+import { Cormorant_Garamond, Geist_Mono, Manrope } from 'next/font/google';
 import { AppShell } from '@/components/shell/app-shell';
 import { Providers } from './providers';
 import './globals.css';
@@ -10,7 +10,7 @@ const display = Cormorant_Garamond({
   variable: '--font-galaxy-display',
 });
 
-const sans = Geist({
+const sans = Manrope({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
   variable: '--font-galaxy-sans',

@@ -7,7 +7,7 @@ export function PersonaAffinityChart({ corridor }: { corridor: Corridor }) {
   return (
     <div className="space-y-3">
       {corridor.personas.map((persona) => (
-        <article key={persona.persona} className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">
+        <article key={persona.persona} className="galaxy-tile p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="font-semibold text-galaxy-cream">{persona.label}</p>

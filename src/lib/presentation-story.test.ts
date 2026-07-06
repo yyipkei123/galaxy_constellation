@@ -1,6 +1,7 @@
 import { topPriorityGuests } from '@/data';
 
 import {
+  boardroomDemoStops,
   mainPresenterTourStops,
   presentationSteps,
   resolvePresentationStep,
@@ -55,6 +56,26 @@ describe('presentation story model', () => {
       '/measurement',
       '/governance',
     ]);
+  });
+
+  it('derives the compact boardroom demo stops from the presenter story source', () => {
+    expect(boardroomDemoStops.map((step) => step.id)).toEqual([
+      'overview',
+      'wallet',
+      'activation',
+      'measurement',
+      'governance',
+    ]);
+    expect(boardroomDemoStops.map((step) => step.href)).toEqual([
+      '/',
+      '/wallet',
+      '/activation',
+      '/measurement',
+      '/governance',
+    ]);
+    expect(boardroomDemoStops[0].title).toBe(resolvePresentationStep('/').title);
+    expect(boardroomDemoStops[0].note).toBe(resolvePresentationStep('/').tourSummary);
+    expect(boardroomDemoStops[3].note).toBe(resolvePresentationStep('/measurement').tourSummary);
   });
 
   it('links the guest priority step to the current top Customer 360', () => {

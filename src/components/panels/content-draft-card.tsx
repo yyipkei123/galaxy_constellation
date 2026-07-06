@@ -37,7 +37,7 @@ export function ContentDraftCard({ draft, onLaunch }: ContentDraftCardProps) {
           <button
             type="button"
             onClick={onLaunch}
-            className="h-10 rounded-md bg-galaxy-gold px-4 text-sm font-semibold text-galaxy-ink transition hover:bg-galaxy-gold/90 focus:outline-none focus:ring-2 focus:ring-galaxy-gold"
+            className="galaxy-cta-primary h-10"
           >
             Launch campaign
           </button>
@@ -56,8 +56,8 @@ export function ContentDraftCard({ draft, onLaunch }: ContentDraftCardProps) {
             onClick={() => setSelectedLanguage(language)}
             className={
               activeLanguage === language
-                ? 'rounded border border-galaxy-gold bg-galaxy-gold px-3 py-1.5 text-xs font-semibold text-galaxy-ink'
-                : 'rounded border border-galaxy-border bg-galaxy-ink/40 px-3 py-1.5 text-xs font-semibold text-galaxy-gold transition hover:border-galaxy-gold/60 focus:outline-none focus:ring-2 focus:ring-galaxy-gold'
+                ? 'rounded-[7px] border border-galaxy-gold bg-galaxy-gold px-3 py-1.5 text-xs font-semibold text-galaxy-ink'
+                : 'rounded-[7px] border border-galaxy-gold/20 bg-white/[0.025] px-3 py-1.5 text-xs font-semibold text-galaxy-gold transition hover:border-galaxy-gold/60 focus:outline-none focus:ring-2 focus:ring-galaxy-gold'
             }
           >
             {language}
@@ -72,11 +72,11 @@ export function ContentDraftCard({ draft, onLaunch }: ContentDraftCardProps) {
         className="mt-5 grid gap-4 lg:grid-cols-2"
       >
         {selectedVariants.map((variant) => (
-          <article key={variant.id} className="rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">
+          <article key={variant.id} className="galaxy-tile p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Variant {variant.id}</p>
             <h3 className="mt-3 font-sans text-lg font-semibold text-galaxy-cream">{variant.subject}</h3>
             <p className="mt-3 text-sm leading-6 text-galaxy-muted">{variant.body}</p>
-            <div className="mt-4 rounded-lg border border-galaxy-gold/30 bg-galaxy-gold/10 p-3">
+            <div className="galaxy-panel-accent mt-4 p-3">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Guardrail</p>
               <p className="mt-2 text-sm font-semibold leading-6 text-galaxy-cream">{variant.guardrail}</p>
             </div>
@@ -85,7 +85,7 @@ export function ContentDraftCard({ draft, onLaunch }: ContentDraftCardProps) {
       </div>
       <ol className="mt-5 flex flex-wrap gap-2 text-xs text-galaxy-muted">
         {draft.versionHistory.map((item) => (
-          <li key={item} className="rounded border border-galaxy-border px-2 py-1">
+          <li key={item} className="rounded-[7px] border border-galaxy-gold/20 bg-white/[0.025] px-2 py-1">
             {item}
           </li>
         ))}

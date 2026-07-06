@@ -36,7 +36,7 @@ export function WalletOrbit({ guest }: { guest: Guest }) {
   const indexByCategory = isRecord(cde.categoryWalletIndex) ? cde.categoryWalletIndex : {};
 
   return (
-    <figure aria-label="Wallet orbit" className="rounded-2xl border border-galaxy-border bg-galaxy-charcoal/60 p-5">
+    <figure aria-label="Wallet orbit" className="galaxy-panel p-5">
       <figcaption className="flex items-center justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-galaxy-gold">Wallet orbit</p>
@@ -52,7 +52,7 @@ export function WalletOrbit({ guest }: { guest: Guest }) {
           const walletIndex = safeIndex(categoryValue(indexByCategory, category));
 
           return (
-            <div key={category} className="rounded-lg border border-galaxy-border bg-galaxy-ink/45 p-3">
+            <div key={category} className="galaxy-tile p-3">
               <div className="flex items-center justify-between gap-3 text-sm">
                 <span className="font-semibold text-galaxy-cream">{categoryLabels[category]}</span>
                 <span className="text-galaxy-muted">

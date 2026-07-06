@@ -100,7 +100,7 @@ export function PurchaseHistoryPanel({ guest }: { guest: Guest }) {
   const purchaseHistory = safePurchases(guest?.purchaseHistory);
 
   return (
-    <section className="rounded-2xl border border-galaxy-border bg-galaxy-charcoal/65 p-5">
+    <section className="galaxy-panel p-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-galaxy-gold">
@@ -113,7 +113,7 @@ export function PurchaseHistoryPanel({ guest }: { guest: Guest }) {
             Internal Galaxy history is shown as categories, bands, service signals, and dates without itemized amounts.
           </p>
         </div>
-        <span className="rounded border border-galaxy-border px-2 py-1 text-xs font-semibold text-galaxy-muted">
+        <span className="rounded-[7px] border border-galaxy-gold/20 bg-white/[0.025] px-2 py-1 text-xs font-semibold text-galaxy-muted">
           Galaxy first-party
         </span>
       </div>
@@ -126,7 +126,7 @@ export function PurchaseHistoryPanel({ guest }: { guest: Guest }) {
               {stayHistory.map((stay, index) => (
                 <li
                   key={`${index}-${safeText(stay.id, safeText(stay.periodLabel, 'stay'))}`}
-                  className="min-w-0 rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-3 text-sm"
+                  className="galaxy-tile min-w-0 p-3 text-sm"
                 >
                   <p className="break-words font-semibold text-galaxy-cream">
                     {safeText(stay.periodLabel, 'Stay period')}
@@ -143,7 +143,7 @@ export function PurchaseHistoryPanel({ guest }: { guest: Guest }) {
               ))}
             </ol>
           ) : (
-            <p className="mt-3 break-words rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-3 text-sm text-galaxy-muted">
+            <p className="galaxy-tile mt-3 break-words p-3 text-sm text-galaxy-muted">
               No stay history available
             </p>
           )}
@@ -156,13 +156,13 @@ export function PurchaseHistoryPanel({ guest }: { guest: Guest }) {
               {purchaseHistory.map((purchase, index) => (
                 <li
                   key={`${index}-${safeText(purchase.id, safeText(purchase.periodLabel, 'purchase'))}`}
-                  className="min-w-0 rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-3 text-sm"
+                  className="galaxy-tile min-w-0 p-3 text-sm"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <p className="min-w-0 break-words font-semibold text-galaxy-cream">
                       {safeText(purchase.itemLabel, 'Purchase signal')}
                     </p>
-                    <span className="rounded border border-galaxy-border px-2 py-0.5 text-xs text-galaxy-muted">
+                    <span className="rounded-[7px] border border-galaxy-gold/20 bg-white/[0.025] px-2 py-0.5 text-xs text-galaxy-muted">
                       {ticketBandLabel(purchase.ticketBand)}
                     </span>
                   </div>
@@ -179,7 +179,7 @@ export function PurchaseHistoryPanel({ guest }: { guest: Guest }) {
               ))}
             </ul>
           ) : (
-            <p className="mt-3 break-words rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-3 text-sm text-galaxy-muted">
+            <p className="galaxy-tile mt-3 break-words p-3 text-sm text-galaxy-muted">
               No purchase history available
             </p>
           )}

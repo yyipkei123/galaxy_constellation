@@ -1,3 +1,5 @@
+import { boardroomDemoStops, type BoardroomDemoStop } from '@/lib/presentation-story';
+
 export type RedesignPageId =
   | 'overview'
   | 'journey'
@@ -251,6 +253,31 @@ export type RedesignQuarterLabel = keyof typeof redesignQuarterData;
 
 export type RedesignModelSegment = RedesignSegment;
 
+export type RedesignAiAnswerKey = 'explain' | 'trust' | 'brief';
+
+export interface RedesignAiPanel {
+  defaultAnswer: string;
+  inputPlaceholder: string;
+  answers: Record<RedesignAiAnswerKey, string>;
+  chips: Array<{ key: RedesignAiAnswerKey; label: string }>;
+  starterPrompts: Array<{ key: RedesignAiAnswerKey; label: string }>;
+  evidenceRows: Array<{ label: string; value: string }>;
+  links: Array<{ label: string; href: string }>;
+}
+
+export type MeasurementDecisionAction = 'Scale' | 'Revise' | 'Hold';
+
+export interface MeasurementDecision {
+  campaignName: string;
+  action: MeasurementDecisionAction;
+  rationale: string;
+  confidence: string;
+  nextStep: string;
+  color: string;
+  border: string;
+  bg: string;
+}
+
 export interface ConstellationRedesignModel {
   pageId: RedesignPageId;
   screenLabel: string;
@@ -258,6 +285,7 @@ export interface ConstellationRedesignModel {
   quarter: RedesignQuarterData & { label: RedesignQuarterLabel };
   quarterKeys: RedesignQuarterLabel[];
   previousQuarterLabel: RedesignQuarterLabel | null;
+  demoStops: BoardroomDemoStop[];
   navItems: Array<RedesignNavItem & { active: boolean; headerDisplay: 'block' | 'none' }>;
   quarterPills: Array<{ label: RedesignQuarterLabel; selected: boolean; color: string }>;
   selectedSegment: RedesignModelSegment;
@@ -313,9 +341,7 @@ export interface ConstellationRedesignModel {
   windowNote: string;
   briefFacts: Array<{ label: string; value: string }>;
   briefCopy: string;
-  aiAnswers: Record<'explain' | 'trust' | 'brief', string>;
-  aiChips: Array<{ key: 'explain' | 'trust' | 'brief'; label: string }>;
-  aiAnswer: string;
+  aiPanel: RedesignAiPanel;
   segmentChips: Array<{ id: string; label: string; selected: boolean }>;
   journeyStages: Array<{
     num: string;
@@ -362,8 +388,19 @@ export interface ConstellationRedesignModel {
     sColor: string;
     sBorder: string;
     note: string;
+    decision: MeasurementDecision;
   }>;
+  measurementDecisions: MeasurementDecision[];
+  measurementDecisionSummary: MeasurementDecision;
   measureCounts: Array<{ v: string; label: string; sub: string; color: string }>;
+  activationHandoff: {
+    audience: string;
+    cohort: string;
+    offer: string;
+    window: string;
+    proof: string;
+    href: string;
+  };
   reach: number;
   depth: number;
   simulation: {
@@ -392,6 +429,7 @@ const ACCENT = '#D4AF5E';
 const CATEGORY_ORDER: RedesignCategory[] = ['Hospitality', 'Dining', 'Entertainment', 'Retail/Luxury'];
 const CHANNEL_ORDER = ['App push', 'CRM email', 'Paid social', 'Concierge / VIP host'];
 const WINDOW_OPTIONS = [4, 6, 8];
+const MEASUREMENT_SCALE_THRESHOLD_IDX = 6;
 
 const catBase: Record<RedesignCategory, number> = {
   Hospitality: 50,
@@ -402,16 +440,16 @@ const catBase: Record<RedesignCategory, number> = {
 
 export const redesignPageTitles = {
   overview: 'Wallet intelligence cockpit',
-  journey: 'Segment journey',
-  wallet: 'Wallet intelligence',
+  journey: 'Guest journey',
+  wallet: 'Wallet split',
   segments: 'Segment rankings',
-  guests: 'Matched guest universe',
-  leakage: 'Leakage control tower',
-  propensity: 'Propensity ladder',
-  activation: 'Activation planning',
+  guests: 'Matched guests',
+  leakage: 'Wallet leakage',
+  propensity: 'Propensity & audiences',
+  activation: 'Campaign activation',
   simulate: 'Scenario simulator',
   measurement: 'Campaign measurement',
-  marketscan: 'Market context',
+  marketscan: 'Market scan',
   governance: 'Governance & CDE rules',
 } satisfies Record<RedesignPageId, string>;
 
@@ -525,6 +563,81 @@ function toModelSegment(segment: RawRedesignSegment): RedesignModelSegment {
 
 function selectedChannels(channels: Record<string, boolean>): string[] {
   return CHANNEL_ORDER.filter((channel) => channels[channel]);
+}
+
+function liftIndexValue(lift: string): number | null {
+  const match = lift.match(/([+-]?\d+)\s*idx/i);
+
+  return match ? Number.parseInt(match[1], 10) : null;
+}
+
+function decisionStyle(action: MeasurementDecisionAction) {
+  if (action === 'Scale') {
+    return { color: '#6FBF8F', border: 'rgba(111,191,143,0.42)', bg: 'rgba(111,191,143,0.11)' };
+  }
+
+  if (action === 'Revise') {
+    return { color: '#EAD9A9', border: 'rgba(212,175,94,0.42)', bg: 'rgba(212,175,94,0.1)' };
+  }
+
+  return { color: '#B5AFC0', border: 'rgba(139,133,152,0.36)', bg: 'rgba(139,133,152,0.1)' };
+}
+
+function buildMeasurementDecision(readout: { name: string; lift: string; status: string }): MeasurementDecision {
+  const liftValue = liftIndexValue(readout.lift);
+
+  if (readout.status !== 'READ COMPLETE' || liftValue == null) {
+    const style = decisionStyle('Hold');
+    const isQueued = readout.status === 'QUEUED';
+
+    return {
+      campaignName: readout.name,
+      action: 'Hold',
+      rationale: isQueued
+        ? 'Hold until governance sign-off and launch sequencing are complete.'
+        : 'Hold until the matched-holdout read lands at the next CDE refresh.',
+      confidence: isQueued ? 'Governance pending' : 'Read pending',
+      nextStep: isQueued
+        ? 'Complete governance sign-off before campaign exposure.'
+        : 'Keep the campaign in flight and review after refresh.',
+      ...style,
+    };
+  }
+
+  if (liftValue >= MEASUREMENT_SCALE_THRESHOLD_IDX) {
+    return {
+      campaignName: readout.name,
+      action: 'Scale',
+      rationale: `The +${liftValue} idx read is above the governed scale threshold of +${MEASUREMENT_SCALE_THRESHOLD_IDX} idx.`,
+      confidence: 'Scale-ready confidence',
+      nextStep: 'Scale to the next eligible cohort band while keeping matched-holdout readout active.',
+      ...decisionStyle('Scale'),
+    };
+  }
+
+  return {
+    campaignName: readout.name,
+    action: 'Revise',
+    rationale: `The +${liftValue} idx read is inside the holdout decision band and below the +${MEASUREMENT_SCALE_THRESHOLD_IDX} idx scale threshold.`,
+    confidence: 'Retest confidence',
+    nextStep: 'Revise offer depth or channel mix, then retest before wider scale.',
+    ...decisionStyle('Revise'),
+  };
+}
+
+function summarizeMeasurementDecisions(decisions: MeasurementDecision[]): MeasurementDecision {
+  return (
+    decisions.find((decision) => decision.action === 'Scale') ??
+    decisions.find((decision) => decision.action === 'Revise') ??
+    decisions[0] ?? {
+      campaignName: 'Measurement readout',
+      action: 'Hold',
+      rationale: 'Hold until a governed campaign readout is available.',
+      confidence: 'Read pending',
+      nextStep: 'Launch a measured campaign before scaling.',
+      ...decisionStyle('Hold'),
+    }
+  );
 }
 
 export function buildConstellationRedesignModel(input: RedesignBuildInput): ConstellationRedesignModel {
@@ -710,7 +823,7 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput): Cons
     `holdout over ${windowWeeks} weeks, reported as banded ranges and indices only. Modelled wallet band: ` +
     `${selectedSegment.wallet} /mo; propensity band ${selectedPropensityBand}.`;
 
-  const aiAnswers = {
+  const baseAiAnswers: Record<RedesignAiAnswerKey, string> = {
     explain:
       `The ${quarterLabel} ranking leads with ${selectedSegment.name}: opportunity index ${selectedSegment.idx} ` +
       `vs the matched-cohort baseline of 100, ${selectedSegment.leak}% ${selectedSegment.cat} leakage, ` +
@@ -726,10 +839,23 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput): Cons
       'leakage. Validate against the next CDE refresh before scaling.',
   };
 
-  const aiChips: ConstellationRedesignModel['aiChips'] = [
+  const baseAiChips: RedesignAiPanel['chips'] = [
     { key: 'explain', label: 'Explain the ranking' },
     { key: 'trust', label: 'Why trust it?' },
     { key: 'brief', label: 'Build a brief' },
+  ];
+  const baseAiStarterPrompts: RedesignAiPanel['starterPrompts'] = [
+    { key: 'explain', label: 'Which segment leaks most?' },
+    { key: 'trust', label: 'Why is this CDE-safe?' },
+    { key: 'brief', label: 'Draft boardroom brief' },
+  ];
+  const segmentAiEvidenceRows: RedesignAiPanel['evidenceRows'] = [
+    { label: 'Selected segment', value: selectedSegment.name },
+    { label: 'Opportunity index', value: String(selectedSegment.idx) },
+    { label: 'Top leakage', value: `${selectedSegment.leak}% ${selectedSegment.cat}` },
+    { label: 'Wallet band', value: `${selectedSegment.wallet} equiv./mo` },
+    { label: 'Matched coverage', value: `${qd.coverage}%` },
+    { label: 'Refresh', value: quarterLabel },
   ];
 
   const segmentChips = rawRedesignSegments.map((segment) => ({
@@ -817,7 +943,7 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput): Cons
     ? 'App push first, CRM email as reinforcement; this cohort is mobile-ready with strong in-stay engagement.'
     : 'CRM email first with concierge follow-up; this cohort under-indexes on app engagement.';
 
-  const readouts = [
+  const readoutDrafts = [
     {
       name: 'Michelin retail cross-sell pilot',
       aud: 'Cosmopolitan Connoisseurs',
@@ -863,11 +989,25 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput): Cons
       note: 'Launches after governance sign-off.',
     },
   ];
+  const measurementDecisions = readoutDrafts.map(buildMeasurementDecision);
+  const measurementDecisionSummary = summarizeMeasurementDecisions(measurementDecisions);
+  const readouts = readoutDrafts.map((readout, index) => ({
+    ...readout,
+    decision: measurementDecisions[index],
+  }));
   const measureCounts = [
     { v: '2', label: 'Reads complete', sub: 'Both above or within the holdout band', color: '#6FBF8F' },
     { v: '1', label: 'In flight', sub: 'Read lands at next refresh', color: '#EAD9A9' },
     { v: '1', label: 'Queued', sub: 'Awaiting governance sign-off', color: '#8B8598' },
   ];
+  const activationHandoff: ConstellationRedesignModel['activationHandoff'] = {
+    audience: selectedSegment.name,
+    cohort: `${selectedSegment.matched} matched guests`,
+    offer: selectedSegment.offer,
+    window: `${windowWeeks} weeks vs matched holdout`,
+    proof: `Index ${selectedSegment.idx} / ${selectedSegment.leak}% ${selectedSegment.cat} leakage`,
+    href: '/measurement',
+  };
 
   const liftLo = Math.max(1, Math.round(selectedSegment.leak * (reachPct / 100) * (depthPct / 100) * 1.6));
   const liftHi = liftLo + Math.max(2, Math.round(liftLo * 0.7));
@@ -939,6 +1079,151 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput): Cons
     sColor: key === '2026 Q2' ? '#6FBF8F' : '#8B8598',
     sBorder: key === '2026 Q2' ? 'rgba(111,191,143,0.4)' : 'rgba(139,133,152,0.3)',
   }));
+  const aiPanelBase: RedesignAiPanel = {
+    defaultAnswer:
+      `Ask for an explanation, trust rationale, or a CDE-safe campaign brief for ${selectedSegment.name}.`,
+    inputPlaceholder: `Ask about ${selectedSegment.name}…`,
+    answers: baseAiAnswers,
+    chips: baseAiChips,
+    starterPrompts: baseAiStarterPrompts,
+    evidenceRows: segmentAiEvidenceRows,
+    links: [{ label: 'Open wallet evidence', href: '/wallet' }],
+  };
+  const aiPanelByRoute: Partial<Record<RedesignPageId, RedesignAiPanel>> = {
+    wallet: {
+      defaultAnswer:
+        `Wallet gap for ${selectedSegment.name}: average on-property share is ${onAvg}% and the widest ` +
+        `recapture lane is ${selectedSegment.leak}% ${selectedSegment.cat}; modelled wallet band ${selectedSegment.wallet} /mo.`,
+      inputPlaceholder: 'Ask about wallet split…',
+      answers: {
+        explain:
+          `The wallet split shows ${selectedSegment.name} at ${onAvg}% average on-property share, with ` +
+          `${selectedSegment.leak}% ${selectedSegment.cat} leakage and a ${selectedSegment.wallet} /mo governed band.`,
+        trust:
+          `Wallet evidence is cohort-level: ${qd.coverage}% matched coverage, category percentages, indices and ` +
+          'modelled bands only.',
+        brief:
+          `Recapture brief: start with ${selectedSegment.cat}, use ${selectedSegment.offer.toLowerCase()}, and read ` +
+          `capture-index lift over ${windowWeeks} weeks before scale.`,
+      },
+      chips: [
+        { key: 'explain', label: 'Explain wallet gap' },
+        { key: 'trust', label: 'Why trust it?' },
+        { key: 'brief', label: 'Build recapture brief' },
+      ],
+      starterPrompts: [
+        { key: 'explain', label: 'Where is the gap?' },
+        { key: 'trust', label: 'Why is this CDE-safe?' },
+        { key: 'brief', label: 'Draft recapture brief' },
+      ],
+      evidenceRows: [
+        { label: 'Average on-property share', value: `${onAvg}%` },
+        { label: 'Widest category gap', value: `${selectedSegment.leak}% ${selectedSegment.cat}` },
+        { label: 'Addressable wallet band', value: `${selectedSegment.wallet} /mo` },
+        { label: 'Matched cohort', value: `${selectedSegment.matched} guests` },
+      ],
+      links: [{ label: 'Open activation handoff', href: '/activation' }],
+    },
+    activation: {
+      defaultAnswer:
+        `Campaign handoff for ${selectedSegment.name}: ${activationHandoff.cohort} receive ` +
+        `${activationHandoff.offer.toLowerCase()} via ${channelSummary}, then read over ${activationHandoff.window}.`,
+      inputPlaceholder: 'Ask about campaign handoff…',
+      answers: {
+        explain:
+          `Activation is ready for ${activationHandoff.audience}: ${activationHandoff.cohort}, ` +
+          `${activationHandoff.offer}, ${activationHandoff.window}.`,
+        trust:
+          'The handoff stays CDE-safe because it uses cohort bands, selected channel scope and matched-holdout measurement.',
+        brief:
+          `Draft brief for ${activationHandoff.audience}: launch ${activationHandoff.offer.toLowerCase()}, ` +
+          `measure ${activationHandoff.window}, and use ${activationHandoff.proof.toLowerCase()} as the proof point.`,
+      },
+      chips: [
+        { key: 'explain', label: 'Explain handoff' },
+        { key: 'trust', label: 'Why trust it?' },
+        { key: 'brief', label: 'Draft board note' },
+      ],
+      starterPrompts: [
+        { key: 'explain', label: 'Summarize handoff' },
+        { key: 'trust', label: 'Why is this CDE-safe?' },
+        { key: 'brief', label: 'Draft board note' },
+      ],
+      evidenceRows: [
+        { label: 'Audience', value: activationHandoff.audience },
+        { label: 'Selected channels', value: channelSummary },
+        { label: 'Window', value: activationHandoff.window },
+        { label: 'Proof', value: activationHandoff.proof },
+      ],
+      links: [{ label: 'Open measurement proof', href: '/measurement' }],
+    },
+    measurement: {
+      defaultAnswer:
+        `${measurementDecisionSummary.action} ${measurementDecisionSummary.campaignName}: ` +
+        `${measurementDecisionSummary.rationale} Next step: ${measurementDecisionSummary.nextStep}`,
+      inputPlaceholder: 'Ask about measurement decision…',
+      answers: {
+        explain:
+          `${measurementDecisionSummary.action} ${measurementDecisionSummary.campaignName}: ` +
+          `${measurementDecisionSummary.rationale}`,
+        trust:
+          'Measurement decisions use campaign status, capture-index lift vs matched holdout, and governed decision thresholds only.',
+        brief:
+          `Boardroom note: ${measurementDecisionSummary.action.toLowerCase()} ${measurementDecisionSummary.campaignName}. ` +
+          `${measurementDecisionSummary.nextStep}`,
+      },
+      chips: [
+        { key: 'explain', label: 'Explain decision' },
+        { key: 'trust', label: 'Why trust it?' },
+        { key: 'brief', label: 'Draft board note' },
+      ],
+      starterPrompts: [
+        { key: 'explain', label: 'What should scale?' },
+        { key: 'trust', label: 'Why is this CDE-safe?' },
+        { key: 'brief', label: 'Draft board note' },
+      ],
+      evidenceRows: [
+        { label: 'Decision', value: measurementDecisionSummary.action },
+        { label: 'Top readout', value: measurementDecisionSummary.campaignName },
+        { label: 'Confidence', value: measurementDecisionSummary.confidence },
+        { label: 'Next step', value: measurementDecisionSummary.nextStep },
+      ],
+      links: [{ label: 'Open governance basis', href: '/governance' }],
+    },
+    governance: {
+      defaultAnswer:
+        `CDE-safe governance uses ranges, indices, cohort floors and refresh controls for ${qd.coverage}% ` +
+        'matched coverage; never guest-level CDE values.',
+      inputPlaceholder: 'Ask about governance basis…',
+      answers: {
+        explain:
+          `Governance is anchored on ${rules.length} rules, ${qd.coverage}% matched coverage, quarterly refresh and ` +
+          'cohort-level outputs only.',
+        trust:
+          'Every visible value is a range, index, percentage or cohort band, with no payment event or venue-level detail.',
+        brief:
+          `Trust close: ${rules[0].t}, ${rules[1].t.toLowerCase()}, quarterly refresh and matched-holdout measurement.`,
+      },
+      chips: [
+        { key: 'explain', label: 'Explain rules' },
+        { key: 'trust', label: 'Why trust it?' },
+        { key: 'brief', label: 'Draft trust close' },
+      ],
+      starterPrompts: [
+        { key: 'explain', label: 'Explain CDE rules' },
+        { key: 'trust', label: 'Why is this CDE-safe?' },
+        { key: 'brief', label: 'Draft trust close' },
+      ],
+      evidenceRows: [
+        { label: 'Rules', value: `${rules.length} governed controls` },
+        { label: 'Cohort floor', value: 'Activation-ready bands only' },
+        { label: 'Refresh', value: quarterLabel },
+        { label: 'Coverage', value: `${qd.coverage}% matched coverage` },
+      ],
+      links: [{ label: 'Open wallet evidence', href: '/wallet' }],
+    },
+  };
+  const aiPanel = aiPanelByRoute[pageId] ?? aiPanelBase;
 
   return {
     pageId,
@@ -947,6 +1232,7 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput): Cons
     quarter: { label: quarterLabel, ...qd },
     quarterKeys: [...REDESIGN_QUARTER_KEYS],
     previousQuarterLabel: prevLabel,
+    demoStops: boardroomDemoStops,
     navItems: redesignNavItems.map((item) => ({
       section: item.section,
       label: item.label,
@@ -979,9 +1265,7 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput): Cons
     windowNote,
     briefFacts,
     briefCopy,
-    aiAnswers,
-    aiChips,
-    aiAnswer: 'Choose a guided chip or ask a question for a CDE-safe answer.',
+    aiPanel,
     segmentChips,
     journeyStages,
     weakName: weakStage.name,
@@ -995,7 +1279,10 @@ export function buildConstellationRedesignModel(input: RedesignBuildInput): Cons
     selectedPropensityBand,
     selectedChannelRecommendation,
     readouts,
+    measurementDecisions,
+    measurementDecisionSummary,
     measureCounts,
+    activationHandoff,
     reach: reachPct,
     depth: depthPct,
     simulation,

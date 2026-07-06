@@ -27,7 +27,7 @@ export function SnapshotStatusStrip({
       role="group"
       aria-label="CDE snapshot status"
       className={clsx(
-        'flex max-w-full flex-wrap items-center gap-2 rounded-lg border border-galaxy-border bg-galaxy-ink/45 p-3 text-xs text-galaxy-muted',
+        'galaxy-tile flex max-w-full flex-wrap items-center gap-2 p-3 text-xs text-galaxy-muted',
         className,
       )}
     >
@@ -38,7 +38,7 @@ export function SnapshotStatusStrip({
             'rounded-full border px-2.5 py-1 font-semibold',
             index === 0
               ? 'border-galaxy-gold/50 bg-galaxy-gold/10 text-galaxy-gold'
-              : 'border-galaxy-border bg-galaxy-charcoal/60 text-galaxy-muted',
+              : 'border-galaxy-gold/20 bg-white/[0.025] text-galaxy-muted',
           )}
         >
           {item}

@@ -25,7 +25,7 @@ describe('AppShell', () => {
     );
 
     expect(screen.getByRole('main')).toBeInTheDocument();
-    expect(screen.getByRole('region', { name: 'Client presentation guidance' })).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Client presentation guidance' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Open presenter tour' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Open AI insight assistant' })).not.toBeInTheDocument();
     expect(screen.getByLabelText('test content')).toHaveTextContent('Route content');
@@ -33,7 +33,7 @@ describe('AppShell', () => {
     expect(screen.getByLabelText('Current CDE refresh')).toHaveTextContent('coverage 63%');
     expect(screen.getByText('Constellation')).toBeInTheDocument();
     expect(screen.getByText('Galaxy x Mastercard CDE')).toBeInTheDocument();
-    expect(screen.getByText(/Enriched figures are modelled estimates/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Enriched figures are modelled estimates/i)).not.toBeInTheDocument();
   });
 
   it('identifies compact CDE AI dock routes without matching Customer 360 detail pages', () => {
@@ -62,7 +62,7 @@ describe('AppShell', () => {
     expect(hasCompactCdeAiDock('/acquisition')).toBe(false);
   });
 
-  it('keeps legacy floating controls on routes without the compact CDE AI dock', () => {
+  it('keeps only the legacy AI launcher on routes without the compact CDE AI dock', () => {
     mockPathname = '/guests/MEM-••••3421';
 
     render(
@@ -73,11 +73,11 @@ describe('AppShell', () => {
       </AppStateProvider>,
     );
 
-    expect(screen.getByRole('button', { name: 'Open presenter tour' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Open presenter tour' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Open AI insight assistant' })).toBeInTheDocument();
   });
 
-  it('orders route content before presentation guidance on small screens', () => {
+  it('does not add presentation guidance inside prototype redesigned routes', () => {
     render(
       <AppStateProvider>
         <AppShell>
@@ -86,10 +86,8 @@ describe('AppShell', () => {
       </AppStateProvider>,
     );
 
-    expect(screen.getByRole('region', { name: 'Client presentation guidance' }).parentElement).toHaveClass('order-2');
-    expect(screen.getByRole('region', { name: 'Client presentation guidance' }).parentElement).toHaveClass('md:order-1');
-    expect(screen.getByLabelText('test content').parentElement).toHaveClass('order-1');
-    expect(screen.getByLabelText('test content').parentElement).toHaveClass('md:order-2');
+    expect(screen.queryByRole('region', { name: 'Client presentation guidance' })).not.toBeInTheDocument();
+    expect(screen.getByLabelText('test content')).toHaveTextContent('Route content');
   });
 
   it('keeps the side rail sticky without applying glass positioning to the aside', () => {
@@ -112,6 +110,8 @@ describe('AppShell', () => {
   });
 
   it('keeps presentation guidance while hiding floating controls in presenter mode', () => {
+    mockPathname = '/guests/MEM-••••3421';
+
     render(
       <AppStateProvider>
         <AppShell>
@@ -122,7 +122,7 @@ describe('AppShell', () => {
 
     expect(screen.getByRole('region', { name: 'Client presentation guidance' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Open presenter tour' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Open AI insight assistant' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open AI insight assistant' })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Presenter mode' }));
 

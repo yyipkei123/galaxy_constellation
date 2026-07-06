@@ -72,14 +72,14 @@ export function HostActionSummaryCard({ guest }: { guest: Guest }) {
           </div>
           <Link
             href="/activation"
-            className="inline-flex min-h-11 items-center rounded-lg bg-galaxy-gold px-4 py-2 text-sm font-semibold text-galaxy-ink transition hover:bg-galaxy-gold/90"
+            className="galaxy-cta-primary"
           >
             Move to activation
           </Link>
         </div>
 
         <div className="grid gap-4 lg:grid-cols-4">
-          <article className="rounded-xl border border-galaxy-border bg-galaxy-ink/40 p-4">
+          <article className="galaxy-tile p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
               Why this guest
             </p>
@@ -92,21 +92,21 @@ export function HostActionSummaryCard({ guest }: { guest: Guest }) {
             </p>
           </article>
 
-          <article className="rounded-xl border border-galaxy-border bg-galaxy-ink/40 p-4">
+          <article className="galaxy-tile p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
               What to offer
             </p>
             <p className="mt-3 text-sm font-semibold leading-6 text-galaxy-cream">{offer}</p>
           </article>
 
-          <article className="rounded-xl border border-galaxy-border bg-galaxy-ink/40 p-4">
+          <article className="galaxy-tile p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
               What to say
             </p>
             <p className="mt-3 text-sm leading-6 text-galaxy-muted">{pitchLine}</p>
           </article>
 
-          <article className="rounded-xl border border-galaxy-border bg-galaxy-ink/40 p-4">
+          <article className="galaxy-tile p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
               Evidence
             </p>

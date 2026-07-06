@@ -42,7 +42,7 @@ export function HostBriefingPanel({ guest }: { guest: Guest }) {
 
   return (
     <section id="guest-brief" className="scroll-mt-24">
-      <Panel className="border-galaxy-gold/40 bg-galaxy-gold/10">
+      <Panel className="galaxy-panel-accent">
         <section role="region" aria-label="Host briefing summary">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
@@ -60,7 +60,7 @@ export function HostBriefingPanel({ guest }: { guest: Guest }) {
           </div>
 
           <div className="mt-5 grid gap-4 lg:grid-cols-3">
-            <article className="rounded-lg border border-galaxy-border bg-galaxy-ink/40 p-4">
+            <article className="galaxy-tile p-4">
               <div className="flex items-center gap-2 text-galaxy-gold">
                 <Sparkles aria-hidden="true" className="h-4 w-4" />
                 <p className="text-xs font-semibold uppercase tracking-[0.16em]">Primary opportunity</p>
@@ -71,7 +71,7 @@ export function HostBriefingPanel({ guest }: { guest: Guest }) {
               </p>
             </article>
 
-            <article className="rounded-lg border border-galaxy-border bg-galaxy-ink/40 p-4">
+            <article className="galaxy-tile p-4">
               <div className="flex items-center gap-2 text-galaxy-gold">
                 <CalendarClock aria-hidden="true" className="h-4 w-4" />
                 <p className="text-xs font-semibold uppercase tracking-[0.16em]">Reason to contact now</p>
@@ -81,7 +81,7 @@ export function HostBriefingPanel({ guest }: { guest: Guest }) {
               </p>
             </article>
 
-            <article className="rounded-lg border border-galaxy-border bg-galaxy-ink/40 p-4">
+            <article className="galaxy-tile p-4">
               <div className="flex items-center gap-2 text-galaxy-gold">
                 <ArrowRight aria-hidden="true" className="h-4 w-4" />
                 <p className="text-xs font-semibold uppercase tracking-[0.16em]">Next action</p>

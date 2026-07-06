@@ -81,8 +81,13 @@ describe('constellation redesign model', () => {
 
   it('exposes a shared page-title lookup for shell chrome', () => {
     expect(getRedesignPageTitle('overview')).toBe('Wallet intelligence cockpit');
-    expect(getRedesignPageTitle('journey')).toBe('Segment journey');
-    expect(getRedesignPageTitle('marketscan')).toBe('Market context');
+    expect(getRedesignPageTitle('journey')).toBe('Guest journey');
+    expect(getRedesignPageTitle('wallet')).toBe('Wallet split');
+    expect(getRedesignPageTitle('guests')).toBe('Matched guests');
+    expect(getRedesignPageTitle('leakage')).toBe('Wallet leakage');
+    expect(getRedesignPageTitle('propensity')).toBe('Propensity & audiences');
+    expect(getRedesignPageTitle('activation')).toBe('Campaign activation');
+    expect(getRedesignPageTitle('marketscan')).toBe('Market scan');
   });
 
   it('builds the 2026 Q2 overview model from the prototype controller', () => {
@@ -126,7 +131,7 @@ describe('constellation redesign model', () => {
       label: 'Governance',
       href: '/governance',
     });
-    Object.values(model.aiAnswers).forEach((answer) => {
+    Object.values(model.aiPanel.answers).forEach((answer) => {
       expect(answer).not.toMatch(/\b0\.\d+\b/);
       expect(answer).not.toMatch(/\b\d+\s+active metrics\b/i);
     });
@@ -262,6 +267,98 @@ describe('constellation redesign model', () => {
     expect(model.walletCards[0].value).toBe(`${selectedTrend?.band} /mo`);
     expect(new Set(model.walletTrend.map((item) => item.band)).size).toBeGreaterThan(1);
     expectDisplaySafe(model.walletTrend);
+  });
+
+  it('exposes route-aware CDE AI panel defaults for key demo routes', () => {
+    const baseInput = {
+      quarterLabel: '2026 Q2',
+      selectedSegmentId: 'cc',
+      channels: {
+        'App push': true,
+        'CRM email': true,
+        'Paid social': false,
+        'Concierge / VIP host': false,
+      },
+      windowWeeks: 6,
+      reachPct: 40,
+      depthPct: 15,
+      exported: false,
+    };
+
+    const wallet = buildConstellationRedesignModel({ ...baseInput, pageId: 'wallet' });
+    const activation = buildConstellationRedesignModel({ ...baseInput, pageId: 'activation' });
+    const measurement = buildConstellationRedesignModel({ ...baseInput, pageId: 'measurement' });
+    const governance = buildConstellationRedesignModel({ ...baseInput, pageId: 'governance' });
+
+    expect(wallet.aiPanel.defaultAnswer).toMatch(/wallet gap/i);
+    expect(wallet.aiPanel.inputPlaceholder).toMatch(/wallet split/i);
+    expect(wallet.aiPanel.evidenceRows.map((row) => row.label)).toEqual(expect.arrayContaining([
+      'Average on-property share',
+      'Widest category gap',
+      'Addressable wallet band',
+    ]));
+    expect(wallet.aiPanel.links).toContainEqual({ label: 'Open activation handoff', href: '/activation' });
+
+    expect(activation.aiPanel.defaultAnswer).toMatch(/campaign handoff/i);
+    expect(activation.aiPanel.evidenceRows.map((row) => row.label)).toEqual(expect.arrayContaining([
+      'Selected channels',
+      'Window',
+      'Proof',
+    ]));
+    expect(activation.aiPanel.links).toContainEqual({ label: 'Open measurement proof', href: '/measurement' });
+
+    expect(measurement.aiPanel.defaultAnswer).toMatch(/scale/i);
+    expect(measurement.aiPanel.evidenceRows.map((row) => row.label)).toEqual(expect.arrayContaining([
+      'Decision',
+      'Top readout',
+      'Next step',
+    ]));
+    expect(measurement.aiPanel.links).toContainEqual({ label: 'Open governance basis', href: '/governance' });
+
+    expect(governance.aiPanel.defaultAnswer).toMatch(/CDE-safe governance/i);
+    expect(governance.aiPanel.evidenceRows.map((row) => row.label)).toEqual(expect.arrayContaining([
+      'Rules',
+      'Cohort floor',
+      'Refresh',
+    ]));
+
+    expectDisplaySafe(wallet.aiPanel);
+    expectDisplaySafe(activation.aiPanel);
+    expectDisplaySafe(measurement.aiPanel);
+    expectDisplaySafe(governance.aiPanel);
+  });
+
+  it('derives scale revise and hold measurement decisions from campaign readouts', () => {
+    const model = buildConstellationRedesignModel({
+      pageId: 'measurement',
+      quarterLabel: '2026 Q2',
+      selectedSegmentId: 'cc',
+      channels: {
+        'App push': true,
+        'CRM email': true,
+        'Paid social': false,
+        'Concierge / VIP host': false,
+      },
+      windowWeeks: 6,
+      reachPct: 40,
+      depthPct: 15,
+      exported: false,
+    });
+
+    expect(model.measurementDecisionSummary.action).toBe('Scale');
+    expect(model.measurementDecisionSummary.rationale).toMatch(/above the governed scale threshold/i);
+    expect(model.measurementDecisionSummary.nextStep).toMatch(/scale/i);
+    expect(model.measurementDecisions.map((decision) => [decision.campaignName, decision.action])).toEqual([
+      ['Michelin retail cross-sell pilot', 'Scale'],
+      ['Weekend dining ladder', 'Revise'],
+      ['Ferry arrival retail voucher', 'Hold'],
+      ['Midweek suite upgrade', 'Hold'],
+    ]);
+    model.measurementDecisions.forEach((decision) => {
+      expect(decision.confidence).toMatch(/\S/);
+      expect(decision.nextStep).toMatch(/\S/);
+      expectDisplaySafe(decision);
+    });
   });
 
   it.each<RedesignPageId>([

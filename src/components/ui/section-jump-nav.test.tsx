@@ -59,9 +59,9 @@ describe('SectionJumpNav', () => {
     expect(nav).toHaveClass('md:px-[26px]');
     expect(nav).toHaveClass('lg:static');
     expect(nav).toHaveClass('lg:mx-0');
-    expect(nav).toHaveClass('lg:rounded-lg');
+    expect(nav).toHaveClass('lg:rounded-[9px]');
     expect(nav).toHaveClass('lg:border');
-    expect(nav).toHaveClass('lg:bg-galaxy-charcoal/60');
+    expect(nav).toHaveClass('lg:bg-white/[0.025]');
     expect(nav).toHaveClass('lg:px-3');
     expect(nav).not.toHaveClass('-mx-4');
     expect(nav).not.toHaveClass('px-4');

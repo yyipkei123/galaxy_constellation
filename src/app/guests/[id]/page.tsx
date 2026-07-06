@@ -34,7 +34,7 @@ export default async function GuestDetailPage({ params }: { params: Promise<{ id
         <p className="text-galaxy-muted">Guest profile not found.</p>
         <Link
           href="/guests"
-          className="inline-flex rounded-md bg-galaxy-gold px-4 py-2 text-sm font-semibold text-galaxy-ink"
+          className="galaxy-cta-primary"
         >
           Back to Lead Board
         </Link>

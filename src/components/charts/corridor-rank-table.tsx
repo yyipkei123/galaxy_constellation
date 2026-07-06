@@ -103,9 +103,9 @@ export function CorridorRankTable({
   metric: CorridorMetric;
 }) {
   return (
-    <div>
+    <div className="min-w-0 max-w-full">
       <CorridorIndexBaseline className="mb-3" />
-      <div className="overflow-x-auto">
+      <div className="max-w-full overflow-x-auto overscroll-x-contain">
         <table className="w-full min-w-[64rem] text-left text-sm">
           <caption className="sr-only">Inbound corridor ranking</caption>
           <thead className="text-xs uppercase tracking-[0.16em] text-galaxy-muted">

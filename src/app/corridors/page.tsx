@@ -50,14 +50,14 @@ export default function CorridorsPage() {
               <div
                 role="group"
                 aria-label="Corridor year"
-                className="inline-flex rounded-lg border border-galaxy-border bg-galaxy-ink/40 p-1"
+                className="inline-flex rounded-[9px] border border-galaxy-gold/20 bg-white/[0.025] p-1"
               >
                 {CORRIDOR_YEARS.map((item) => (
                   <button
                     key={item}
                     type="button"
                     aria-pressed={year === item}
-                    className={year === item ? 'rounded-md bg-galaxy-gold px-3 py-1.5 text-sm font-semibold text-galaxy-ink' : 'rounded-md px-3 py-1.5 text-sm font-semibold text-galaxy-muted'}
+                    className={year === item ? 'rounded-[7px] bg-galaxy-gold px-3 py-1.5 text-sm font-semibold text-galaxy-ink' : 'rounded-[7px] px-3 py-1.5 text-sm font-semibold text-galaxy-muted'}
                     onClick={() => setYear(item)}
                   >
                     {item}
@@ -68,7 +68,7 @@ export default function CorridorsPage() {
                 <span className="sr-only">Corridor metric</span>
                 <select
                   aria-label="Corridor metric"
-                  className="h-10 rounded-md border border-galaxy-border bg-galaxy-charcoal px-3 font-semibold text-galaxy-cream"
+                  className="h-10 rounded-[9px] border border-galaxy-gold/20 bg-white/[0.025] px-3 font-semibold text-galaxy-cream"
                   value={metric}
                   onChange={(event) => setMetric(event.target.value as CorridorMetric)}
                 >

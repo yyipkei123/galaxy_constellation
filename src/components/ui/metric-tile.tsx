@@ -10,7 +10,7 @@ interface MetricTileProps {
 
 export function MetricTile({ label, value, detail, className }: MetricTileProps) {
   return (
-    <article className={clsx('rounded-lg border border-galaxy-border bg-galaxy-charcoal/72 p-4', className)}>
+    <article className={clsx('galaxy-tile p-4', className)}>
       <p className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-galaxy-muted">{label}</p>
       <div className="mt-3 font-mono text-2xl font-semibold tabular-nums text-galaxy-cream md:text-3xl">
         {value}

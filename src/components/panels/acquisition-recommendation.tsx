@@ -29,7 +29,7 @@ export function AcquisitionRecommendation({ corridor }: { corridor: Corridor }) 
         description={description}
       />
       {statusTag ? (
-        <p className="mt-4 inline-flex rounded border border-galaxy-gold/40 bg-galaxy-gold/10 px-2 py-1 text-xs font-semibold text-galaxy-gold">
+        <p className="mt-4 inline-flex rounded-[7px] border border-galaxy-gold/35 bg-galaxy-gold/10 px-2 py-1 text-xs font-semibold text-galaxy-gold">
           {statusTag}
         </p>
       ) : null}
@@ -72,7 +72,7 @@ export function AcquisitionRecommendation({ corridor }: { corridor: Corridor }) 
           </div>
         </div>
       </div>
-      <p className="mt-5 rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4 text-sm leading-6 text-galaxy-muted">
+      <p className="galaxy-tile mt-5 p-4 text-sm leading-6 text-galaxy-muted">
         {offerLabel}: {topPersona.recommendedOffer}
       </p>
     </Panel>

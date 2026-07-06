@@ -38,7 +38,7 @@ export function NbaRecommendationCard({ rec }: { rec: NbaRec }) {
   const channel = safeChannel(rec?.channel);
 
   return (
-    <article className="rounded-2xl border border-galaxy-border bg-galaxy-charcoal/65 p-5">
+    <article className="galaxy-panel p-5">
       <h3 className="text-lg font-semibold leading-7 text-galaxy-cream">{offer}</h3>
       <p className="mt-3 text-sm leading-6 text-galaxy-muted">{rationale}</p>
       <div className="mt-4 grid gap-3 text-sm sm:grid-cols-3">

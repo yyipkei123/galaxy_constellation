@@ -19,7 +19,7 @@ export function PitchScriptCard({ guest }: { guest: Guest }) {
   const traditionalChinesePitch = safePitch(guest?.pitchScript?.zh, fallbackTraditionalChinesePitch);
 
   return (
-    <section className="rounded-2xl border border-galaxy-border bg-galaxy-charcoal/65 p-5">
+    <section className="galaxy-panel p-5">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-galaxy-gold">Suggested pitch script</p>
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <div className="min-w-0">

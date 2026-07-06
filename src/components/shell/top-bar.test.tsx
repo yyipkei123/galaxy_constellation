@@ -121,16 +121,20 @@ describe('TopBar', () => {
     expect(screen.queryByRole('heading', { name: 'Wallet intelligence cockpit' })).not.toBeInTheDocument();
     expect(screen.getByRole('banner')).not.toHaveTextContent(/Galaxy first-party/i);
     expect(screen.getByText('7 CDE metrics - Modelled')).toBeInTheDocument();
-    expect(screen.getByLabelText('Galaxy Macau and Mastercard data partnership')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Open CDE signal guide/i })).toBeInTheDocument();
+    expect(screen.queryByLabelText('Galaxy Macau and Mastercard data partnership')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Open CDE signal guide/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: /Lens switch/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Presenter mode' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Copy narrative' })).not.toBeInTheDocument();
     expect(screen.getByRole('group', { name: 'Quarter selector' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '2026 Q2' })).toHaveAttribute('aria-pressed', 'true');
   });
 
   it.each([
     ['/', 'Wallet intelligence cockpit'],
-    ['/journey', 'Segment journey'],
-    ['/marketscan', 'Market context'],
+    ['/journey', 'Guest journey'],
+    ['/wallet', 'Wallet split'],
+    ['/marketscan', 'Market scan'],
     ['/corridors', 'Source-market corridors'],
     ['/acquisition', 'Priority corridor acquisition'],
   ])('maps %s to the prototype shell title %s', (pathname, expectedTitle) => {
@@ -147,6 +151,8 @@ describe('TopBar', () => {
   });
 
   it('opens a global CDE signal guide from the top bar', () => {
+    mockPathname = '/corridors';
+
     render(
       <AppStateProvider>
         <TopBar />
@@ -169,6 +175,8 @@ describe('TopBar', () => {
   });
 
   it('mounts the CDE signal guide outside the header layout', () => {
+    mockPathname = '/corridors';
+
     render(
       <AppStateProvider>
         <TopBar />
@@ -182,6 +190,8 @@ describe('TopBar', () => {
   });
 
   it('moves focus into the CDE signal guide and restores it when closed', async () => {
+    mockPathname = '/corridors';
+
     render(
       <AppStateProvider>
         <TopBar />
@@ -204,6 +214,8 @@ describe('TopBar', () => {
   });
 
   it('keeps tab focus inside the CDE signal guide while open', () => {
+    mockPathname = '/corridors';
+
     render(
       <AppStateProvider>
         <TopBar />
@@ -255,6 +267,7 @@ describe('TopBar', () => {
   });
 
   it('copies a CDE-safe executive narrative with the Clipboard API', async () => {
+    mockPathname = '/corridors';
     const writeText = vi.fn().mockResolvedValue(undefined);
     const execCommand = vi.spyOn(document, 'execCommand');
     setClipboard({ writeText });
@@ -276,6 +289,7 @@ describe('TopBar', () => {
   });
 
   it('falls back to a temporary textarea when the Clipboard API rejects', async () => {
+    mockPathname = '/corridors';
     const writeText = vi.fn().mockRejectedValue(new Error('denied'));
     const execCommand = vi.spyOn(document, 'execCommand').mockReturnValue(true);
     setClipboard({ writeText });
@@ -295,6 +309,7 @@ describe('TopBar', () => {
   });
 
   it('falls back to a temporary textarea when the Clipboard API is missing', async () => {
+    mockPathname = '/corridors';
     const execCommand = vi.spyOn(document, 'execCommand').mockReturnValue(true);
     setClipboard(undefined);
 
@@ -312,6 +327,7 @@ describe('TopBar', () => {
   });
 
   it('reports copy unavailable when Clipboard API and fallback copy both fail', async () => {
+    mockPathname = '/corridors';
     const writeText = vi.fn().mockRejectedValue(new Error('denied'));
     vi.spyOn(document, 'execCommand').mockReturnValue(false);
     setClipboard({ writeText });
@@ -329,6 +345,7 @@ describe('TopBar', () => {
   });
 
   it('reports copy unavailable when textarea fallback throws', async () => {
+    mockPathname = '/corridors';
     vi.spyOn(document, 'execCommand').mockImplementation(() => {
       throw new Error('blocked');
     });
@@ -347,6 +364,7 @@ describe('TopBar', () => {
   });
 
   it('keeps copied narrative CDE-safe when falling back after Clipboard API rejection', async () => {
+    mockPathname = '/corridors';
     const writeText = vi.fn().mockRejectedValue(new Error('denied'));
     const execCommand = vi.spyOn(document, 'execCommand').mockImplementation(() => {
       const activeElement = document.activeElement;
@@ -431,6 +449,8 @@ describe('TopBar', () => {
   });
 
   it('renders the lens switch beside methodology metadata', () => {
+    mockPathname = '/corridors';
+
     render(
       <AppStateProvider>
         <TopBar />
@@ -450,11 +470,11 @@ describe('TopBar', () => {
     );
 
     expect(screen.getByRole('banner')).toHaveTextContent('Wallet intelligence cockpit');
-    expect(screen.getByRole('button', { name: 'Copy narrative' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Copy narrative' })).not.toBeInTheDocument();
     expect(container.textContent).not.toMatch(/HKD|MOP|\$|元|澳門幣/i);
   });
 
-  it('uses a non-heading prototype title and toggles presenter mode', () => {
+  it('uses a non-heading prototype title without hybrid presenter controls', () => {
     render(
       <AppStateProvider>
         <TopBar />
@@ -465,13 +485,8 @@ describe('TopBar', () => {
     expect(screen.getByText('Wallet intelligence cockpit')).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Wallet intelligence cockpit' })).not.toBeInTheDocument();
 
-    const presenterToggle = screen.getByRole('button', { name: 'Presenter mode' });
-    expect(presenterToggle).toHaveAttribute('aria-pressed', 'false');
-
-    fireEvent.click(presenterToggle);
-
-    expect(screen.getByRole('button', { name: 'Presenter mode' })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByText('Presenter')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Presenter mode' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Presenter')).not.toBeInTheDocument();
   });
 
   it('keeps fixed assistant bottom clearance after the footer instead of inside main', () => {
@@ -486,14 +501,13 @@ describe('TopBar', () => {
     const main = screen.getByText('Route content').closest('main');
     const contentColumn = main?.parentElement;
 
-    expect(contentColumn).toHaveClass('pb-24');
-    expect(contentColumn).toHaveClass('lg:pb-0');
+    expect(contentColumn).toHaveClass('pb-0');
     expect(main).toHaveClass('min-w-0');
     expect(main).toHaveClass('flex-1');
     expect(main).toHaveClass('px-3');
-    expect(main).toHaveClass('py-[18px]');
-    expect(main).toHaveClass('sm:px-5');
-    expect(main).toHaveClass('md:px-[26px]');
+    expect(main).toHaveClass('py-[26px]');
+    expect(main).toHaveClass('md:px-[28px]');
+    expect(main).toHaveClass('pb-[120px]');
     expect(main).not.toHaveClass('pb-24');
     expect(main).not.toHaveClass('lg:pb-6');
     expect(container.textContent).not.toMatch(/HKD|MOP|\$|元|澳門幣/i);

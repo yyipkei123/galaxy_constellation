@@ -11,14 +11,14 @@ export function BrandPartnershipBadge({ className }: BrandPartnershipBadgeProps)
       aria-label="Galaxy Macau and Mastercard data partnership"
       role="group"
       className={clsx(
-        'inline-flex min-h-8 shrink-0 items-center gap-2 rounded-full border border-galaxy-border bg-galaxy-charcoal/70 px-2 py-1',
+        'inline-flex min-h-8 shrink-0 items-center gap-2 rounded-[9px] border border-galaxy-gold/20 bg-white/[0.025] px-2 py-1',
         className,
       )}
     >
       <span className="hidden text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-galaxy-muted sm:inline">
         Data partnership
       </span>
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-md bg-white p-1">
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-[7px] bg-white p-1">
         <Image
           src="/brand/galaxy-macau-logo.png"
           alt="Galaxy Macau"

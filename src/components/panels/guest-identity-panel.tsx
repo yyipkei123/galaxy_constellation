@@ -45,7 +45,7 @@ export function GuestIdentityPanel({ guest }: { guest: Guest }) {
   const occasionSignals = safeList(preferences?.occasionSignals, ['No occasion signal']);
 
   return (
-    <section className="rounded-2xl border border-galaxy-border bg-galaxy-charcoal/65 p-5">
+    <section className="galaxy-panel p-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-galaxy-gold">
@@ -56,13 +56,13 @@ export function GuestIdentityPanel({ guest }: { guest: Guest }) {
             Demo-only synthetic identity linked to the masked member ID. No real PII is shown.
           </p>
         </div>
-        <span className="rounded border border-galaxy-gold/35 bg-galaxy-gold/10 px-2 py-1 text-xs font-semibold text-galaxy-gold">
+        <span className="rounded-[7px] border border-galaxy-gold/35 bg-galaxy-gold/10 px-2 py-1 text-xs font-semibold text-galaxy-gold">
           Synthetic
         </span>
       </div>
 
       <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
-        <div className="min-w-0 rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">
+        <div className="galaxy-tile min-w-0 p-4">
           <p className="break-words text-sm font-semibold text-galaxy-cream">{displayName}</p>
           <p className="mt-1 break-words text-sm text-galaxy-muted">{displayNameZh}</p>
           <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
@@ -91,7 +91,7 @@ export function GuestIdentityPanel({ guest }: { guest: Guest }) {
           </dl>
         </div>
 
-        <div className="min-w-0 rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">
+        <div className="galaxy-tile min-w-0 p-4">
           <dl className="grid gap-3 text-sm">
             <div>
               <dt className="text-galaxy-muted">Host owner</dt>
@@ -120,19 +120,19 @@ export function GuestIdentityPanel({ guest }: { guest: Guest }) {
       </div>
 
       <div className="mt-4 grid gap-3 text-sm md:grid-cols-3">
-        <div className="min-w-0 rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">
+        <div className="galaxy-tile min-w-0 p-4">
           <p className="font-semibold text-galaxy-gold">Favorite signals</p>
           <ul className="mt-3 space-y-2 text-galaxy-muted">
             {favoriteCategories.map((item) => <li className="break-words" key={item}>{item}</li>)}
           </ul>
         </div>
-        <div className="min-w-0 rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">
+        <div className="galaxy-tile min-w-0 p-4">
           <p className="font-semibold text-galaxy-gold">Service preferences</p>
           <ul className="mt-3 space-y-2 text-galaxy-muted">
             {servicePreferences.map((item) => <li className="break-words" key={item}>{item}</li>)}
           </ul>
         </div>
-        <div className="min-w-0 rounded-lg border border-galaxy-border bg-galaxy-ink/35 p-4">
+        <div className="galaxy-tile min-w-0 p-4">
           <p className="font-semibold text-galaxy-gold">Occasion signals</p>
           <ul className="mt-3 space-y-2 text-galaxy-muted">
             {occasionSignals.map((item) => <li className="break-words" key={item}>{item}</li>)}

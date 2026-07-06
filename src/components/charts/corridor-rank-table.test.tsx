@@ -7,7 +7,14 @@ describe('CorridorRankTable', () => {
     render(<CorridorRankTable corridors={corridors} year="2024" metric="spend" />);
 
     const table = screen.getByRole('table', { name: /Inbound corridor ranking/i });
+    const scrollWrapper = table.parentElement;
+    const rootWrapper = scrollWrapper?.parentElement;
     expect(table).toBeInTheDocument();
+    expect(rootWrapper).toHaveClass('min-w-0');
+    expect(rootWrapper).toHaveClass('max-w-full');
+    expect(scrollWrapper).toHaveClass('max-w-full');
+    expect(scrollWrapper).toHaveClass('overflow-x-auto');
+    expect(scrollWrapper).toHaveClass('overscroll-x-contain');
     within(table).getAllByRole('columnheader').forEach((header) => {
       expect(header).toHaveAttribute('scope', 'col');
     });

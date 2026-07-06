@@ -24,13 +24,13 @@ export function GuestTimeline({ guest }: { guest: Guest }) {
   ];
 
   return (
-    <section className="rounded-2xl border border-galaxy-border bg-galaxy-charcoal/65 p-5">
+    <section className="galaxy-panel p-5">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-galaxy-gold">Guest journey timeline</p>
       <ol className="mt-5 grid gap-3 md:grid-cols-3">
         {events.map((event) => (
           <li
             key={event}
-            className="rounded-lg border border-galaxy-border bg-galaxy-ink/45 p-3 text-sm text-galaxy-muted"
+            className="galaxy-tile p-3 text-sm text-galaxy-muted"
           >
             {event}
           </li>

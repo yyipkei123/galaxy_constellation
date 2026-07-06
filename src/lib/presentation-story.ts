@@ -31,6 +31,13 @@ export interface PresentationStep {
   tourSummary: string;
 }
 
+export interface BoardroomDemoStop {
+  id: Extract<PresentationStepId, 'overview' | 'wallet' | 'activation' | 'measurement' | 'governance'>;
+  title: string;
+  href: string;
+  note: string;
+}
+
 const topCustomer360Href = `/guests/${encodeURIComponent(topPriorityGuests[0].id)}`;
 
 export const presentationSteps: PresentationStep[] = [
@@ -239,6 +246,25 @@ export const mainPresenterTourStops = [
   'measurement',
   'governance',
 ].map((id) => presentationSteps.find((step) => step.id === id) as PresentationStep);
+
+const boardroomDemoStopIds = [
+  'overview',
+  'wallet',
+  'activation',
+  'measurement',
+  'governance',
+] satisfies BoardroomDemoStop['id'][];
+
+export const boardroomDemoStops: BoardroomDemoStop[] = boardroomDemoStopIds.map((id) => {
+  const step = presentationSteps.find((item) => item.id === id) as PresentationStep;
+
+  return {
+    id,
+    title: step.title,
+    href: step.href,
+    note: step.tourSummary,
+  };
+});
 
 function normalizePathname(pathname: string) {
   if (!pathname || pathname === '/') return '/';

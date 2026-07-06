@@ -94,9 +94,11 @@ export function Nav() {
           </div>
         );
       })}
-      <div className="mt-5 hidden rounded-lg border border-[rgba(212,175,94,0.14)] bg-[rgba(255,255,255,0.025)] px-3 py-2 text-[11px] font-semibold text-[#8B8598] lg:block">
-        {isAcquisitionLens(pathname) ? 'Inbound corridor view' : 'Cotai wallet view'}
-      </div>
+      {isAcquisitionLens(pathname) ? (
+        <div className="mt-5 hidden rounded-lg border border-[rgba(212,175,94,0.14)] bg-[rgba(255,255,255,0.025)] px-3 py-2 text-[11px] font-semibold text-[#8B8598] lg:block">
+          Inbound corridor view
+        </div>
+      ) : null}
     </nav>
   );
 }

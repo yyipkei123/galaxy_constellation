@@ -95,7 +95,7 @@ export function CdeSignalGuide() {
         aria-modal="true"
         aria-label="CDE signal guide"
         onKeyDown={handleDialogKeyDown}
-        className="w-full max-w-xl rounded-lg border border-galaxy-gold/35 bg-galaxy-charcoal p-5 shadow-2xl shadow-black/60 sm:p-6"
+        className="galaxy-panel w-full max-w-xl p-5 shadow-2xl shadow-black/60 sm:p-6"
       >
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -109,7 +109,7 @@ export function CdeSignalGuide() {
             type="button"
             aria-label="Close CDE signal guide"
             onClick={closeGuide}
-            className="rounded-md border border-galaxy-border p-2 text-galaxy-muted transition hover:border-galaxy-gold/60 hover:text-galaxy-cream focus:outline-none focus:ring-2 focus:ring-galaxy-gold"
+            className="rounded-[9px] border border-galaxy-gold/25 bg-white/[0.03] p-2 text-galaxy-muted transition hover:border-galaxy-gold/60 hover:text-galaxy-cream focus:outline-none focus:ring-2 focus:ring-galaxy-gold"
           >
             <X aria-hidden="true" className="h-4 w-4" />
           </button>
@@ -134,7 +134,7 @@ export function CdeSignalGuide() {
 
         <div className="mt-5 grid gap-2 sm:grid-cols-2">
           {indexSignalBands.map((band) => (
-            <div key={band.range} className={`rounded-lg border px-3 py-2 ${band.className}`}>
+            <div key={band.range} className={`rounded-[10px] border px-3 py-2 ${band.className}`}>
               <p className="text-sm font-semibold">{band.range}</p>
               <p className="mt-1 text-xs font-semibold">{band.label}</p>
               <p className="mt-1 text-xs opacity-80">{band.description}</p>
@@ -152,7 +152,7 @@ export function CdeSignalGuide() {
         type="button"
         aria-label="Open CDE signal guide"
         onClick={() => setIsOpen(true)}
-        className="inline-flex min-h-8 items-center gap-1.5 rounded-full border border-galaxy-border bg-galaxy-charcoal/70 px-2.5 py-1 text-xs font-semibold text-galaxy-muted transition hover:border-galaxy-gold/50 hover:text-galaxy-cream focus:outline-none focus:ring-2 focus:ring-galaxy-gold"
+        className="inline-flex min-h-8 items-center gap-1.5 rounded-[9px] border border-galaxy-gold/20 bg-white/[0.025] px-2.5 py-1 text-xs font-semibold text-galaxy-muted transition hover:border-galaxy-gold/50 hover:text-galaxy-cream focus:outline-none focus:ring-2 focus:ring-galaxy-gold"
       >
         <HelpCircle aria-hidden="true" className="h-3.5 w-3.5 text-galaxy-gold" />
         <span>CDE Guide</span>

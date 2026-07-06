@@ -17,17 +17,17 @@ type RedesignedRouteExpectation = {
 const redesignedRouteExpectations = new Map<string, RedesignedRouteExpectation>([
   ['/', {
     region: 'Overview',
-    heading: 'Wallet intelligence cockpit',
+    heading: 'Pitch Cosmopolitan Connoisseurs first.',
     texts: ['Wallet headroom constellation'],
   }],
   ['/journey', {
     region: 'Journey',
-    heading: 'Segment journey',
+    heading: 'Guest journey',
     texts: ['Weakest link'],
   }],
   ['/wallet', {
     region: 'Wallet',
-    heading: 'Wallet intelligence',
+    heading: 'Wallet split',
     texts: ['On-property vs modelled off-property'],
   }],
   ['/segments', {
@@ -37,22 +37,22 @@ const redesignedRouteExpectations = new Map<string, RedesignedRouteExpectation>(
   }],
   ['/guests', {
     region: 'Guests',
-    heading: 'Matched guest universe',
+    heading: 'Matched guests',
     texts: ['Match funnel'],
   }],
   ['/leakage', {
     region: 'Leakage',
-    heading: 'Leakage control tower',
+    heading: 'Wallet leakage',
     texts: ['Leakage matrix'],
   }],
   ['/propensity', {
     region: 'Propensity',
-    heading: 'Propensity ladder',
+    heading: 'Propensity & audiences',
     texts: ['Audience readiness'],
   }],
   ['/activation', {
     region: 'Activation',
-    heading: 'Activation planning',
+    heading: 'Campaign activation',
     texts: ['Campaign brief'],
   }],
   ['/simulate', {
@@ -67,7 +67,7 @@ const redesignedRouteExpectations = new Map<string, RedesignedRouteExpectation>(
   }],
   ['/marketscan', {
     region: 'Market Scan',
-    heading: 'Market context',
+    heading: 'Market scan',
     texts: ['Corridor mix'],
   }],
   ['/governance', {
@@ -163,18 +163,17 @@ test.describe('Galaxy Constellation rendered compliance', () => {
       const body = page.locator('body');
       const banner = page.getByRole('banner');
       const redesignedExpectation = redesignedRouteExpectations.get(route);
-      await expect(page.getByText(/Enriched figures are modelled estimates/i)).toBeVisible();
       await expect(banner.getByText('7 CDE metrics - Modelled', { exact: true })).toBeVisible();
       await expect(banner.locator('[aria-label="7 active CDE metrics - Modelled"]')).toBeVisible();
       const partnershipBadge = banner.getByLabel('Galaxy Macau and Mastercard data partnership');
-      await expect(partnershipBadge).toBeVisible();
-      await expect(partnershipBadge.getByRole('img', { name: 'Galaxy Macau' })).toBeVisible();
-      await expect(partnershipBadge.getByRole('img', { name: 'Mastercard' })).toBeVisible();
-      await expect(page.getByRole('region', { name: 'Client presentation guidance' })).toBeVisible();
       await expect(body).not.toContainText(globalUnsafeCdePattern);
 
       if (redesignedExpectation) {
-        const routeRegion = page.getByRole('region', { name: redesignedExpectation.region });
+        await expect(page.getByText(/Enriched figures are modelled estimates/i)).toHaveCount(0);
+        await expect(partnershipBadge).toHaveCount(0);
+        await expect(page.getByRole('region', { name: 'Client presentation guidance' })).toHaveCount(0);
+
+        const routeRegion = page.getByRole('region', { name: redesignedExpectation.region, exact: true });
 
         await expect(routeRegion).toBeVisible();
         await expect(routeRegion.getByRole('heading', { name: redesignedExpectation.heading })).toBeVisible();
@@ -190,10 +189,15 @@ test.describe('Galaxy Constellation rendered compliance', () => {
         await expectCompactCdeAiDockOnly(page);
 
       } else if (route.startsWith('/guests/')) {
+        await expect(page.getByText(/Enriched figures are modelled estimates/i)).toBeVisible();
+        await expect(partnershipBadge).toBeVisible();
+        await expect(partnershipBadge.getByRole('img', { name: 'Galaxy Macau' })).toBeVisible();
+        await expect(partnershipBadge.getByRole('img', { name: 'Mastercard' })).toBeVisible();
+        await expect(page.getByRole('region', { name: 'Client presentation guidance' })).toBeVisible();
         const hostActionSummary = page.getByRole('region', { name: 'Host action summary' });
 
         await expect(page.getByRole('complementary', { name: 'CDE AI' })).toHaveCount(0);
-        await expect(page.getByRole('button', { name: 'Open presenter tour' })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Open presenter tour' })).toHaveCount(0);
         await expect(page.getByRole('button', { name: 'Open AI insight assistant' })).toBeVisible();
         await expect(page.getByRole('heading', { name: 'Customer 360', level: 1 })).toBeVisible();
         await expect(hostActionSummary).toBeVisible();
@@ -206,6 +210,11 @@ test.describe('Galaxy Constellation rendered compliance', () => {
         await expect(page.getByText('What Mastercard CDE adds')).toBeVisible();
         await expect(page.getByText('Suggested pitch script')).toBeVisible();
       } else if (route === '/corridors') {
+        await expect(page.getByText(/Enriched figures are modelled estimates/i)).toBeVisible();
+        await expect(partnershipBadge).toBeVisible();
+        await expect(partnershipBadge.getByRole('img', { name: 'Galaxy Macau' })).toBeVisible();
+        await expect(partnershipBadge.getByRole('img', { name: 'Mastercard' })).toBeVisible();
+        await expect(page.getByRole('region', { name: 'Client presentation guidance' })).toBeVisible();
         const koreaRow = page.getByRole('row', { name: /#1 Korea/i });
 
         await expect(page.getByRole('heading', { name: /Source-Market & Corridor Intelligence/i })).toBeVisible();
@@ -213,10 +222,20 @@ test.describe('Galaxy Constellation rendered compliance', () => {
         await expect(page.getByText(/aggregate inbound panel, no PII/i)).toBeVisible();
         await expect(koreaRow).toBeVisible();
       } else if (route === '/corridors/korea') {
+        await expect(page.getByText(/Enriched figures are modelled estimates/i)).toBeVisible();
+        await expect(partnershipBadge).toBeVisible();
+        await expect(partnershipBadge.getByRole('img', { name: 'Galaxy Macau' })).toBeVisible();
+        await expect(partnershipBadge.getByRole('img', { name: 'Mastercard' })).toBeVisible();
+        await expect(page.getByRole('region', { name: 'Client presentation guidance' })).toBeVisible();
         await expect(page.getByRole('heading', { name: /Korea Corridor Detail/i })).toBeVisible();
         await expect(page.getByText('2020 base · refresh pending')).toBeVisible();
         await expect(page.getByRole('link', { name: 'Generate campaign content', exact: true })).toBeVisible();
       } else if (route === '/acquisition') {
+        await expect(page.getByText(/Enriched figures are modelled estimates/i)).toBeVisible();
+        await expect(partnershipBadge).toBeVisible();
+        await expect(partnershipBadge.getByRole('img', { name: 'Galaxy Macau' })).toBeVisible();
+        await expect(partnershipBadge.getByRole('img', { name: 'Mastercard' })).toBeVisible();
+        await expect(page.getByRole('region', { name: 'Client presentation guidance' })).toBeVisible();
         await expect(page.getByRole('heading', { name: /Priority Corridor Acquisition/i })).toBeVisible();
         await expect(page.getByRole('heading', { name: /Content draft/i })).toBeVisible();
         await expect(page.getByText(/No live model call/i)).toBeVisible();
@@ -230,13 +249,26 @@ test.describe('Galaxy Constellation rendered compliance', () => {
     const aiDock = page.getByRole('complementary', { name: 'CDE AI' });
     const aiPanel = aiDock.locator('[data-cde-ai-panel="floating"]');
     await expect(aiDock).toBeVisible();
+    await expect(aiPanel).toBeHidden();
+    await expect(aiDock.getByRole('button', { name: 'Ask CDE AI' })).toHaveAttribute('aria-expanded', 'false');
+
+    await aiDock.getByRole('button', { name: 'Ask CDE AI' }).click();
+
     await expect(aiPanel).toBeVisible();
+    await expect(aiDock.getByRole('button', { name: 'Hide CDE AI' })).toHaveAttribute('aria-expanded', 'true');
     await expect(aiPanel.getByText('CDE AI', { exact: true })).toBeVisible();
     await expect(aiPanel.getByText('Governed answers · ranges & indices only', { exact: true })).toBeVisible();
     await expect(aiPanel.getByText(
       'Ask for an explanation, trust rationale, or a CDE-safe campaign brief for Cosmopolitan Connoisseurs.',
       { exact: true },
     )).toBeVisible();
+    await expect(aiDock.getByRole('button', { name: 'Which segment leaks most?' })).toBeVisible();
+    await aiDock.getByRole('button', { name: 'Why is this CDE-safe?' }).click();
+    await expect(aiDock.getByText(/matched Galaxy and Mastercard CDE cohort/i)).toBeVisible();
+    await aiDock.getByText('Show data behind this').click();
+    await expect(aiDock.getByText('Grounded data used')).toBeVisible();
+    await expect(aiDock.getByText('Opportunity index')).toBeVisible();
+    await expect(aiDock.getByText('Matched coverage')).toBeVisible();
 
     const briefChip = aiDock.getByRole('button', { name: 'Build a brief' });
     await briefChip.click();
@@ -247,7 +279,7 @@ test.describe('Galaxy Constellation rendered compliance', () => {
     await expect(aiDock).not.toContainText(bannedCdeTokenPattern);
 
     const input = aiDock.getByRole('textbox', { name: /Ask a CDE-safe question/i });
-    await expect(input).toHaveAttribute('placeholder', 'Ask about Cosmopolitan Connoisseurs...');
+    await expect(input).toHaveAttribute('placeholder', 'Ask about Cosmopolitan Connoisseurs…');
     await input.fill('Show HKD 5000 leakage');
     await aiDock.getByRole('button', { name: 'Ask' }).click();
 
@@ -266,6 +298,66 @@ test.describe('Galaxy Constellation rendered compliance', () => {
     await expect(aiDock.getByRole('button', { name: 'Hide CDE AI' })).toHaveAttribute('aria-expanded', 'true');
     await expect(aiPanel).toBeVisible();
     await expect(aiDock.getByRole('button', { name: 'Build a brief' })).toBeVisible();
+  });
+
+  test('redesigned route CDE AI changes context for wallet activation measurement and governance', async ({ page }) => {
+    const cases = [
+      {
+        route: '/wallet',
+        defaultText: /Wallet gap for Cosmopolitan Connoisseurs/i,
+        placeholder: 'Ask about wallet split…',
+        evidence: 'Average on-property share',
+        link: 'Open activation handoff',
+      },
+      {
+        route: '/activation',
+        defaultText: /Campaign handoff for Cosmopolitan Connoisseurs/i,
+        placeholder: 'Ask about campaign handoff…',
+        evidence: 'Selected channels',
+        link: 'Open measurement proof',
+      },
+      {
+        route: '/measurement',
+        defaultText: /Scale Michelin retail cross-sell pilot/i,
+        placeholder: 'Ask about measurement decision…',
+        evidence: 'Decision',
+        link: 'Open governance basis',
+      },
+      {
+        route: '/governance',
+        defaultText: /CDE-safe governance uses ranges, indices, cohort floors and refresh controls/i,
+        placeholder: 'Ask about governance basis…',
+        evidence: 'Cohort floor',
+        link: 'Open wallet evidence',
+      },
+    ];
+
+    for (const item of cases) {
+      await gotoStableRoute(page, item.route);
+
+      const aiDock = page.getByRole('complementary', { name: 'CDE AI' });
+      await aiDock.getByRole('button', { name: 'Ask CDE AI' }).click();
+      await expect(aiDock.getByText(item.defaultText)).toBeVisible();
+      await expect(aiDock.getByPlaceholder(item.placeholder)).toBeVisible();
+      await aiDock.getByText('Show data behind this').click();
+      await expect(aiDock.getByTestId('cde-ai-panel').getByText(item.evidence, { exact: true })).toBeVisible();
+      await expect(aiDock.getByRole('link', { name: item.link })).toBeVisible();
+      await expect(aiDock).not.toContainText(bannedCdeTokenPattern);
+      await aiDock.getByRole('button', { name: 'Hide CDE AI' }).click();
+    }
+  });
+
+  test('measurement route shows governed scale revise hold decision guidance', async ({ page }) => {
+    await page.goto('/measurement');
+
+    const decision = page.getByRole('region', { name: 'Measurement decision guidance' });
+    await expect(decision).toBeVisible();
+    await expect(decision.getByRole('heading', { name: 'Scale Michelin retail cross-sell pilot' })).toBeVisible();
+    await expect(decision.getByText(/above the governed scale threshold/i)).toBeVisible();
+    await expect(page.getByText('Scale', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('Revise', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('Hold', { exact: true }).first()).toBeVisible();
+    await expect(page.locator('body')).not.toContainText(bannedCdeTokenPattern);
   });
 
   test('acquisition lens keeps corridor data aggregate and CDE-safe', async ({ page }) => {
@@ -292,15 +384,16 @@ test.describe('Galaxy Constellation rendered compliance', () => {
 
     await expect(page.getByRole('link', { name: /Overview/i })).toBeVisible();
     await expect(page.getByRole('group', { name: /Quarter selector/i })).toBeVisible();
-    await expect(page.getByRole('banner').getByLabel('Galaxy Macau and Mastercard data partnership')).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Wallet intelligence cockpit' })).toBeVisible();
+    await expect(page.getByRole('banner').getByLabel('Galaxy Macau and Mastercard data partnership')).toHaveCount(0);
+    await expect(page.getByRole('banner')).toContainText('Wallet intelligence cockpit');
+    await expect(page.getByRole('heading', { name: 'Pitch Cosmopolitan Connoisseurs first.' })).toBeVisible();
   });
 
   test('mobile overview keeps redesigned cockpit within viewport width', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
 
-    await expect(page.getByRole('heading', { name: 'Wallet intelligence cockpit' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Pitch Cosmopolitan Connoisseurs first.' })).toBeVisible();
     await expect(page.getByRole('region', { name: 'Overview' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Wallet headroom constellation' })).toBeVisible();
     await expect(page.getByRole('complementary', { name: 'CDE AI' })).toBeVisible();
@@ -312,15 +405,15 @@ test.describe('Galaxy Constellation rendered compliance', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/leakage');
 
-    await expect(page.getByRole('heading', { name: 'Leakage control tower' })).toBeVisible();
-    await expect(page.getByText(/Enriched figures are modelled estimates/i)).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Wallet leakage' })).toBeVisible();
+    await expect(page.getByRole('banner')).toContainText(/CDE metrics/i);
   });
 
   test('mobile activation keeps route content in the first viewport', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/activation');
 
-    const hero = page.getByRole('heading', { name: 'Activation planning', exact: true });
+    const hero = page.getByRole('heading', { name: 'Campaign activation', exact: true });
     await expect(hero).toBeVisible();
     const box = await hero.evaluate((element) => {
       const rect = element.getBoundingClientRect();
@@ -349,41 +442,21 @@ test.describe('Galaxy Constellation rendered compliance', () => {
     expect(await documentScrollWidth(page)).toBeLessThanOrEqual(390);
   });
 
-  test('mobile presenter tour opens without horizontal overflow', async ({ page }) => {
+  test('mobile legacy route omits the presenter tour launcher without horizontal overflow', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/guests/MEM-••••3421');
 
-    await page.getByRole('button', { name: 'Open presenter tour' }).click();
-
-    const dialog = page.getByRole('dialog', { name: 'Presenter tour' });
-    const presenterStops = [
-      'Journey',
-      'Overview',
-      'Wallet',
-      'Segments',
-      'Guests',
-      'Audience',
-      'Activation',
-      'Measurement',
-      'Governance',
-    ];
-
-    await expect(dialog).toBeVisible();
-    for (const [index, stop] of presenterStops.entries()) {
-      if (index > 0) {
-        await dialog.getByRole('button', { name: 'Next stop' }).click();
-      }
-
-      await expect(dialog.getByText(`${index + 1} of 9`)).toBeVisible();
-      await expect(dialog.getByRole('heading', { name: stop })).toBeVisible();
-    }
+    await expect(page.getByRole('button', { name: 'Open presenter tour' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Open AI insight assistant' })).toBeVisible();
     expect(await documentScrollWidth(page)).toBeLessThanOrEqual(390);
   });
 
   test('presenter mode hides floating controls while keeping guidance visible', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/guests/MEM-••••3421');
 
-    await expectCompactCdeAiDockOnly(page);
+    await expect(page.getByRole('region', { name: 'Client presentation guidance' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Open presenter tour' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Open AI insight assistant' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Presenter mode' }).click();
 
@@ -402,7 +475,7 @@ test.describe('Galaxy Constellation rendered compliance', () => {
 
       for (const route of ['/measurement', '/simulate', '/journey', '/governance']) {
         await gotoStableRoute(page, route);
-        await expect(page.getByText(/Enriched figures are modelled estimates/i)).toBeVisible();
+        await expect(page.getByRole('banner')).toContainText(/CDE metrics/i);
         await expect(page.locator('body')).not.toContainText(bannedCdeTokenPattern);
         await expect(page.locator('body')).not.toContainText(/NaN|Infinity/);
         expect(await documentScrollWidth(page)).toBeLessThanOrEqual(viewport.width);
@@ -420,7 +493,11 @@ test.describe('Galaxy Constellation rendered compliance', () => {
 
       for (const route of ['/guests', '/guests/MEM-••••3421']) {
         await gotoStableRoute(page, route);
-        await expect(page.getByText(/Enriched figures are modelled estimates/i)).toBeVisible();
+        if (redesignedRouteExpectations.has(route)) {
+          await expect(page.getByText(/Enriched figures are modelled estimates/i)).toHaveCount(0);
+        } else {
+          await expect(page.getByText(/Enriched figures are modelled estimates/i)).toBeVisible();
+        }
         if (route.startsWith('/guests/')) {
           await expect(page.getByRole('heading', { name: /Synthetic CRM identity/i })).toBeVisible();
           await expect(page.getByRole('heading', { name: /Galaxy purchase and stay history/i })).toBeVisible();
@@ -441,9 +518,9 @@ test.describe('Galaxy Constellation rendered compliance', () => {
       await page.goto('/wallet');
 
       await expect(page.getByRole('region', { name: 'Wallet' })).toBeVisible();
-      await expect(page.getByRole('heading', { name: 'Wallet intelligence', exact: true })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Wallet split', exact: true })).toBeVisible();
       await expect(page.getByRole('heading', { name: /On-property vs modelled off-property/i })).toBeVisible();
-      await expect(page.getByText(/Enriched figures are modelled estimates/i)).toBeVisible();
+      await expect(page.getByRole('banner')).toContainText(/CDE metrics/i);
       await expect(page.locator('body')).not.toContainText(bannedCdeTokenPattern);
 
       const scrollWidth = await documentScrollWidth(page);
@@ -462,7 +539,7 @@ test.describe('Galaxy Constellation rendered compliance', () => {
       for (const route of ['/wallet', '/segments', '/activation']) {
         await gotoStableRoute(page, route);
         await expect(page.getByRole('banner')).toContainText(/CDE metrics/i);
-        await expect(page.getByRole('banner').getByLabel('Galaxy Macau and Mastercard data partnership')).toBeVisible();
+        await expect(page.getByRole('banner').getByLabel('Galaxy Macau and Mastercard data partnership')).toHaveCount(0);
         await expectCompactCdeAiDockOnly(page);
 
         const primaryNav = page.getByRole('navigation', { name: /Primary navigation/i });
@@ -488,7 +565,7 @@ test.describe('Galaxy Constellation rendered compliance', () => {
       await gotoStableRoute(page, '/wallet');
       await hideCompactCdeAiDock(page);
       const walletRegion = page.getByRole('region', { name: 'Wallet' });
-      await expect(walletRegion.getByRole('heading', { name: 'Wallet intelligence' })).toBeVisible();
+      await expect(walletRegion.getByRole('heading', { name: 'Wallet split' })).toBeVisible();
       await expect(walletRegion.getByRole('heading', { name: 'On-property vs modelled off-property' })).toBeVisible();
       await walletRegion.getByRole('button', { name: 'Weekenders', exact: true }).click();
       await expect(walletRegion.getByText('Selected segment: Premium Mass Weekenders')).toBeVisible();

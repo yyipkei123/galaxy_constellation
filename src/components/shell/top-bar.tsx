@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { PresenterModeToggle } from '@/components/presentation/presenter-mode-toggle';
+import { hasCompactCdeAiDock } from '@/components/presentation/presentation-floating-controls';
 import { getRedesignPageTitle, redesignNavItems } from '@/components/redesign/constellation-redesign-model';
 import { useAppState } from '@/store/app-store';
 import { BrandPartnershipBadge } from './brand-partnership-badge';
@@ -77,6 +78,7 @@ export function TopBar() {
   const [copyStatus, setCopyStatus] = useState('');
   const primaryLeakagePct = selectedSegment.categories.retailLuxury.leakagePct;
   const pageTitle = titleForPathname(pathname);
+  const usePrototypeChrome = hasCompactCdeAiDock(pathname);
 
   async function copyNarrative() {
     const narrative = segmentNarrative(
@@ -91,6 +93,43 @@ export function TopBar() {
     setCopyStatus(copied ? 'Narrative copied' : 'Copy unavailable in this preview');
   }
 
+  if (usePrototypeChrome) {
+    return (
+      <header className="flex min-h-[52px] flex-col gap-3 md:flex-row md:items-center">
+        <p className="m-0 min-w-0 flex-1 font-serif text-2xl font-semibold leading-tight tracking-[0.02em] text-galaxy-cream">
+          {pageTitle}
+        </p>
+        <div
+          role="group"
+          aria-label="Quarter selector"
+          className="flex max-w-full gap-1 overflow-x-auto rounded-[9px] border border-galaxy-gold/20 bg-white/[0.025] p-1"
+        >
+          {quarters.map((quarter) => {
+            const selected = quarter.id === selectedQuarterId;
+
+            return (
+              <button
+                key={quarter.id}
+                type="button"
+                aria-pressed={selected}
+                onClick={() => setSelectedQuarterId(quarter.id)}
+                className="min-h-8 shrink-0 rounded-[7px] border border-transparent px-3 text-[11.5px] font-bold tracking-[0.03em] text-[#8B8598] transition hover:text-galaxy-cream aria-pressed:bg-galaxy-gold aria-pressed:text-[#14101F]"
+              >
+                {quarter.label}
+              </button>
+            );
+          })}
+        </div>
+        <span
+          aria-label={`${methodology.activeMetricCount} active CDE metrics - Modelled`}
+          className="inline-flex min-h-8 items-center rounded-[9px] border border-galaxy-gold/20 bg-white/[0.025] px-3 text-[11px] font-bold tracking-[0.04em] text-galaxy-gold"
+        >
+          {methodology.activeMetricCount} CDE metrics - Modelled
+        </span>
+      </header>
+    );
+  }
+
   return (
     <header className="flex min-h-[52px] flex-col gap-3 md:flex-row md:items-center md:justify-between">
       <div className="flex min-w-0 flex-wrap items-center gap-3">
@@ -100,7 +139,7 @@ export function TopBar() {
         <div className="flex flex-wrap items-center gap-2">
           <span
             aria-label={`${methodology.activeMetricCount} active CDE metrics - Modelled`}
-            className="inline-flex min-h-8 items-center rounded-full border border-galaxy-gold/30 bg-galaxy-gold/10 px-3 text-[11px] font-bold tracking-[0.04em] text-galaxy-gold"
+            className="inline-flex min-h-8 items-center rounded-[9px] border border-galaxy-gold/20 bg-white/[0.025] px-3 text-[11px] font-bold tracking-[0.04em] text-galaxy-gold"
           >
             {methodology.activeMetricCount} CDE metrics - Modelled
           </span>
@@ -114,7 +153,7 @@ export function TopBar() {
         <div
           role="group"
           aria-label="Quarter selector"
-          className="flex max-w-full gap-1 overflow-x-auto rounded-full border border-galaxy-gold/20 bg-white/[0.02] p-1"
+          className="flex max-w-full gap-1 overflow-x-auto rounded-[9px] border border-galaxy-gold/20 bg-white/[0.025] p-1"
         >
           {quarters.map((quarter) => {
             const selected = quarter.id === selectedQuarterId;
@@ -125,7 +164,7 @@ export function TopBar() {
                 type="button"
                 aria-pressed={selected}
                 onClick={() => setSelectedQuarterId(quarter.id)}
-                className="min-h-8 shrink-0 rounded-full border border-transparent px-3 text-[11.5px] font-bold tracking-[0.03em] text-[#8B8598] transition hover:text-galaxy-cream aria-pressed:bg-galaxy-gold aria-pressed:text-[#14101F]"
+                className="min-h-8 shrink-0 rounded-[7px] border border-transparent px-3 text-[11.5px] font-bold tracking-[0.03em] text-[#8B8598] transition hover:text-galaxy-cream aria-pressed:bg-galaxy-gold aria-pressed:text-[#14101F]"
               >
                 {quarter.label}
               </button>
@@ -136,7 +175,7 @@ export function TopBar() {
         <button
           type="button"
           onClick={copyNarrative}
-          className="inline-flex min-h-[42px] items-center justify-center rounded-xl border border-white/10 bg-galaxy-ink/45 px-4 text-[13px] font-semibold tracking-normal text-galaxy-cream transition hover:border-galaxy-gold/40 hover:text-galaxy-gold active:translate-y-px"
+          className="galaxy-cta-ghost"
         >
           Copy narrative
         </button>

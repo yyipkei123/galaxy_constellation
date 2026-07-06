@@ -2,10 +2,12 @@
 
 import { useMemo, useRef, useState, type FormEvent } from 'react';
 import clsx from 'clsx';
+import Link from 'next/link';
 import { formatEnriched } from '@/lib/format';
 import {
   buildConstellationRedesignModel,
   type ConstellationRedesignModel,
+  type RedesignAiAnswerKey,
   type RedesignPageId,
 } from './constellation-redesign-model';
 
@@ -21,8 +23,6 @@ type Stat = ConstellationRedesignModel['selectedStats'][number];
 type Node = ConstellationRedesignModel['constellationNodes'][number];
 type SegmentRow = ConstellationRedesignModel['segmentRows'][number];
 type ChannelState = Record<string, boolean>;
-type AiAnswerKey = 'explain' | 'trust' | 'brief';
-
 interface SharedRouteControls {
   windowWeeks: number;
   setWindowWeeks: (weeks: number) => void;
@@ -34,8 +34,8 @@ interface SharedRouteControls {
   setExported: (exported: boolean) => void;
   aiOpen: boolean;
   setAiOpen: (open: boolean) => void;
-  aiAnswerKey: AiAnswerKey | null;
-  setAiAnswerKey: (key: AiAnswerKey | null) => void;
+  aiAnswerKey: RedesignAiAnswerKey | null;
+  setAiAnswerKey: (key: RedesignAiAnswerKey | null) => void;
   aiInput: string;
   setAiInput: (input: string) => void;
   onToggleChannel: (channel: string) => void;
@@ -43,6 +43,15 @@ interface SharedRouteControls {
 }
 
 const rawModelledWalletBandPattern = /(\d+(?:\.\d+)?-\d+(?:\.\d+)?)k \/mo/g;
+
+const prototypeStars = [
+  { left: '12%', top: '18%', size: 2, opacity: 0.22 },
+  { left: '24%', top: '72%', size: 2, opacity: 0.18 },
+  { left: '38%', top: '24%', size: 3, opacity: 0.2 },
+  { left: '56%', top: '68%', size: 2, opacity: 0.18 },
+  { left: '70%', top: '20%', size: 3, opacity: 0.2 },
+  { left: '84%', top: '74%', size: 2, opacity: 0.18 },
+];
 
 const defaultChannels: ChannelState = {
   'App push': true,
@@ -60,8 +69,6 @@ function normalizeModelledWalletBands(value: string): string {
 export function ConstellationRedesignScreen({
   pageId,
   quarterLabel,
-  coveragePct,
-  activeMetricCount,
 }: ConstellationRedesignScreenProps) {
   const [selectedSegmentId, setSelectedSegmentId] = useState('cc');
   const [channels, setChannels] = useState<ChannelState>(defaultChannels);
@@ -69,10 +76,12 @@ export function ConstellationRedesignScreen({
   const [reachPct, setReachPct] = useState(40);
   const [depthPct, setDepthPct] = useState(15);
   const [exported, setExported] = useState(false);
-  const [aiOpen, setAiOpen] = useState(true);
-  const [aiAnswerKey, setAiAnswerKey] = useState<AiAnswerKey | null>(null);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiAnswerKey, setAiAnswerKey] = useState<RedesignAiAnswerKey | null>(null);
   const [aiInput, setAiInput] = useState('');
   const [audienceBriefDrafted, setAudienceBriefDrafted] = useState(false);
+  const [demoOpen, setDemoOpen] = useState(false);
+  const [demoStepIndex, setDemoStepIndex] = useState(0);
 
   const model = useMemo(
     () => buildConstellationRedesignModel({
@@ -144,11 +153,20 @@ export function ConstellationRedesignScreen({
   return (
     <>
       <section aria-label={model.screenLabel} className="space-y-[18px] pb-28 text-galaxy-cream">
+        <ExecutiveDemoGuide
+          model={model}
+          isOpen={demoOpen}
+          stepIndex={demoStepIndex}
+          onStart={() => {
+            setDemoOpen(true);
+            setDemoStepIndex(0);
+          }}
+          onNext={() => setDemoStepIndex((current) => (current + 1) % model.demoStops.length)}
+        />
+
         {pageId === 'overview' ? (
           <Overview
             model={model}
-            coveragePct={coveragePct}
-            activeMetricCount={activeMetricCount}
             onSelectSegment={selectSegment}
           />
         ) : (
@@ -168,6 +186,69 @@ export function ConstellationRedesignScreen({
         setAiInput={setAiInput}
       />
     </>
+  );
+}
+
+function ExecutiveDemoGuide({
+  model,
+  isOpen,
+  stepIndex,
+  onStart,
+  onNext,
+}: {
+  model: ConstellationRedesignModel;
+  isOpen: boolean;
+  stepIndex: number;
+  onStart: () => void;
+  onNext: () => void;
+}) {
+  const activeStop = model.demoStops[stepIndex] ?? model.demoStops[0];
+
+  return (
+    <section
+      aria-label="Executive demo guide"
+      className="rounded-[14px] border border-galaxy-gold/20 bg-white/[0.025] px-4 py-3.5"
+    >
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-galaxy-gold">
+            Boardroom story mode
+          </p>
+          {isOpen ? (
+            <>
+              <div className="mt-1 flex flex-wrap items-center gap-2">
+                <span className="rounded-full border border-galaxy-gold/30 px-2 py-0.5 font-mono text-[10px] font-semibold text-galaxy-gold">
+                  {stepIndex + 1} of {model.demoStops.length}
+                </span>
+                <h2 className="font-serif text-xl leading-tight text-galaxy-cream">{activeStop.title}</h2>
+              </div>
+              <p className="mt-1.5 max-w-3xl text-xs leading-5 text-galaxy-muted">{activeStop.note}</p>
+            </>
+          ) : (
+            <p className="mt-1 text-xs leading-5 text-galaxy-muted">
+              Open a presenter-safe sequence across overview, wallet, activation, measurement and governance.
+            </p>
+          )}
+        </div>
+
+        <div className="flex shrink-0 flex-wrap gap-2">
+          {isOpen ? (
+            <>
+              <Link href={activeStop.href} className="galaxy-cta-secondary min-h-9 px-3 text-xs">
+                Open this stop
+              </Link>
+              <button type="button" onClick={onNext} className="galaxy-cta-primary min-h-9 px-3 text-xs">
+                Next stop
+              </button>
+            </>
+          ) : (
+            <button type="button" onClick={onStart} className="galaxy-cta-primary min-h-9 px-3 text-xs">
+              Start demo
+            </button>
+          )}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -207,85 +288,62 @@ function renderRouteBody(
 
 function Overview({
   model,
-  coveragePct,
-  activeMetricCount,
   onSelectSegment,
 }: {
   model: ConstellationRedesignModel;
-  coveragePct: number;
-  activeMetricCount: number;
   onSelectSegment: (segmentId: string) => void;
 }) {
+  const topWalletBand = normalizeModelledWalletBands(`${model.topSegment.wallet} /mo`);
+
   return (
     <>
-      <section className="galaxy-glass-panel overflow-hidden rounded-[24px] border border-white/10 p-5 md:p-6">
-        <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="min-w-0">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
-              {model.quarter.label} constellation cockpit
+      <section className="overflow-hidden rounded-[14px] border border-galaxy-gold/35 bg-[linear-gradient(120deg,rgba(212,175,94,0.12),rgba(26,20,48,0.4)_55%)] px-[26px] py-[22px]">
+        <div className="flex flex-col gap-[22px] lg:flex-row lg:items-center">
+          <div className="min-w-0 flex-1">
+            <p className="text-[10.5px] font-bold uppercase tracking-[0.18em] text-galaxy-gold">
+              This quarter&apos;s play · {model.quarter.label}
             </p>
-            <h1 className="mt-3 max-w-4xl font-serif text-4xl leading-[1.02] text-galaxy-cream md:text-5xl">
-              {model.pageTitle}
+            <h1 className="mt-1.5 font-serif text-[32px] font-semibold leading-[1.15] text-[#F7F2E6]">
+              Pitch {model.topSegment.name} first.
             </h1>
-            <p className="mt-4 max-w-3xl text-sm leading-6 text-galaxy-muted md:text-base md:leading-7">
-              Pitch {model.topSegment.name} first. The current quarter points to {model.topSegment.short} as the
-              strongest governed recapture play. Use the constellation to compare opportunity index, category leakage
-              and reach readiness before briefing Marketing.
+            <p className="mt-1.5 max-w-[640px] text-[13px] leading-[1.55] text-[#B5AFC0]">
+              Index {model.topSegment.idx} opportunity, {model.topSegment.leak}% {model.topSegment.cat} leakage and a{' '}
+              {topWalletBand} modelled wallet band. {model.topSegment.move} is the recommended campaign handoff.
             </p>
           </div>
-          <div className="grid gap-3 rounded-[18px] border border-galaxy-gold/25 bg-galaxy-gold/10 p-4 sm:grid-cols-2 xl:grid-cols-1">
-            <StatTile label="Matched coverage" value={`${coveragePct}%`} sub={`${activeMetricCount} governed metrics`} />
-            <StatTile label="Decision move" value={model.topSegment.move} sub="Recommended first audience" />
+          <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:gap-2.5">
+            <Link
+              href="/activation"
+              className="galaxy-cta-primary px-5"
+            >
+              Build the brief
+            </Link>
+            <Link
+              href="/segments"
+              className="galaxy-cta-secondary px-5"
+            >
+              See the evidence
+            </Link>
           </div>
         </div>
       </section>
 
-      <div className="grid min-w-0 gap-[18px] xl:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="min-w-0 space-y-[18px]">
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            {model.kpis.map((metric) => (
-              <MetricCard key={metric.label} metric={metric} />
-            ))}
-          </div>
+      <div className="grid gap-3.5 md:grid-cols-2 xl:grid-cols-4">
+        {model.kpis.map((metric) => (
+          <MetricCard key={metric.label} metric={metric} />
+        ))}
+      </div>
 
+      <div className="grid min-w-0 items-stretch gap-3.5 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)]">
+        <div className="min-w-0">
           <ConstellationMap
             nodes={model.constellationNodes}
             segmentRows={model.segmentRows}
             selectedSegmentName={model.selectedSegment.name}
+            capturePct={model.quarter.capture}
             onSelectSegment={onSelectSegment}
           />
-
-          <section className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
-            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-galaxy-cream">CDE index legend</h2>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-galaxy-muted">
-                  Indexed, banded and aggregated signals only; no individual or venue-specific values are shown.
-                </p>
-              </div>
-              <p className="rounded-full border border-galaxy-positive/35 bg-galaxy-positive/10 px-3 py-1 text-xs font-semibold text-galaxy-positive">
-                CDE-safe note
-              </p>
-            </div>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              {model.legend.map((item) => (
-                <div key={item.band} className="rounded-[14px] border border-white/10 bg-galaxy-ink/35 p-4">
-                  <div className="flex items-center gap-2">
-                    <span
-                      aria-hidden="true"
-                      className="h-3 w-3 rounded-full"
-                      style={{ backgroundColor: item.color }}
-                    />
-                    <p className="font-mono text-sm font-semibold text-galaxy-cream">{item.band}</p>
-                  </div>
-                  <p className="mt-3 text-sm font-semibold text-galaxy-cream">{item.label}</p>
-                  <p className="mt-1 text-xs leading-5 text-galaxy-muted">{item.sub}</p>
-                </div>
-              ))}
-            </div>
-          </section>
         </div>
-
         <SelectedFinding model={model} />
       </div>
     </>
@@ -294,7 +352,7 @@ function Overview({
 
 function MetricCard({ metric }: { metric: Metric }) {
   return (
-    <article className="galaxy-glass-panel min-h-[154px] rounded-[18px] border border-white/10 p-4">
+    <article className="galaxy-kpi-card p-4">
       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-muted">{metric.label}</p>
       <p className="mt-3 font-mono text-3xl font-semibold leading-none text-galaxy-cream">{metric.value}</p>
       <p className="mt-2 text-xs font-semibold" style={{ color: metric.deltaColor }}>
@@ -302,16 +360,6 @@ function MetricCard({ metric }: { metric: Metric }) {
       </p>
       <p className="mt-3 text-xs leading-5 text-galaxy-muted">{metric.sub}</p>
     </article>
-  );
-}
-
-function StatTile({ label, value, sub }: { label: string; value: string; sub: string }) {
-  return (
-    <div className="rounded-[14px] border border-white/10 bg-galaxy-ink/35 p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-muted">{label}</p>
-      <p className="mt-2 text-lg font-semibold leading-tight text-galaxy-cream">{value}</p>
-      <p className="mt-2 text-xs leading-5 text-galaxy-muted">{sub}</p>
-    </div>
   );
 }
 
@@ -363,7 +411,7 @@ function renderSegments(
 ) {
   return (
     <div className="grid min-w-0 gap-[18px] xl:grid-cols-[minmax(0,1fr)_360px]">
-      <section className="galaxy-glass-panel min-w-0 rounded-[24px] border border-white/10 p-5 md:p-6">
+      <section className="galaxy-panel min-w-0 p-5 md:p-6">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
           {model.quarter.label} governed audience rank
         </p>
@@ -372,7 +420,7 @@ function renderSegments(
           Rank segments by opportunity index, top leakage lane and modelled wallet band before building an audience brief.
         </p>
 
-        <div className="mt-6 overflow-hidden rounded-[18px] border border-white/10">
+        <div className="mt-6 overflow-hidden galaxy-tile">
           <div className="grid grid-cols-[52px_minmax(180px,1.3fr)_90px_minmax(150px,1fr)_140px] gap-3 bg-galaxy-ink/70 px-4 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-galaxy-muted">
             <span>#</span>
             <span>Segment</span>
@@ -410,7 +458,7 @@ function renderSegments(
         </div>
       </section>
 
-      <aside className="galaxy-glass-panel sticky top-4 h-fit rounded-[20px] border border-white/10 p-5">
+      <aside className="galaxy-panel sticky top-4 h-fit p-5">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Segment detail</p>
         <h2 className="mt-3 text-2xl font-semibold leading-tight text-galaxy-cream">{model.selectedSegment.name}</h2>
         <p className="mt-3 text-sm leading-6 text-galaxy-muted">{model.selectedSegment.desc}</p>
@@ -441,7 +489,7 @@ function renderSegments(
         <button
           type="button"
           onClick={onBuildAudienceBrief}
-          className="mt-5 min-h-11 w-full rounded-[12px] border border-galaxy-gold/45 px-4 text-sm font-semibold text-galaxy-gold transition hover:bg-galaxy-gold/10"
+          className="galaxy-cta-secondary mt-5 w-full"
         >
           Build audience brief
         </button>
@@ -471,7 +519,7 @@ function renderSegments(
 function renderLeakage(model: ConstellationRedesignModel, onSelectSegment: (segmentId: string) => void) {
   return (
     <>
-      <section className="galaxy-glass-panel rounded-[24px] border border-white/10 p-5 md:p-6">
+      <section className="galaxy-panel p-5 md:p-6">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
           {model.quarter.label} category controls
         </p>
@@ -485,7 +533,7 @@ function renderLeakage(model: ConstellationRedesignModel, onSelectSegment: (segm
 
         <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {model.leakageCategories.map((category) => (
-            <article key={category.name} className="rounded-[16px] border border-white/10 bg-galaxy-ink/35 p-4">
+            <article key={category.name} className="galaxy-tile p-4">
               <div className="flex items-start justify-between gap-3">
                 <h3 className="text-sm font-semibold text-galaxy-cream">{category.name}</h3>
                 <span className="font-mono text-lg font-semibold text-galaxy-gold">{category.v}%</span>
@@ -499,7 +547,7 @@ function renderLeakage(model: ConstellationRedesignModel, onSelectSegment: (segm
         </div>
       </section>
 
-      <section className="galaxy-glass-panel overflow-hidden rounded-[20px] border border-white/10 p-5">
+      <section className="galaxy-panel overflow-hidden p-5">
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <h2 className="text-2xl font-semibold leading-tight text-galaxy-cream">Leakage matrix</h2>
@@ -556,7 +604,7 @@ function renderLeakage(model: ConstellationRedesignModel, onSelectSegment: (segm
       </section>
 
       <div className="grid min-w-0 gap-[18px] lg:grid-cols-2">
-        <article className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+        <article className="galaxy-panel p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
             What this means for {model.quarter.label}
           </p>
@@ -565,7 +613,7 @@ function renderLeakage(model: ConstellationRedesignModel, onSelectSegment: (segm
             validate supporting category lanes before activation.
           </p>
         </article>
-        <article className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+        <article className="galaxy-panel p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Controls note</p>
           <p className="mt-3 text-sm leading-6 text-galaxy-muted">
             Values are demi-decile averages from matched CDE cohorts. This view exposes aggregated category
@@ -580,7 +628,7 @@ function renderLeakage(model: ConstellationRedesignModel, onSelectSegment: (segm
 function renderJourney(model: ConstellationRedesignModel, onSelectSegment: (segmentId: string) => void) {
   return (
     <>
-      <section className="galaxy-glass-panel rounded-[24px] border border-white/10 p-5 md:p-6">
+      <section className="galaxy-panel p-5 md:p-6">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
           {model.quarter.label} segment journey
         </p>
@@ -599,7 +647,7 @@ function renderJourney(model: ConstellationRedesignModel, onSelectSegment: (segm
           <article
             key={stage.num}
             className={clsx(
-              'rounded-[18px] border p-4',
+              'galaxy-tile p-4',
               stage.isWeak ? 'border-galaxy-gold/45 bg-galaxy-gold/10' : 'border-white/10 bg-galaxy-ink/35',
             )}
           >
@@ -620,7 +668,7 @@ function renderJourney(model: ConstellationRedesignModel, onSelectSegment: (segm
       </div>
 
       <div className="grid min-w-0 gap-[18px] lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-        <article className="galaxy-glass-panel rounded-[20px] border border-galaxy-gold/30 bg-galaxy-gold/10 p-5">
+        <article className="galaxy-panel galaxy-panel-accent p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Weakest link</p>
           <h2 className="mt-3 text-2xl font-semibold leading-tight text-galaxy-cream">{model.weakName}</h2>
           <p className="mt-3 text-sm leading-6 text-galaxy-muted">
@@ -628,7 +676,7 @@ function renderJourney(model: ConstellationRedesignModel, onSelectSegment: (segm
             widening reach.
           </p>
         </article>
-        <article className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+        <article className="galaxy-panel p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Intervention</p>
           <h2 className="mt-3 text-2xl font-semibold leading-tight text-galaxy-cream">{model.selectedSegment.offer}</h2>
           <p className="mt-3 text-sm leading-6 text-galaxy-muted">{model.selectedSegment.desc}</p>
@@ -641,7 +689,7 @@ function renderJourney(model: ConstellationRedesignModel, onSelectSegment: (segm
 function renderWallet(model: ConstellationRedesignModel, onSelectSegment: (segmentId: string) => void) {
   return (
     <>
-      <section className="galaxy-glass-panel rounded-[24px] border border-white/10 p-5 md:p-6">
+      <section className="galaxy-panel p-5 md:p-6">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
           {model.quarter.label} wallet split
         </p>
@@ -655,7 +703,7 @@ function renderWallet(model: ConstellationRedesignModel, onSelectSegment: (segme
       </section>
 
       <div className="grid min-w-0 gap-[18px] xl:grid-cols-[minmax(0,1fr)_360px]">
-        <section className="galaxy-glass-panel min-w-0 rounded-[20px] border border-white/10 p-5">
+        <section className="galaxy-panel min-w-0 p-5">
           <h2 className="text-2xl font-semibold leading-tight text-galaxy-cream">
             On-property vs modelled off-property
           </h2>
@@ -683,7 +731,7 @@ function renderWallet(model: ConstellationRedesignModel, onSelectSegment: (segme
           </div>
         </section>
 
-        <section className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+        <section className="galaxy-panel p-5">
           <h2 className="text-2xl font-semibold leading-tight text-galaxy-cream">Wallet trend</h2>
           <p className="mt-2 text-sm leading-6 text-galaxy-muted">Quarterly modelled wallet bands for the selection.</p>
           <div className="mt-5">
@@ -719,7 +767,7 @@ function renderWallet(model: ConstellationRedesignModel, onSelectSegment: (segme
 
       <div className="grid gap-3 md:grid-cols-3">
         {model.walletCards.map((card) => (
-          <article key={card.label} className="galaxy-glass-panel rounded-[18px] border border-white/10 p-4">
+          <article key={card.label} className="galaxy-tile p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-muted">{card.label}</p>
             <p className="mt-3 text-2xl font-semibold leading-tight text-galaxy-cream">
               {normalizeModelledWalletBands(card.value)}
@@ -735,7 +783,7 @@ function renderWallet(model: ConstellationRedesignModel, onSelectSegment: (segme
 function renderGuests(model: ConstellationRedesignModel, onSelectSegment: (segmentId: string) => void) {
   return (
     <>
-      <section className="galaxy-glass-panel rounded-[24px] border border-white/10 p-5 md:p-6">
+      <section className="galaxy-panel p-5 md:p-6">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
           {model.quarter.label} matched guests
         </p>
@@ -748,7 +796,7 @@ function renderGuests(model: ConstellationRedesignModel, onSelectSegment: (segme
         </p>
       </section>
 
-      <section className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+      <section className="galaxy-panel p-5">
         <h2 className="text-2xl font-semibold leading-tight text-galaxy-cream">Match funnel</h2>
         <div className="mt-5 space-y-4">
           {model.funnel.map((step) => (
@@ -771,7 +819,7 @@ function renderGuests(model: ConstellationRedesignModel, onSelectSegment: (segme
         </div>
       </section>
 
-      <section className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+      <section className="galaxy-panel p-5">
         <h2 className="text-2xl font-semibold leading-tight text-galaxy-cream">Cohort coverage</h2>
         <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-gold">
           Selected cohort: {model.selectedSegment.name}
@@ -785,7 +833,7 @@ function renderGuests(model: ConstellationRedesignModel, onSelectSegment: (segme
               aria-label={`Select ${row.name}, matched band ${row.matched}, coverage ${row.cov}, ${row.quality} quality, ${row.reach}`}
               onClick={() => onSelectSegment(row.id)}
               className={clsx(
-                'rounded-[16px] border p-4 text-left transition',
+                'galaxy-tile p-4 text-left transition',
                 row.selected ? 'border-galaxy-gold/40 bg-galaxy-gold/10' : 'border-white/10 bg-galaxy-ink/35',
               )}
             >
@@ -825,7 +873,7 @@ function renderGuests(model: ConstellationRedesignModel, onSelectSegment: (segme
 function renderPropensity(model: ConstellationRedesignModel, onSelectSegment: (segmentId: string) => void) {
   return (
     <div className="grid min-w-0 gap-[18px] xl:grid-cols-[minmax(0,1fr)_360px]">
-      <section className="galaxy-glass-panel min-w-0 rounded-[24px] border border-white/10 p-5 md:p-6">
+      <section className="galaxy-panel min-w-0 p-5 md:p-6">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
           {model.quarter.label} propensity bands
         </p>
@@ -834,7 +882,7 @@ function renderPropensity(model: ConstellationRedesignModel, onSelectSegment: (s
           Select the activation audience using governed propensity bands and channel reach status.
         </p>
 
-        <div className="mt-6 overflow-hidden rounded-[18px] border border-white/10">
+        <div className="mt-6 overflow-hidden galaxy-tile">
           <div className="grid grid-cols-[minmax(200px,1.3fr)_minmax(160px,1fr)_140px] gap-3 bg-galaxy-ink/70 px-4 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-galaxy-muted">
             <span>Segment</span>
             <span>Propensity band</span>
@@ -866,7 +914,7 @@ function renderPropensity(model: ConstellationRedesignModel, onSelectSegment: (s
         </div>
       </section>
 
-      <aside className="galaxy-glass-panel sticky top-4 h-fit rounded-[20px] border border-galaxy-gold/30 bg-galaxy-gold/10 p-5">
+      <aside className="galaxy-panel galaxy-panel-accent sticky top-4 h-fit p-5">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Audience readiness</p>
         <h2 className="mt-3 text-2xl font-semibold leading-tight text-galaxy-cream">{model.selectedSegment.name}</h2>
         <div className="mt-5 grid gap-3">
@@ -893,7 +941,7 @@ function renderActivation(model: ConstellationRedesignModel, controls: SharedRou
 
   return (
     <>
-      <section className="galaxy-glass-panel rounded-[24px] border border-white/10 p-5 md:p-6">
+      <section className="galaxy-panel p-5 md:p-6">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
           {model.quarter.label} activation setup
         </p>
@@ -905,7 +953,7 @@ function renderActivation(model: ConstellationRedesignModel, controls: SharedRou
 
       <div className="grid min-w-0 gap-[18px] lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
         <div className="min-w-0 space-y-[18px]">
-          <section className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+          <section className="galaxy-panel p-5">
             <h2 className="text-lg font-semibold text-galaxy-cream">Audience</h2>
             <p className="mt-2 text-sm leading-6 text-galaxy-muted">
               Choose one of the top governed recapture audiences for this brief.
@@ -934,7 +982,7 @@ function renderActivation(model: ConstellationRedesignModel, controls: SharedRou
             </div>
           </section>
 
-          <section className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+          <section className="galaxy-panel p-5">
             <h2 className="text-lg font-semibold text-galaxy-cream">Channels</h2>
             <div className="mt-4 flex flex-wrap gap-2">
               {model.channels.map((channel) => (
@@ -956,7 +1004,7 @@ function renderActivation(model: ConstellationRedesignModel, controls: SharedRou
             </div>
           </section>
 
-          <section className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+          <section className="galaxy-panel p-5">
             <h2 className="text-lg font-semibold text-galaxy-cream">Measurement window</h2>
             <div className="mt-4 grid grid-cols-3 gap-2">
               {model.windows.map((windowOption) => (
@@ -982,7 +1030,7 @@ function renderActivation(model: ConstellationRedesignModel, controls: SharedRou
           </section>
         </div>
 
-        <aside className="galaxy-glass-panel h-fit min-w-0 max-w-full rounded-[20px] border border-galaxy-gold/30 bg-galaxy-gold/10 p-5 lg:sticky lg:top-4">
+        <aside className="galaxy-panel galaxy-panel-accent h-fit min-w-0 max-w-full p-5 lg:sticky lg:top-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
@@ -1027,7 +1075,7 @@ function renderActivation(model: ConstellationRedesignModel, controls: SharedRou
             <button
               type="button"
               onClick={() => controls.setExported(true)}
-              className="min-h-11 flex-1 rounded-[12px] px-4 text-sm font-semibold text-galaxy-ink transition hover:brightness-110"
+              className="galaxy-cta-primary flex-1"
               style={{ backgroundColor: model.exportBg, color: model.exportColor }}
             >
               {controls.exported ? model.exportLabel : 'Export campaign brief'}
@@ -1035,11 +1083,30 @@ function renderActivation(model: ConstellationRedesignModel, controls: SharedRou
             <button
               type="button"
               onClick={askAiBrief}
-              className="min-h-11 rounded-[12px] border border-galaxy-gold/45 px-4 text-sm font-semibold text-galaxy-gold transition hover:bg-galaxy-gold/10"
+              className="galaxy-cta-secondary"
             >
               Ask CDE AI
             </button>
           </div>
+
+          {controls.exported ? (
+            <div
+              role="status"
+              aria-label="Measurement handoff queued"
+              className="mt-5 rounded-[14px] border border-galaxy-positive/30 bg-galaxy-positive/10 p-4"
+            >
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-positive">
+                Measurement handoff queued
+              </p>
+              <p className="mt-2 text-sm leading-6 text-galaxy-cream">
+                {model.activationHandoff.audience} enters {model.activationHandoff.window} with{' '}
+                {model.activationHandoff.proof.toLowerCase()}.
+              </p>
+              <Link href={model.activationHandoff.href} className="galaxy-cta-secondary mt-3 min-h-9 px-3 text-xs">
+                Open measurement readout
+              </Link>
+            </div>
+          ) : null}
         </aside>
       </div>
     </>
@@ -1049,7 +1116,7 @@ function renderActivation(model: ConstellationRedesignModel, controls: SharedRou
 function renderSimulator(model: ConstellationRedesignModel, controls: SharedRouteControls) {
   return (
     <>
-      <section className="galaxy-glass-panel rounded-[24px] border border-white/10 p-5 md:p-6">
+      <section className="galaxy-panel p-5 md:p-6">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
           {model.quarter.label} scenario lab
         </p>
@@ -1061,14 +1128,14 @@ function renderSimulator(model: ConstellationRedesignModel, controls: SharedRout
 
       <div className="grid min-w-0 gap-[18px] lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
         <div className="min-w-0 space-y-[18px]">
-          <section className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+          <section className="galaxy-panel p-5">
             <h2 className="text-lg font-semibold text-galaxy-cream">Scenario audience</h2>
             <div className="mt-4">
               <SegmentChipBar chips={model.segmentChips} onSelectSegment={controls.onSelectSegment} />
             </div>
           </section>
 
-          <section className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+          <section className="galaxy-panel p-5">
             <div className="space-y-5">
               <label className="block text-sm font-semibold text-galaxy-cream">
                 Audience reach
@@ -1129,7 +1196,7 @@ function renderSimulator(model: ConstellationRedesignModel, controls: SharedRout
           </section>
         </div>
 
-        <aside className="galaxy-glass-panel h-fit min-w-0 max-w-full rounded-[20px] border border-galaxy-gold/30 bg-galaxy-gold/10 p-5 lg:sticky lg:top-4">
+        <aside className="galaxy-panel galaxy-panel-accent h-fit min-w-0 max-w-full p-5 lg:sticky lg:top-4">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Projected outcome</p>
           <h2 className="mt-3 text-2xl font-semibold leading-tight text-galaxy-cream">
             {model.selectedSegment.name}
@@ -1163,7 +1230,7 @@ function renderSimulator(model: ConstellationRedesignModel, controls: SharedRout
 function renderMeasurement(model: ConstellationRedesignModel) {
   return (
     <>
-      <section className="galaxy-glass-panel rounded-[24px] border border-white/10 p-5 md:p-6">
+      <section className="galaxy-panel p-5 md:p-6">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
           {model.quarter.label} measurement
         </p>
@@ -1173,9 +1240,61 @@ function renderMeasurement(model: ConstellationRedesignModel) {
         </p>
       </section>
 
+      <section aria-label="Latest activation handoff" className="galaxy-panel galaxy-panel-accent p-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
+          Latest activation handoff
+        </p>
+        <h2 className="mt-3 text-2xl font-semibold leading-tight text-galaxy-cream">
+          Campaign activation now closes into measurement
+        </h2>
+        <div className="mt-4 grid gap-3 md:grid-cols-4">
+          {[
+            { label: 'Audience', value: model.activationHandoff.audience },
+            { label: 'Cohort band', value: model.activationHandoff.cohort },
+            { label: 'Window', value: model.activationHandoff.window },
+            { label: 'Proof', value: model.activationHandoff.proof },
+          ].map((item) => (
+            <div key={item.label} className="rounded-[12px] border border-white/10 bg-galaxy-ink/35 p-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-galaxy-muted">{item.label}</p>
+              <p className="mt-1.5 text-xs font-semibold leading-5 text-galaxy-cream">
+                {normalizeModelledWalletBands(item.value)}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section aria-label="Measurement decision guidance" className="galaxy-panel galaxy-panel-accent p-5">
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(260px,0.8fr)] lg:items-start">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Governed action</p>
+            <h2 className="mt-3 text-2xl font-semibold leading-tight text-galaxy-cream">
+              {model.measurementDecisionSummary.action} {model.measurementDecisionSummary.campaignName}
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-galaxy-muted">
+              {model.measurementDecisionSummary.rationale}
+            </p>
+            <p className="mt-3 text-sm leading-6 text-galaxy-cream">
+              {model.measurementDecisionSummary.nextStep}
+            </p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+            {[
+              { label: 'Decision', value: model.measurementDecisionSummary.action },
+              { label: 'Confidence', value: model.measurementDecisionSummary.confidence },
+            ].map((item) => (
+              <div key={item.label} className="rounded-[12px] border border-white/10 bg-galaxy-ink/35 p-3">
+                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-galaxy-muted">{item.label}</p>
+                <p className="mt-1.5 text-sm font-semibold leading-5 text-galaxy-cream">{item.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <div className="grid gap-3 md:grid-cols-3">
         {model.measureCounts.map((count) => (
-          <article key={count.label} className="galaxy-glass-panel rounded-[18px] border border-white/10 p-4">
+          <article key={count.label} className="galaxy-tile p-4">
             <div className="flex items-center gap-4">
               <p className="font-serif text-4xl font-semibold leading-none" style={{ color: count.color }}>
                 {count.v}
@@ -1189,7 +1308,7 @@ function renderMeasurement(model: ConstellationRedesignModel) {
         ))}
       </div>
 
-      <section className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+      <section className="galaxy-panel p-5">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Campaign readouts</p>
         <h2 className="mt-3 text-2xl font-semibold leading-tight text-galaxy-cream">
           Every campaign reads as capture-index delta vs a matched holdout
@@ -1198,11 +1317,12 @@ function renderMeasurement(model: ConstellationRedesignModel) {
           {model.readouts.map((readout) => (
             <article
               key={readout.name}
-              className="grid gap-3 rounded-[14px] border border-white/10 bg-galaxy-ink/35 p-4 md:grid-cols-[minmax(0,1.5fr)_minmax(150px,1fr)_80px_90px_110px] md:items-center"
+              className="grid gap-3 rounded-[14px] border border-white/10 bg-galaxy-ink/35 p-4 md:grid-cols-[minmax(0,1.45fr)_minmax(140px,0.9fr)_80px_80px_100px_100px] md:items-center"
             >
               <div>
                 <h3 className="text-sm font-semibold text-galaxy-cream">{readout.name}</h3>
                 <p className="mt-1 text-xs leading-5 text-galaxy-muted">{readout.note}</p>
+                <p className="mt-1 text-xs leading-5 text-galaxy-muted">{readout.decision.nextStep}</p>
               </div>
               <p className="text-sm text-galaxy-muted">{readout.aud}</p>
               <p className="font-mono text-xs font-semibold text-galaxy-muted">{readout.window}</p>
@@ -1214,6 +1334,16 @@ function renderMeasurement(model: ConstellationRedesignModel) {
                 style={{ borderColor: readout.sBorder, color: readout.sColor }}
               >
                 {readout.status}
+              </p>
+              <p
+                className="w-fit rounded-full border px-3 py-1 text-xs font-semibold"
+                style={{
+                  borderColor: readout.decision.border,
+                  color: readout.decision.color,
+                  backgroundColor: readout.decision.bg,
+                }}
+              >
+                {readout.decision.action}
               </p>
             </article>
           ))}
@@ -1230,7 +1360,7 @@ function renderMeasurement(model: ConstellationRedesignModel) {
 function renderMarketScan(model: ConstellationRedesignModel) {
   return (
     <>
-      <section className="galaxy-glass-panel rounded-[24px] border border-white/10 p-5 md:p-6">
+      <section className="galaxy-panel p-5 md:p-6">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
           {model.quarter.label} market baseline
         </p>
@@ -1242,7 +1372,7 @@ function renderMarketScan(model: ConstellationRedesignModel) {
 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         {model.demand.map((item) => (
-          <article key={item.name} className="galaxy-glass-panel rounded-[18px] border border-white/10 p-4">
+          <article key={item.name} className="galaxy-tile p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-muted">{item.name}</p>
             <div className="mt-3 flex items-baseline gap-3">
               <p className="font-serif text-4xl font-semibold leading-none" style={{ color: item.color }}>
@@ -1258,7 +1388,7 @@ function renderMarketScan(model: ConstellationRedesignModel) {
       </div>
 
       <div className="grid min-w-0 gap-[18px] lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
-        <section className="galaxy-glass-panel min-w-0 rounded-[20px] border border-white/10 p-5">
+        <section className="galaxy-panel min-w-0 p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Corridor mix</p>
           <h2 className="mt-3 text-2xl font-semibold leading-tight text-galaxy-cream">
             Where matched visitation originates
@@ -1283,7 +1413,7 @@ function renderMarketScan(model: ConstellationRedesignModel) {
           </div>
         </section>
 
-        <aside className="galaxy-glass-panel min-w-0 rounded-[20px] border border-white/10 p-5">
+        <aside className="galaxy-panel min-w-0 p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Competitive read</p>
           <p className="mt-3 text-sm leading-6 text-galaxy-muted">
             Retail/Luxury demand indexes highest against the market baseline while Galaxy category capture trails it.
@@ -1305,7 +1435,7 @@ function renderMarketScan(model: ConstellationRedesignModel) {
 function renderGovernance(model: ConstellationRedesignModel) {
   return (
     <>
-      <section className="galaxy-glass-panel rounded-[24px] border border-white/10 p-5 md:p-6">
+      <section className="galaxy-panel p-5 md:p-6">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">
           {model.quarter.label} governed controls
         </p>
@@ -1317,7 +1447,7 @@ function renderGovernance(model: ConstellationRedesignModel) {
 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {model.rules.map((rule) => (
-          <article key={rule.t} className="galaxy-glass-panel rounded-[18px] border border-white/10 p-4">
+          <article key={rule.t} className="galaxy-tile p-4">
             <div className="flex items-start justify-between gap-3">
               <h2 className="text-sm font-semibold text-galaxy-cream">{rule.t}</h2>
               <span className="rounded-full border border-galaxy-positive/35 bg-galaxy-positive/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-galaxy-positive">
@@ -1330,7 +1460,7 @@ function renderGovernance(model: ConstellationRedesignModel) {
       </div>
 
       <div className="grid min-w-0 gap-[18px] lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
-        <section className="galaxy-glass-panel min-w-0 rounded-[20px] border border-white/10 p-5">
+        <section className="galaxy-panel min-w-0 p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Refresh log</p>
           <div className="mt-5 overflow-x-auto">
             <div className="min-w-[620px]">
@@ -1362,7 +1492,7 @@ function renderGovernance(model: ConstellationRedesignModel) {
           </div>
         </section>
 
-        <aside className="galaxy-glass-panel min-w-0 rounded-[20px] border border-white/10 p-5">
+        <aside className="galaxy-panel min-w-0 p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">Data-sharing scope</p>
           <p className="mt-3 text-sm leading-6 text-galaxy-muted">
             Mastercard CDE enrichment reaches Galaxy as demi-decile averages over matched cohorts: governed metrics,
@@ -1385,11 +1515,13 @@ function ConstellationMap({
   nodes,
   segmentRows,
   selectedSegmentName,
+  capturePct,
   onSelectSegment,
 }: {
   nodes: Node[];
   segmentRows: SegmentRow[];
   selectedSegmentName: string;
+  capturePct: number;
   onSelectSegment: (segmentId: string) => void;
 }) {
   function accessibleNodeName(node: Node) {
@@ -1401,39 +1533,60 @@ function ConstellationMap({
   }
 
   return (
-    <section className="galaxy-glass-panel min-w-0 rounded-[20px] border border-white/10 p-5">
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold leading-tight text-galaxy-cream">Wallet headroom constellation</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-galaxy-muted">
-            Point size is opportunity index. Orbit width is category leakage. Border color marks reach readiness.
-          </p>
-        </div>
-        <p className="rounded-full border border-galaxy-gold/30 bg-galaxy-gold/10 px-3 py-1 text-xs font-semibold text-galaxy-gold">
-          Selected: {selectedSegmentName}
+    <section className="relative min-w-0 overflow-hidden rounded-[14px] border border-galaxy-gold/20 bg-[radial-gradient(900px_500px_at_50%_40%,#171230_0%,#0B0916_70%)] min-h-[540px]">
+      <div className="absolute left-[22px] top-[18px] z-30">
+        <p className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-galaxy-gold">Opportunity map</p>
+        <h2 className="mt-0.5 font-serif text-[22px] leading-tight text-galaxy-cream">
+          Wallet headroom constellation
+        </h2>
+        <p className="mt-2 max-w-[28rem] text-[12px] leading-5 text-galaxy-muted">
+          Point size is opportunity index. Orbit width is category leakage. Border color marks reach readiness.
         </p>
       </div>
 
-      <div className="relative mt-5 min-h-[420px] overflow-hidden rounded-[18px] border border-white/10 bg-[#0A0812]">
-        <div
+      {prototypeStars.map((star) => (
+        <span
+          key={`${star.left}-${star.top}`}
           aria-hidden="true"
-          className="absolute inset-0 bg-[radial-gradient(circle_at_50%_48%,rgba(212,175,94,0.12),transparent_30%),radial-gradient(circle_at_30%_62%,rgba(111,191,143,0.10),transparent_24%)]"
+          className="absolute rounded-full bg-[#EAD9A9]"
+          style={{
+            left: star.left,
+            top: star.top,
+            width: `${star.size}px`,
+            height: `${star.size}px`,
+            opacity: star.opacity,
+          }}
         />
-        <div aria-hidden="true" className="absolute left-1/2 top-1/2 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10" />
-        <div aria-hidden="true" className="absolute left-1/2 top-1/2 h-[210px] w-[210px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10" />
-        <div aria-hidden="true" className="absolute left-1/2 top-1/2 h-[112px] w-[112px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-galaxy-gold/20" />
+      ))}
 
-        {nodes.map((node) => (
+      <div className="absolute left-1/2 top-[52%] z-20 flex h-[92px] w-[92px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-galaxy-gold/55 bg-[radial-gradient(circle_at_40%_35%,rgba(212,175,94,0.35),rgba(20,16,31,0.9)_75%)] text-center shadow-[0_0_50px_rgba(212,175,94,0.2)]">
+        <div className="text-[10px] font-bold uppercase leading-[1.35] tracking-[0.1em] text-[#EAD9A9]">
+          Galaxy capture {capturePct}%
+        </div>
+      </div>
+
+      <div aria-hidden="true" className="absolute left-1/2 top-[52%] h-[360px] w-[360px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-galaxy-gold/10" />
+      <div aria-hidden="true" className="absolute left-1/2 top-[52%] h-[250px] w-[250px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-galaxy-gold/10" />
+      <div aria-hidden="true" className="absolute left-1/2 top-[52%] h-[145px] w-[145px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-galaxy-gold/20" />
+
+      <p className="absolute right-[22px] top-[20px] z-30 rounded-full border border-galaxy-gold/30 bg-galaxy-gold/10 px-3 py-1 text-xs font-semibold text-galaxy-gold">
+        Selected: {selectedSegmentName}
+      </p>
+
+      {nodes.map((node) => (
+        <div key={node.id} className="absolute z-20" style={{ left: `${node.x}%`, top: `${node.y}%` }}>
+          <div
+            aria-hidden="true"
+            className="absolute left-0 top-0 -translate-x-1/2 -translate-y-1/2 rounded-full border border-dashed border-galaxy-gold/30"
+            style={{ width: `${node.orbit}px`, height: `${node.orbit}px` }}
+          />
           <button
-            key={node.id}
             type="button"
             aria-label={accessibleNodeName(node)}
             aria-pressed={node.selected}
             onClick={() => onSelectSegment(node.id)}
             className="absolute z-10 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 text-center font-mono font-semibold shadow-[0_16px_38px_rgba(0,0,0,0.32)] transition hover:scale-105 focus-visible:scale-105"
             style={{
-              left: `${node.x}%`,
-              top: `${node.y}%`,
               width: `${node.size}px`,
               height: `${node.size}px`,
               borderColor: node.border,
@@ -1444,21 +1597,32 @@ function ConstellationMap({
           >
             {node.idx}
           </button>
-        ))}
-
-        {nodes.map((node) => (
           <span
-            key={`${node.id}-label`}
             className="absolute z-10 -translate-x-1/2 rounded-full border border-white/10 bg-galaxy-ink/75 px-2 py-1 text-[11px] font-semibold"
             style={{
-              left: `${node.x}%`,
-              top: `calc(${node.y}% + ${Math.round(node.size / 2) + 10}px)`,
+              left: '0px',
+              top: `${Math.round(node.size / 2) + 10}px`,
               color: node.labelColor,
             }}
           >
             {node.shortName}
           </span>
-        ))}
+        </div>
+      ))}
+
+      <div className="absolute bottom-4 left-[22px] right-[22px] z-30 flex flex-wrap gap-x-[18px] gap-y-2 text-[10.5px] text-galaxy-muted">
+        <span className="inline-flex items-center gap-1.5">
+          <span aria-hidden="true" className="h-3.5 w-3.5 rounded-full border border-galaxy-gold bg-galaxy-gold/25" />
+          Number = opportunity index
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span aria-hidden="true" className="h-4 w-4 rounded-full border border-dashed border-galaxy-gold/50" />
+          Ring width = wallet leakage
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span aria-hidden="true" className="h-2 w-2 rounded-full bg-galaxy-positive" />
+          Mobile-ready cohort
+        </span>
       </div>
     </section>
   );
@@ -1466,18 +1630,26 @@ function ConstellationMap({
 
 function SelectedFinding({ model }: { model: ConstellationRedesignModel }) {
   return (
-    <section aria-label="Selected finding" className="galaxy-glass-panel rounded-[20px] border border-white/10 p-5">
+    <section aria-label="Selected finding" className="flex rounded-[14px] border border-galaxy-gold/20 bg-white/[0.025] p-[22px]">
+      <div className="flex min-h-full w-full flex-col gap-3.5">
       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-gold">Selected finding</p>
-      <h2 className="mt-3 text-2xl font-semibold leading-tight text-galaxy-cream">{model.selectedSegment.name}</h2>
-      <p className="mt-3 text-sm leading-6 text-galaxy-muted">{model.selectedSegment.desc}</p>
-      <div className="mt-5 grid gap-3">
+      <h2 className="font-serif text-2xl font-semibold leading-tight text-[#F7F2E6]">{model.selectedSegment.name}</h2>
+      <p className="text-[12.5px] leading-[1.6] text-[#B5AFC0]">{model.selectedSegment.desc}</p>
+      <div className="grid gap-2.5 sm:grid-cols-2">
         {model.selectedStats.map((stat) => (
           <SelectedStat key={stat.label} stat={stat} />
         ))}
       </div>
-      <div className="mt-5 rounded-[14px] border border-galaxy-gold/25 bg-galaxy-gold/10 p-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-muted">Recommended play</p>
-        <p className="mt-2 text-sm font-semibold leading-6 text-galaxy-cream">{model.selectedSegment.offer}</p>
+      <div className="rounded-[9px] border border-galaxy-gold/25 bg-galaxy-gold/5 px-[15px] py-[13px]">
+        <p className="text-[9.5px] font-bold uppercase tracking-[0.12em] text-galaxy-gold">Recommended move</p>
+        <p className="mt-1 text-[13px] font-semibold leading-[1.45] text-galaxy-cream">{model.selectedSegment.move}</p>
+      </div>
+      <Link
+        href="/activation"
+        className="galaxy-cta-primary mt-auto"
+      >
+        Build audience brief →
+      </Link>
       </div>
     </section>
   );
@@ -1504,17 +1676,15 @@ function CdeAiDock({
   model: ConstellationRedesignModel;
   aiOpen: boolean;
   setAiOpen: (open: boolean) => void;
-  aiAnswerKey: 'explain' | 'trust' | 'brief' | null;
-  setAiAnswerKey: (key: 'explain' | 'trust' | 'brief' | null) => void;
+  aiAnswerKey: RedesignAiAnswerKey | null;
+  setAiAnswerKey: (key: RedesignAiAnswerKey | null) => void;
   aiInput: string;
   setAiInput: (input: string) => void;
 }) {
   const aiPanelId = 'constellation-redesign-ai-panel';
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
-  const defaultAiAnswer =
-    `Ask for an explanation, trust rationale, or a CDE-safe campaign brief for ${model.selectedSegment.name}.`;
   const aiAnswer = normalizeModelledWalletBands(
-    aiAnswerKey ? model.aiAnswers[aiAnswerKey] : defaultAiAnswer,
+    aiAnswerKey ? model.aiPanel.answers[aiAnswerKey] : model.aiPanel.defaultAnswer,
   );
 
   function submitAiQuestion(event: FormEvent<HTMLFormElement>) {
@@ -1534,7 +1704,7 @@ function CdeAiDock({
   return (
     <aside
       aria-label="CDE AI"
-      className="fixed bottom-4 right-4 z-[60] flex max-w-[calc(100vw-2rem)] flex-col items-end gap-3 text-galaxy-cream md:bottom-[22px] md:right-[22px]"
+      className="fixed bottom-4 right-4 z-[60] flex max-w-[calc(100vw-2rem)] flex-col items-end gap-2.5 text-galaxy-cream md:bottom-[22px] md:right-[22px]"
     >
       <div
         id={aiPanelId}
@@ -1543,7 +1713,7 @@ function CdeAiDock({
         hidden={!aiOpen}
         className="w-[392px] max-w-full overflow-hidden rounded-[16px] border border-galaxy-gold/35 bg-[linear-gradient(160deg,#1B1530,#100C1E_70%)] shadow-[0_24px_70px_rgba(0,0,0,0.6)]"
       >
-        <div className="flex items-center gap-3 border-b border-galaxy-gold/20 bg-galaxy-gold/10 px-[18px] py-3.5">
+        <div className="flex items-center gap-2.5 border-b border-[rgba(212,175,94,0.18)] bg-[rgba(212,175,94,0.06)] px-[18px] py-3.5">
           <span
             aria-hidden="true"
             className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-[radial-gradient(circle_at_35%_30%,#EAD9A9,#D4AF5E_70%)] text-[13px] font-extrabold text-galaxy-ink"
@@ -1562,7 +1732,7 @@ function CdeAiDock({
             aria-controls={aiPanelId}
             aria-expanded={aiOpen}
             onClick={closeAiPanel}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-base text-galaxy-muted transition hover:bg-white/5 hover:text-galaxy-cream"
+            className="flex h-6 w-6 items-center justify-center bg-transparent p-1 text-base text-galaxy-muted transition hover:text-galaxy-cream"
           >
             ×
           </button>
@@ -1570,7 +1740,20 @@ function CdeAiDock({
 
         <div className="flex flex-col gap-3 px-[18px] py-4">
           <div className="flex flex-wrap gap-[7px]">
-            {model.aiChips.map((chip) => (
+            {model.aiPanel.starterPrompts.map((prompt) => (
+              <button
+                key={prompt.label}
+                type="button"
+                onClick={() => setAiAnswerKey(prompt.key)}
+                className="min-h-[31px] rounded-full border border-white/10 bg-white/[0.035] px-3 text-[11px] font-semibold text-galaxy-muted transition hover:border-galaxy-gold/45 hover:text-galaxy-gold"
+              >
+                {prompt.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap gap-[7px]">
+            {model.aiPanel.chips.map((chip) => (
               <button
                 key={chip.key}
                 type="button"
@@ -1592,6 +1775,31 @@ function CdeAiDock({
             {aiAnswer}
           </div>
 
+          <details className="rounded-[10px] border border-white/10 bg-galaxy-ink/35 px-3.5 py-3 text-xs text-galaxy-muted">
+            <summary className="cursor-pointer font-semibold text-galaxy-gold">Show data behind this</summary>
+            <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.14em] text-galaxy-muted">
+              Grounded data used
+            </p>
+            <dl className="mt-2 grid gap-2">
+              {model.aiPanel.evidenceRows.map((row) => (
+                <div key={row.label} className="flex items-start justify-between gap-3">
+                  <dt className="text-galaxy-muted">{row.label}</dt>
+                  <dd className="text-right font-semibold text-galaxy-cream">{normalizeModelledWalletBands(row.value)}</dd>
+                </div>
+              ))}
+            </dl>
+          </details>
+
+          {model.aiPanel.links.length ? (
+            <div className="flex flex-wrap gap-2">
+              {model.aiPanel.links.map((link) => (
+                <Link key={`${link.href}-${link.label}`} href={link.href} className="galaxy-cta-secondary min-h-8 px-3 text-[11px]">
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          ) : null}
+
           <form className="flex gap-2" onSubmit={submitAiQuestion}>
             <label className="sr-only" htmlFor="cde-ai-question">
               Ask a CDE-safe question
@@ -1601,19 +1809,19 @@ function CdeAiDock({
               type="text"
               value={aiInput}
               onChange={(event) => setAiInput(event.target.value)}
-              placeholder={`Ask about ${model.selectedSegment.name}...`}
+              placeholder={model.aiPanel.inputPlaceholder}
               className="min-h-[39px] min-w-0 flex-1 rounded-[9px] border border-galaxy-gold/20 bg-white/[0.03] px-3.5 text-[12.5px] text-galaxy-cream outline-none placeholder:text-galaxy-muted/70 focus:border-galaxy-gold"
             />
             <button
               type="submit"
-              className="min-h-[39px] rounded-[9px] bg-galaxy-gold px-4 text-[12.5px] font-extrabold text-galaxy-ink transition hover:brightness-110"
+              className="galaxy-cta-primary min-h-[39px] px-4 text-[12.5px]"
             >
               Ask
             </button>
           </form>
 
           <p className="text-[9.5px] leading-4 text-galaxy-muted">
-            Answers use modelled CDE ranges, percentages and indices only - never guest-level data.
+            Answers use modelled CDE ranges, percentages and indices only — never guest-level data.
           </p>
         </div>
       </div>
@@ -1624,7 +1832,7 @@ function CdeAiDock({
         aria-controls={aiPanelId}
         aria-expanded={aiOpen}
         onClick={() => setAiOpen(!aiOpen)}
-        className="flex min-h-11 items-center gap-2 rounded-full border border-galaxy-gold/50 bg-[linear-gradient(120deg,#221A3C,#14101F)] px-5 text-[13px] font-extrabold tracking-[0.02em] text-galaxy-gold shadow-[0_10px_34px_rgba(0,0,0,0.5),0_0_24px_rgba(212,175,94,0.15)] transition hover:shadow-[0_10px_34px_rgba(0,0,0,0.5),0_0_34px_rgba(212,175,94,0.3)]"
+        className="flex min-h-11 items-center gap-[9px] rounded-full border border-galaxy-gold/50 bg-[linear-gradient(120deg,#221A3C,#14101F)] px-5 text-[13px] font-extrabold tracking-[0.02em] text-galaxy-gold shadow-[0_10px_34px_rgba(0,0,0,0.5),0_0_24px_rgba(212,175,94,0.15)] transition hover:shadow-[0_10px_34px_rgba(0,0,0,0.5),0_0_34px_rgba(212,175,94,0.3)]"
       >
         <span aria-hidden="true" className="text-sm text-galaxy-gold">
           ✦
@@ -1637,7 +1845,7 @@ function CdeAiDock({
 
 function PlaceholderScreen({ model }: { model: ConstellationRedesignModel }) {
   return (
-    <div className="galaxy-glass-panel rounded-[24px] border border-white/10 p-6">
+    <div className="galaxy-panel p-6">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-galaxy-gold">{model.screenLabel}</p>
       <h1 className="mt-3 font-serif text-4xl leading-tight text-galaxy-cream">{model.pageTitle}</h1>
       <p className="mt-4 max-w-3xl text-sm leading-6 text-galaxy-muted">

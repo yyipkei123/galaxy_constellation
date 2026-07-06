@@ -1,7 +1,6 @@
 'use client';
 
 import { ChatAssistantLauncher } from '@/components/assistant/chat-assistant-launcher';
-import { PresenterTour } from '@/components/shell/presenter-tour';
 import { useAppState } from '@/store/app-store';
 import { usePathname } from 'next/navigation';
 
@@ -42,10 +41,7 @@ export function PresentationFloatingControls() {
   return (
     <>
       {showLegacyFloatingControls ? (
-        <>
-          <PresenterTour />
-          <ChatAssistantLauncher />
-        </>
+        <ChatAssistantLauncher />
       ) : null}
     </>
   );
