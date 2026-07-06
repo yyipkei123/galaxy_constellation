@@ -141,6 +141,16 @@ async function documentScrollWidth(page: Page) {
   ));
 }
 
+async function hideCompactCdeAiDock(page: Page) {
+  const aiDock = page.getByRole('complementary', { name: 'CDE AI' });
+  const hideButton = aiDock.getByRole('button', { name: 'Hide CDE AI' });
+
+  if (await hideButton.isVisible()) {
+    await hideButton.click();
+    await expect(aiDock.locator('[data-cde-ai-panel="floating"]')).toBeHidden();
+  }
+}
+
 test.describe('Galaxy Constellation rendered compliance', () => {
   for (const route of routes) {
     test(`${route} shows CDE methodology and avoids banned CDE currency patterns`, async ({ page }) => {
@@ -213,7 +223,15 @@ test.describe('Galaxy Constellation rendered compliance', () => {
     await page.goto('/');
 
     const aiDock = page.getByRole('complementary', { name: 'CDE AI' });
+    const aiPanel = aiDock.locator('[data-cde-ai-panel="floating"]');
     await expect(aiDock).toBeVisible();
+    await expect(aiPanel).toBeVisible();
+    await expect(aiPanel.getByText('CDE AI', { exact: true })).toBeVisible();
+    await expect(aiPanel.getByText('Governed answers · ranges & indices only', { exact: true })).toBeVisible();
+    await expect(aiPanel.getByText(
+      'Ask for an explanation, trust rationale, or a CDE-safe campaign brief for Cosmopolitan Connoisseurs.',
+      { exact: true },
+    )).toBeVisible();
 
     const briefChip = aiDock.getByRole('button', { name: 'Build a brief' });
     await briefChip.click();
@@ -224,6 +242,7 @@ test.describe('Galaxy Constellation rendered compliance', () => {
     await expect(aiDock).not.toContainText(bannedCdeTokenPattern);
 
     const input = aiDock.getByRole('textbox', { name: /Ask a CDE-safe question/i });
+    await expect(input).toHaveAttribute('placeholder', 'Ask about Cosmopolitan Connoisseurs...');
     await input.fill('Show HKD 5000 leakage');
     await aiDock.getByRole('button', { name: 'Ask' }).click();
 
@@ -231,12 +250,16 @@ test.describe('Galaxy Constellation rendered compliance', () => {
     await expect(aiDock.getByText(/Cosmopolitan Connoisseurs: opportunity index 118/i)).toBeVisible();
     await expect(aiDock).not.toContainText(bannedCdeTokenOrUnsafeAmountPattern);
 
-    await aiDock.getByRole('button', { name: 'Collapse' }).click();
-    await expect(aiDock.getByRole('button', { name: 'Open' })).toHaveAttribute('aria-expanded', 'false');
-    await expect(briefChip).not.toBeVisible();
+    await expect(aiDock.getByRole('button', { name: 'Collapse' })).toHaveCount(0);
+    await expect(aiDock.getByRole('button', { name: 'Open' })).toHaveCount(0);
 
-    await aiDock.getByRole('button', { name: 'Open' }).click();
-    await expect(aiDock.getByRole('button', { name: 'Collapse' })).toHaveAttribute('aria-expanded', 'true');
+    await aiDock.getByRole('button', { name: 'Hide CDE AI' }).click();
+    await expect(aiDock.getByRole('button', { name: 'Ask CDE AI' })).toHaveAttribute('aria-expanded', 'false');
+    await expect(aiPanel).toBeHidden();
+
+    await aiDock.getByRole('button', { name: 'Ask CDE AI' }).click();
+    await expect(aiDock.getByRole('button', { name: 'Hide CDE AI' })).toHaveAttribute('aria-expanded', 'true');
+    await expect(aiPanel).toBeVisible();
     await expect(aiDock.getByRole('button', { name: 'Build a brief' })).toBeVisible();
   });
 
@@ -325,7 +348,8 @@ test.describe('Galaxy Constellation rendered compliance', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
 
-    await page.getByRole('button', { name: 'Open presenter tour' }).click();
+    await hideCompactCdeAiDock(page);
+    await page.getByRole('button', { name: 'Open presenter tour' }).dispatchEvent('click');
 
     const dialog = page.getByRole('dialog', { name: 'Presenter tour' });
     const presenterStops = [
@@ -464,6 +488,7 @@ test.describe('Galaxy Constellation rendered compliance', () => {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
 
       await gotoStableRoute(page, '/wallet');
+      await hideCompactCdeAiDock(page);
       const walletRegion = page.getByRole('region', { name: 'Wallet' });
       await expect(walletRegion.getByRole('heading', { name: 'Wallet intelligence' })).toBeVisible();
       await expect(walletRegion.getByRole('heading', { name: 'On-property vs modelled off-property' })).toBeVisible();
@@ -473,6 +498,7 @@ test.describe('Galaxy Constellation rendered compliance', () => {
       expect(await documentScrollWidth(page)).toBeLessThanOrEqual(viewport.width);
 
       await gotoStableRoute(page, '/segments');
+      await hideCompactCdeAiDock(page);
       const segmentsRegion = page.getByRole('region', { name: 'Segments' });
       await expect(segmentsRegion.getByRole('heading', { name: 'Segment rankings' })).toBeVisible();
       await expect(segmentsRegion.getByText('Segment detail')).toBeVisible();
