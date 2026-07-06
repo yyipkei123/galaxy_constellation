@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { ConstellationRedesignScreen } from './constellation-redesign-screen';
 import type { RedesignPageId } from './constellation-redesign-model';
 
-const bannedCdePattern = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣|raw[-\s]?spend|exact\s+spend|\b(?:guest|member|merchant|transaction)-level\b|forecast|\b(?:NaN|Infinity)\b/i;
+const bannedCdePattern = /\b(?:HKD|MOP)(?=\b|[\s\d$.,:;/-])|\$|元|澳門幣|raw[-\s]?spend|exact\s+spend|(?<!never\s)\b(?:guest|member|merchant|transaction)-level\b|forecast|\b(?:NaN|Infinity)\b/i;
 const rawWalletBandPattern = /\d+(?:\.\d+)?-\d+(?:\.\d+)?k \/mo/;
 
 function expectCdeSafe(container: HTMLElement) {
@@ -49,21 +49,30 @@ describe('ConstellationRedesignScreen', () => {
     expect(container.textContent).toContain('8-14k equiv./mo');
   });
 
-  it('labels the AI dock as a complementary landmark with collapse state', () => {
+  it('matches the compact prototype CDE AI dock shell and collapse state', () => {
     renderScreen('overview');
 
     const aiDock = screen.getByRole('complementary', { name: 'CDE AI' });
-    const toggle = within(aiDock).getByRole('button', { name: 'Collapse' });
+    const panel = within(aiDock).getByTestId('cde-ai-panel');
+    const closeButton = within(panel).getByRole('button', { name: 'Close CDE AI' });
+    const toggle = within(aiDock).getByRole('button', { name: 'Hide CDE AI' });
     const controlledPanelId = toggle.getAttribute('aria-controls');
 
+    expect(panel).toHaveClass('w-[392px]');
+    expect(within(panel).getByText('CDE AI')).toBeInTheDocument();
+    expect(within(panel).getByText('Governed answers · ranges & indices only')).toBeInTheDocument();
+    expect(within(panel).getByText('Explain the ranking')).toBeInTheDocument();
+    expect(within(panel).getByText('Why trust it?')).toBeInTheDocument();
+    expect(within(panel).getByText('Build a brief')).toBeInTheDocument();
+    expect(within(panel).getByText(/Ask for an explanation, trust rationale/i)).toBeInTheDocument();
+    expect(within(panel).getByPlaceholderText('Ask about Cosmopolitan Connoisseurs...')).toBeInTheDocument();
+    expect(within(panel).getByText(/Answers use modelled CDE ranges/i)).toBeInTheDocument();
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
     expect(controlledPanelId).toBeTruthy();
-    expect(document.getElementById(controlledPanelId ?? '')).toBeInTheDocument();
 
-    fireEvent.click(toggle);
+    fireEvent.click(closeButton);
 
-    expect(within(aiDock).getByRole('button', { name: 'Open' })).toHaveAttribute('aria-expanded', 'false');
-    expect(document.getElementById(controlledPanelId ?? '')).toBeInTheDocument();
+    expect(within(aiDock).getByRole('button', { name: 'Ask CDE AI' })).toHaveAttribute('aria-expanded', 'false');
     expect(document.getElementById(controlledPanelId ?? '')).toHaveAttribute('hidden');
   });
 
@@ -87,8 +96,8 @@ describe('ConstellationRedesignScreen', () => {
     );
   });
 
-  it('groups the segment shortcuts with an accessible label', () => {
-    renderScreen('overview');
+  it('groups the route segment shortcuts with an accessible label', () => {
+    renderScreen('journey');
 
     expect(screen.getByRole('group', { name: 'Segment shortcuts' })).toBeInTheDocument();
   });
@@ -296,7 +305,7 @@ describe('ConstellationRedesignScreen', () => {
 
     fireEvent.click(within(route).getByRole('button', { name: 'Ask CDE AI' }));
     expect(screen.getAllByRole('complementary', { name: 'CDE AI' })).toHaveLength(1);
-    expect(screen.getByRole('button', { name: 'Collapse' })).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('button', { name: 'Hide CDE AI' })).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByText(/Draft brief for Premium Mass Weekenders/i)).toBeInTheDocument();
     expectCdeSafe(container);
   });

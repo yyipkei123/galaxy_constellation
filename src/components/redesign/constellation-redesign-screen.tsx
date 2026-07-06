@@ -158,7 +158,15 @@ export function ConstellationRedesignScreen({
         )}
       </section>
 
-      <CdeAiDock model={model} {...sharedControls} />
+      <CdeAiDock
+        model={model}
+        aiOpen={aiOpen}
+        setAiOpen={setAiOpen}
+        aiAnswerKey={aiAnswerKey}
+        setAiAnswerKey={setAiAnswerKey}
+        aiInput={aiInput}
+        setAiInput={setAiInput}
+      />
     </>
   );
 }
@@ -335,22 +343,6 @@ function SegmentChipBar({
           {chip.label}
         </button>
       ))}
-    </div>
-  );
-}
-
-function ProgressBar({ value, label }: { value: number; label: string }) {
-  const safeValue = Math.max(0, Math.min(100, value));
-
-  return (
-    <div>
-      <div className="mb-2 flex items-center justify-between gap-3 text-xs">
-        <span className="font-semibold text-galaxy-muted">{label}</span>
-        <span className="font-mono text-galaxy-cream">{safeValue}%</span>
-      </div>
-      <div className="h-2 overflow-hidden rounded-full bg-galaxy-ink/70">
-        <div className="h-full rounded-full bg-galaxy-gold" style={{ width: `${safeValue}%` }} />
-      </div>
     </div>
   );
 }
@@ -1502,30 +1494,26 @@ function SelectedStat({ stat }: { stat: Stat }) {
 
 function CdeAiDock({
   model,
-  windowWeeks,
-  setWindowWeeks,
-  reachPct,
-  setReachPct,
-  depthPct,
-  setDepthPct,
-  exported,
-  setExported,
   aiOpen,
   setAiOpen,
   aiAnswerKey,
   setAiAnswerKey,
   aiInput,
   setAiInput,
-  onToggleChannel,
-  onSelectSegment,
 }: {
   model: ConstellationRedesignModel;
-} & SharedRouteControls) {
+  aiOpen: boolean;
+  setAiOpen: (open: boolean) => void;
+  aiAnswerKey: 'explain' | 'trust' | 'brief' | null;
+  setAiAnswerKey: (key: 'explain' | 'trust' | 'brief' | null) => void;
+  aiInput: string;
+  setAiInput: (input: string) => void;
+}) {
   const aiPanelId = 'constellation-redesign-ai-panel';
   const aiAnswer = normalizeModelledWalletBands(
     aiAnswerKey
       ? model.aiAnswers[aiAnswerKey]
-      : 'Choose a guided chip or ask a question for a CDE-safe answer.',
+      : 'Ask for an explanation, trust rationale, or a campaign-ready brief.',
   );
 
   function submitAiQuestion(event: FormEvent<HTMLFormElement>) {
@@ -1540,156 +1528,102 @@ function CdeAiDock({
   return (
     <aside
       aria-label="CDE AI"
-      className="fixed bottom-4 right-4 z-[60] h-fit min-w-0 max-w-full rounded-[20px] border border-white/10 bg-galaxy-ink/95 p-5 shadow-2xl"
+      className="fixed bottom-4 right-4 z-[60] flex max-w-[calc(100vw-2rem)] flex-col items-end gap-3 text-galaxy-cream md:bottom-[22px] md:right-[22px]"
     >
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-gold">CDE AI dock</p>
-          <h2 className="mt-2 text-xl font-semibold leading-tight text-galaxy-cream">Briefing controls</h2>
+      <div
+        id={aiPanelId}
+        data-cde-ai-panel="floating"
+        data-testid="cde-ai-panel"
+        hidden={!aiOpen}
+        className="w-[392px] max-w-full overflow-hidden rounded-[16px] border border-galaxy-gold/35 bg-[linear-gradient(160deg,#1B1530,#100C1E_70%)] shadow-[0_24px_70px_rgba(0,0,0,0.6)]"
+      >
+        <div className="flex items-center gap-3 border-b border-galaxy-gold/20 bg-galaxy-gold/10 px-[18px] py-3.5">
+          <span
+            aria-hidden="true"
+            className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-[radial-gradient(circle_at_35%_30%,#EAD9A9,#D4AF5E_70%)] text-[13px] font-extrabold text-galaxy-ink"
+          >
+            ✦
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[13px] font-extrabold leading-tight text-galaxy-cream">CDE AI</span>
+            <span className="mt-0.5 block text-[10px] leading-tight tracking-[0.06em] text-galaxy-muted">
+              Governed answers · ranges &amp; indices only
+            </span>
+          </span>
+          <button
+            type="button"
+            aria-label="Close CDE AI"
+            aria-controls={aiPanelId}
+            aria-expanded={aiOpen}
+            onClick={() => setAiOpen(false)}
+            className="flex h-8 w-8 items-center justify-center rounded-full text-base text-galaxy-muted transition hover:bg-white/5 hover:text-galaxy-cream"
+          >
+            ×
+          </button>
         </div>
-        <button
-          type="button"
-          aria-controls={aiPanelId}
-          aria-expanded={aiOpen}
-          onClick={() => setAiOpen(!aiOpen)}
-          className="min-h-9 rounded-full border border-white/10 px-3 text-xs font-semibold text-galaxy-muted transition hover:border-galaxy-gold/50 hover:text-galaxy-cream"
-        >
-          {aiOpen ? 'Collapse' : 'Open'}
-        </button>
-      </div>
 
-      <div id={aiPanelId} hidden={!aiOpen} className="mt-5 space-y-5">
-          <SegmentChipBar
-            chips={model.segmentChips}
-            onSelectSegment={onSelectSegment}
-            buttonLabelPrefix="CDE AI "
-          />
-
-          <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-muted">Channels</p>
-            <div className="grid gap-2">
-              {model.channels.map((channel) => (
-                <button
-                  key={channel.name}
-                  type="button"
-                  aria-pressed={channel.enabled}
-                  onClick={() => onToggleChannel(channel.name)}
-                  className={clsx(
-                    'min-h-10 rounded-[12px] border px-3 text-left text-sm font-semibold transition',
-                    channel.enabled
-                      ? 'border-galaxy-gold/45 bg-galaxy-gold/12 text-galaxy-cream'
-                      : 'border-white/10 bg-galaxy-ink/35 text-galaxy-muted hover:border-galaxy-gold/45',
-                  )}
-                >
-                  {channel.name}
-                </button>
-              ))}
-            </div>
+        <div className="flex flex-col gap-3 px-[18px] py-4">
+          <div className="flex flex-wrap gap-[7px]">
+            {model.aiChips.map((chip) => (
+              <button
+                key={chip.key}
+                type="button"
+                aria-pressed={aiAnswerKey === chip.key}
+                onClick={() => setAiAnswerKey(chip.key)}
+                className={clsx(
+                  'min-h-[33px] rounded-full border px-3 text-[11.5px] font-bold transition',
+                  aiAnswerKey === chip.key
+                    ? 'border-galaxy-gold bg-galaxy-gold text-galaxy-ink'
+                    : 'border-galaxy-gold/35 bg-galaxy-gold/5 text-galaxy-muted hover:border-galaxy-gold hover:text-galaxy-gold',
+                )}
+              >
+                {chip.label}
+              </button>
+            ))}
           </div>
 
-          <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-muted">Window</p>
-            <div className="grid grid-cols-3 gap-2">
-              {model.windows.map((windowOption) => (
-                <button
-                  key={windowOption.weeks}
-                  type="button"
-                  aria-pressed={windowWeeks === windowOption.weeks}
-                  onClick={() => setWindowWeeks(windowOption.weeks)}
-                  className={clsx(
-                    'min-h-9 rounded-full border px-3 text-xs font-semibold transition',
-                    windowWeeks === windowOption.weeks
-                      ? 'border-galaxy-gold bg-galaxy-gold text-galaxy-ink'
-                      : 'border-white/10 bg-galaxy-ink/35 text-galaxy-muted hover:border-galaxy-gold/45',
-                  )}
-                >
-                  {windowOption.label}
-                </button>
-              ))}
-            </div>
-            <p className="mt-2 text-xs leading-5 text-galaxy-muted">{model.windowNote}</p>
+          <div className="min-h-[88px] rounded-[10px] border border-galaxy-gold/15 bg-galaxy-ink/50 px-4 py-3.5 text-[12.5px] leading-7 text-[#C9C3D2]">
+            {aiAnswer}
           </div>
 
-          <div className="space-y-4">
-            <label className="block text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-muted">
-              Audience reach
-              <input
-                type="range"
-                aria-label="Audience reach"
-                min="10"
-                max="90"
-                step="5"
-                value={reachPct}
-                onChange={(event) => setReachPct(Number(event.target.value))}
-                className="mt-3 block w-full accent-galaxy-gold"
-              />
-            </label>
-            <ProgressBar value={reachPct} label="Audience reach" />
-            <label className="block text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-muted">
-              Offer depth
-              <input
-                type="range"
-                aria-label="Offer depth"
-                min="5"
-                max="30"
-                step="1"
-                value={depthPct}
-                onChange={(event) => setDepthPct(Number(event.target.value))}
-                className="mt-3 block w-full accent-galaxy-gold"
-              />
-            </label>
-            <ProgressBar value={depthPct} label="Offer depth" />
-          </div>
-
-          <div className="rounded-[16px] border border-white/10 bg-galaxy-ink/35 p-4">
-            <div className="flex flex-wrap gap-2">
-              {model.aiChips.map((chip) => (
-                <button
-                  key={chip.key}
-                  type="button"
-                  aria-pressed={aiAnswerKey === chip.key}
-                  onClick={() => setAiAnswerKey(chip.key)}
-                  className={clsx(
-                    'min-h-9 rounded-full border px-3 text-xs font-semibold transition',
-                    aiAnswerKey === chip.key
-                      ? 'border-galaxy-gold bg-galaxy-gold text-galaxy-ink'
-                      : 'border-white/10 text-galaxy-muted hover:border-galaxy-gold/50 hover:text-galaxy-cream',
-                  )}
-                >
-                  {chip.label}
-                </button>
-              ))}
-            </div>
-            <p className="mt-4 text-sm leading-6 text-galaxy-cream">{aiAnswer}</p>
-          </div>
-
-          <form className="space-y-3" onSubmit={submitAiQuestion}>
-            <label className="block text-xs font-semibold uppercase tracking-[0.14em] text-galaxy-muted">
+          <form className="flex gap-2" onSubmit={submitAiQuestion}>
+            <label className="sr-only" htmlFor="cde-ai-question">
               Ask a CDE-safe question
-              <input
-                type="text"
-                value={aiInput}
-                onChange={(event) => setAiInput(event.target.value)}
-                placeholder="Compare the top two audiences"
-                className="mt-3 block min-h-11 w-full rounded-[12px] border border-white/10 bg-galaxy-ink/50 px-3 text-sm normal-case tracking-normal text-galaxy-cream placeholder:text-galaxy-muted/70"
-              />
             </label>
+            <input
+              id="cde-ai-question"
+              type="text"
+              value={aiInput}
+              onChange={(event) => setAiInput(event.target.value)}
+              placeholder={`Ask about ${model.selectedSegment.name}...`}
+              className="min-h-[39px] min-w-0 flex-1 rounded-[9px] border border-galaxy-gold/20 bg-white/[0.03] px-3.5 text-[12.5px] text-galaxy-cream outline-none placeholder:text-galaxy-muted/70 focus:border-galaxy-gold"
+            />
             <button
               type="submit"
-              className="min-h-10 w-full rounded-[12px] border border-white/10 bg-galaxy-ink/35 px-4 text-sm font-semibold text-galaxy-cream transition hover:border-galaxy-gold/50"
+              className="min-h-[39px] rounded-[9px] bg-galaxy-gold px-4 text-[12.5px] font-extrabold text-galaxy-ink transition hover:brightness-110"
             >
               Ask
             </button>
           </form>
 
-          <button
-            type="button"
-            onClick={() => setExported(true)}
-            className="min-h-11 w-full rounded-[12px] border border-galaxy-gold/45 px-4 text-sm font-semibold text-galaxy-gold transition hover:bg-galaxy-gold/10"
-          >
-            {exported ? model.exportLabel : 'Export campaign brief'}
-          </button>
+          <p className="text-[9.5px] leading-4 text-galaxy-muted">
+            Answers use modelled CDE ranges, percentages and indices only - never guest-level data.
+          </p>
         </div>
+      </div>
+
+      <button
+        type="button"
+        aria-controls={aiPanelId}
+        aria-expanded={aiOpen}
+        onClick={() => setAiOpen(!aiOpen)}
+        className="flex min-h-11 items-center gap-2 rounded-full border border-galaxy-gold/50 bg-[linear-gradient(120deg,#221A3C,#14101F)] px-5 text-[13px] font-extrabold tracking-[0.02em] text-galaxy-gold shadow-[0_10px_34px_rgba(0,0,0,0.5),0_0_24px_rgba(212,175,94,0.15)] transition hover:shadow-[0_10px_34px_rgba(0,0,0,0.5),0_0_34px_rgba(212,175,94,0.3)]"
+      >
+        <span aria-hidden="true" className="text-sm text-galaxy-gold">
+          ✦
+        </span>
+        {aiOpen ? 'Hide CDE AI' : 'Ask CDE AI'}
+      </button>
     </aside>
   );
 }
