@@ -346,9 +346,8 @@ test.describe('Galaxy Constellation rendered compliance', () => {
 
   test('mobile presenter tour opens without horizontal overflow', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/');
+    await page.goto('/guests/MEM-••••3421');
 
-    await hideCompactCdeAiDock(page);
     await page.getByRole('button', { name: 'Open presenter tour' }).click({ position: { x: 22, y: 42 } });
 
     const dialog = page.getByRole('dialog', { name: 'Presenter tour' });
@@ -379,8 +378,8 @@ test.describe('Galaxy Constellation rendered compliance', () => {
   test('presenter mode hides floating controls while keeping guidance visible', async ({ page }) => {
     await page.goto('/');
 
-    await expect(page.getByRole('button', { name: 'Open presenter tour' })).toBeVisible();
     await expect(page.getByRole('complementary', { name: 'CDE AI' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Open presenter tour' })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Open AI insight assistant' })).toHaveCount(0);
 
     await page.getByRole('button', { name: 'Presenter mode' }).click();
@@ -462,6 +461,7 @@ test.describe('Galaxy Constellation rendered compliance', () => {
         await expect(page.getByRole('banner')).toContainText(/CDE metrics/i);
         await expect(page.getByRole('banner').getByLabel('Galaxy Macau and Mastercard data partnership')).toBeVisible();
         await expect(page.getByRole('complementary', { name: 'CDE AI' })).toBeVisible();
+        await expect(page.getByRole('button', { name: /Open presenter tour/i })).toHaveCount(0);
         await expect(page.getByRole('button', { name: /Open AI insight assistant/i })).toHaveCount(0);
 
         const primaryNav = page.getByRole('navigation', { name: /Primary navigation/i });

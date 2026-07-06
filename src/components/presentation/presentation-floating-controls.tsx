@@ -37,12 +37,16 @@ export function PresentationFloatingControls() {
     return null;
   }
 
-  const showLegacyAssistant = !hasCompactCdeAiDock(pathname);
+  const showLegacyFloatingControls = !hasCompactCdeAiDock(pathname);
 
   return (
     <>
-      <PresenterTour />
-      {showLegacyAssistant ? <ChatAssistantLauncher /> : null}
+      {showLegacyFloatingControls ? (
+        <>
+          <PresenterTour />
+          <ChatAssistantLauncher />
+        </>
+      ) : null}
     </>
   );
 }

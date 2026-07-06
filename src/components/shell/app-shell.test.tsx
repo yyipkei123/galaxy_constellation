@@ -14,7 +14,7 @@ describe('AppShell', () => {
     mockPathname = '/';
   });
 
-  it('keeps route content in the main landmark and uses the compact route chatbot on redesigned routes', () => {
+  it('keeps route content in the main landmark and hides legacy floating controls on redesigned routes', () => {
     render(
       <AppStateProvider>
         <AppShell>
@@ -25,7 +25,7 @@ describe('AppShell', () => {
 
     expect(screen.getByRole('main')).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Client presentation guidance' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Open presenter tour' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Open presenter tour' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Open AI insight assistant' })).not.toBeInTheDocument();
     expect(screen.getByLabelText('test content')).toHaveTextContent('Route content');
     expect(screen.getByLabelText('Current CDE refresh')).toHaveTextContent('2026 Q2');
@@ -35,7 +35,7 @@ describe('AppShell', () => {
     expect(screen.getByText(/Enriched figures are modelled estimates/i)).toBeInTheDocument();
   });
 
-  it('keeps the legacy AI insight assistant on routes without the compact CDE AI dock', () => {
+  it('keeps legacy floating controls on routes without the compact CDE AI dock', () => {
     mockPathname = '/guests/MEM-••••3421';
 
     render(
@@ -94,7 +94,7 @@ describe('AppShell', () => {
     );
 
     expect(screen.getByRole('region', { name: 'Client presentation guidance' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Open presenter tour' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Open presenter tour' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Open AI insight assistant' })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Presenter mode' }));
